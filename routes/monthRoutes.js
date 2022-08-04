@@ -12,6 +12,7 @@ router.use(authController.protect);
 
 router.use(authController.restrictToMessId);
 
+router.get('/pdf', monthContorller.getPDF);
 // router.get('/', monthContorller.getMonthList);
 router.get('/:id', monthContorller.getMonth);
 router.get('/', monthContorller.getActiveMonth);
