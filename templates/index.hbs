@@ -1,0 +1,189 @@
+<html lang='en'>
+  <head>
+    <meta charset='UTF-8' />
+    <meta http-equiv='X-UA-Compatible' content='IE=edge' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title>{{title}}</title>
+    <link
+      href='https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css'
+      rel='stylesheet'
+      integrity='sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC'
+      crossorigin='anonymous'
+    />
+
+  </head>
+  <body>
+    <div class='container-fluid'>
+      <h1 class='text-center'>{{messId.messName}}</h1>
+      <h5 class='text-center'>Manager Name:{{manager.name}}</h5>
+
+      <h6 class='text-center'>Month Title:{{monthTitle}}</h6>
+      <h6 class='text-center'>Rich Balance:{{richBalance}}</h6>
+      <h6 class='text-center'>MealRate:{{mealRate}}</h6>
+
+      <table class='table table-bordered table-striped'>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>meal</th>
+            <th>fixedMeal</th>
+            <th>mealCost</th>
+            <th>OtherCost</th>
+            <th>totalCost</th>
+            <th>Deposit</th>
+            <th>balance</th>
+            <th>rich</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each userMonthData as |member|}}
+            <tr>
+              <td>{{member.userName}}</td>
+              <td>{{member.totalMeal}}</td>
+              <td>{{member.fixedMeal}}</td>
+              <td>{{member.mealCost}}</td>
+              <td>{{member.otherCost}}</td>
+              <td>{{member.totalCost}}</td>
+              <td>{{member.totalDeposit}}</td>
+              <td>{{member.balance}}</td>
+              <td>{{member.richBalance}}</td>
+            </tr>
+          {{/each}}
+        </tbody>
+        <thead>
+          <tr>
+            <th>Total Border = {{userMonthData.length}}</th>
+            <th>{{totalMeal}}</th>
+            <th>{{totalFixedMeal}}</th>
+            <th>{{totalMealCost}}</th>
+            <th>{{totalOtherCost}}</th>
+            <th>{{totalCost}}</th>
+            <th>{{totalDeposit}}</th>
+            <th>{{balance}}</th>
+            <th>{{richBalance}}</th>
+
+          </tr>
+        </thead>
+      </table>
+      {{! rich table }}
+      <h6 class='text-center'>Rich Table</h6>
+      <table class='table table-bordered table-striped'>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>quantity</th>
+            <th>date</th>
+
+          </tr>
+        </thead>
+        <tbody>
+
+          {{#each richs as |rich|}}
+            <tr>
+              <td>{{rich.userName}}</td>
+              <td>{{rich.amount}}</td>
+              <td>{{dateFormat rich.date}}</td>
+              {{!-- <td>{{cash.date.substring(0,15)}}</td> --}}
+
+            </tr>
+          {{/each}}
+        </tbody>
+
+      </table>
+      {{! rich Table }}
+
+      {{! cash table }}
+      <h6 class='text-center'>Cash Table</h6>
+      <table class='table table-bordered table-striped'>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>amount</th>
+            <th>date</th>
+
+          </tr>
+        </thead>
+        <tbody>
+
+          {{#each cashs as |cash|}}
+            <tr>
+              <td>{{cash.userName}}</td>
+              <td>{{cash.amount}}</td>
+              <td>{{dateFormat cash.date}}</td>
+              {{!-- <td>{{cash.date.substring(0,15)}}</td> --}}
+
+            </tr>
+          {{/each}}
+        </tbody>
+
+      </table>
+      {{! cash table }}
+
+      {{! cost table }}
+      <h6 class='text-center'>Cost Table</h6>
+      <table class='table table-bordered table-striped'>
+        <thead>
+          <tr>
+
+            <th>title</th>
+            <th>type</th>
+            <th>amount</th>
+            <th>date</th>
+
+          </tr>
+        </thead>
+        <tbody>
+
+          {{#each costs as |cost|}}
+
+            <tr>
+              <td>{{cost.title}}</td>
+              <td>{{cost.type}}</td>
+              <td>{{cost.amount}}</td>
+              <td>{{dateFormat cost.date}}</td>
+              {{!-- <td>{{cash.date.substring(0,15)}}</td> --}}
+
+            </tr>
+
+          {{/each}}
+
+        </tbody>
+
+      </table>
+      {{! cost table }}
+
+      {{! meal table }}
+      <h6 class='text-center'>meal Table</h6>
+      <table class='table table-bordered table-striped'>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>breakfast</th>
+            <th>lunch</th>
+            <th>dinner</th>
+            <th>total</th>
+            <th>date</th>
+
+          </tr>
+        </thead>
+        <tbody>
+
+          {{#each meals as |meal|}}
+            <tr>
+              <td>{{meal.userName}}</td>
+              <td>{{meal.breakfast}}</td>
+              <td>{{meal.lunch}}</td>
+              <td>{{meal.dinner}}</td>
+              <td>{{meal.total}}</td>
+              <td>{{dateFormat meal.date}}</td>
+              {{!-- <td>{{cash.date.substring(0,15)}}</td> --}}
+
+            </tr>
+          {{/each}}
+        </tbody>
+
+      </table>
+      {{! meal table }}
+    </div>
+  </body>
+</html>
