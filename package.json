@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
+    "start-server": "node server.jss",
     "start:dev": "nodemon server.js"
   },
   "keywords": [],
@@ -26,7 +27,6 @@
     "hbs": "^4.2.0",
     "helmet": "^5.1.1",
     "hpp": "^0.2.3",
-    "js-file-download": "^0.4.12",
     "jsonwebtoken": "^8.5.1",
     "moment": "^2.29.4",
     "mongoose": "^6.4.7",
