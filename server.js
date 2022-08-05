@@ -20,8 +20,8 @@ const database = 'mongodb://localhost:27017/node-api-structure';
 
 mongoose
   .connect(
-    database,
-    // process.env.DB_URL,
+    // database,
+    process.env.DB_URL,
     {
       // useNewUrlParser: true,
       // useCreateIndex: true,
@@ -33,9 +33,8 @@ mongoose
   });
 
 // -> Start the server
-const port = process.env.PORT || 4000;
 
-app.listen(port, () => {
+app.listen(process.env.PORT || 4000, () => {
   console.log(`Application is running on port ${port} `);
 });
 
