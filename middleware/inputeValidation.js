@@ -80,7 +80,6 @@ module.exports.addMemberEmailValidat = [
       }
       // const equalss = user.messId.equals(req.user.messId);
       const messId = user.messId || false;
-      console.log(messId);
       // if(messId ){}
       const equal = JSON.stringify(messId) === JSON.stringify(req.user.messId);
       const notequal =

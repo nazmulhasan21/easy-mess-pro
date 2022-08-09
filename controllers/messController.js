@@ -23,6 +23,7 @@ const {
   createMonth,
 } = require('../utils/fun');
 const UserMonthData = require('../models/userMonthDataModel');
+const Meal = require('../models/mealModel');
 
 // ********** Start Mess Controller *************** //
 
@@ -93,13 +94,17 @@ exports.getMember = base.getOne(User, 'User');
 // add member in your mess
 exports.addMember = async (req, res, next) => {
   try {
+    // this is a add Member email and other validation
     const errors = validationResult(req);
     console.log(errors);
     if (!errors.isEmpty()) {
       return next(errors);
     }
 
-    const { user, newUser } = req;
+    const { user } = req;
+    // find new User by email;
+    const newUser = await User.findOne({ email: req.body.email });
+
     // #### change newUser role
     newUser.role = 'border';
     // 1. find mess
@@ -114,11 +119,23 @@ exports.addMember = async (req, res, next) => {
       $and: [{ messId: user.messId }, { active: true }],
     })
       .populate('userMonthData')
-      .select('userMonthData');
+      .select('userMonthData meals');
 
     // 4. create user Month data
     await createUserMonthData(newUser._id, month, mess._id);
 
+    // 5. create user now day meal
+    // const userMeal = await Meal.create({
+    //   userId: newUser._id,
+    //   userName: newUser.name,
+    //   total: total,
+    //   messId: user.messId,
+    //   monthId: month._id,
+    //   addBy: user._id,
+    //   date: now.Date(),
+    // });
+    // // push this userMeal in active month
+    // month.meals.push(userMeal);
     await month.save();
 
     res.status(201).json({

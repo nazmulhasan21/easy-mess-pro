@@ -9,6 +9,7 @@ const Month = require('../models/monthModel');
 const AppError = require('../utils/appError');
 const APIFeatures = require('../utils/apiFeatures');
 const User = require('../models/userModel');
+const moment = require('moment');
 
 // get cost one
 
@@ -26,10 +27,10 @@ exports.getOne = (Model, model) => async (req, res, next) => {
     // 1. find cost
     const doc = await Model.findOne({
       $and: [{ _id: req.params.id }, { messId: user.messId }],
-    });
+    }).populate('addBy editBy userId', 'name avater role');
     if (!doc)
       return next(new AppError(404, model, `No ${model} found with that id`));
-
+    doc.userName = undefined;
     // 2. send res
     res.status(200).json({
       status: 'success',
@@ -49,35 +50,69 @@ exports.getOne = (Model, model) => async (req, res, next) => {
  * @returns {Array}
  */
 // get All Cost active month
-exports.getList =
-  (Model, populate = '') =>
-  async (req, res, next) => {
-    try {
-      const { user } = req;
-      // 1. find active month
-      const activMonth = await Month.findOne({
-        $and: [{ messId: user.messId }, { active: true }],
-      });
-      // 2. get all cost in active month
-      const features = new APIFeatures(
-        Model.find({ monthId: activMonth._id }).populate(populate),
-        req.body
-      )
-        .sort()
-        .paginate();
-      const doc = await features.query;
-      // 3. send res
-      res.status(200).json({
-        status: 'success',
-        results: doc.length,
-        data: {
-          data: doc,
+exports.getList = (Model) => async (req, res, next) => {
+  try {
+    const { user, query } = req;
+    const { startDate, endDate, day, amount } = query;
+    // filter
+    // 1. filter in date
+    let date = {};
+    if (startDate || endDate) {
+      date = {
+        date: {
+          $gte: moment(startDate).startOf('day'),
+          $lte: moment(endDate).endOf('day'),
         },
-      });
-    } catch (error) {
-      next(error);
+      };
+    } else if (day) {
+      date = {
+        date: {
+          $gte: moment(day).startOf('day'),
+          $lte: moment(day).endOf('day'),
+        },
+      };
     }
-  };
+    // amount filter
+
+    const filteramount = amount
+      ? {
+          amount: {
+            $gte: amount.split('-')[0],
+            $lte: amount.split('-')[1],
+          },
+        }
+      : {};
+
+    // 1. find active month
+    const activMonth = await Month.findOne({
+      $and: [{ messId: user.messId }, { active: true }],
+    });
+
+    // 2. get all cost in active month
+    const features = new APIFeatures(
+      Model.find({
+        $and: [{ monthId: activMonth._id }, date, filteramount],
+      })
+        .populate('addBy editBy userId', 'name avater role')
+        .select({ userName: 0 }),
+      req.query
+    )
+      .sort()
+      .paginate();
+    const doc = await features.query;
+
+    // 3. send res
+    res.status(200).json({
+      status: 'success',
+      results: doc.length,
+      data: {
+        data: doc,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 /**
  *

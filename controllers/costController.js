@@ -1,5 +1,6 @@
 // node modules
 const mongoose = require('mongoose');
+const moment = require('moment');
 const { validationResult } = require('express-validator');
 
 // all Models
@@ -24,7 +25,7 @@ exports.getCost = async (req, res, next) => {
     // 1. find cost
     const doc = await Cost.findOne({
       $and: [{ _id: req.params.id }, { messId: user.messId }],
-    }).populate('addBy editBy monthId', 'name avater monthTitle');
+    }).populate('addBy editBy monthId', 'name avater role monthTitle');
     if (!doc)
       return next(new AppError(404, 'cost', 'No cost found with that id'));
 
@@ -44,7 +45,41 @@ exports.getCost = async (req, res, next) => {
 // get All Cost active month
 exports.getCostList = async (req, res, next) => {
   try {
-    const { user } = req;
+    const { user, query } = req;
+
+    const { startDate, endDate, day, amount } = query;
+
+    // filter
+    // 1. filter in date
+    let date = {};
+    if (startDate || endDate) {
+      date = {
+        date: {
+          $gte: moment(startDate).startOf('day'),
+          $lte: moment(endDate).endOf('day'),
+        },
+      };
+    } else if (day) {
+      date = {
+        date: {
+          $gte: moment(day).startOf('day'),
+          $lte: moment(day).endOf('day'),
+        },
+      };
+    }
+
+    // 1 filter in amount
+
+    const filteramount = amount
+      ? {
+          amount: {
+            $gte: amount.split('-')[0],
+            $lte: amount.split('-')[1],
+          },
+        }
+      : {};
+    const type = req.query.type || '';
+    const typeFilter = type ? { type } : {};
 
     // 1. find active month
     const activMonth = await Month.findOne({
@@ -52,11 +87,10 @@ exports.getCostList = async (req, res, next) => {
     });
     // 2. get all cost in active month
     const features = new APIFeatures(
-      Cost.find({ monthId: activMonth._id }).populate(
-        'addBy editBy monthId',
-        'name avater monthTitle'
-      ),
-      req.body
+      Cost.find({
+        $and: [{ monthId: activMonth._id }, date, filteramount, typeFilter],
+      }).populate('addBy editBy', 'name avater role'),
+      req.query
     )
       .sort()
       .paginate();
@@ -183,6 +217,9 @@ exports.deleteCost = async (req, res, next) => {
 
     // 3. delete Cost
     await Cost.findByIdAndDelete(req.params.id);
+
+    //4. delete this cost id in active Month
+    activeMonth.costs.pull(cost);
 
     res.status(200).json({
       status: 'success',

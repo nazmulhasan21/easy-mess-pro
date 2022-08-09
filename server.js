@@ -20,8 +20,8 @@ const database = 'mongodb://localhost:27017/node-api-structure';
 
 mongoose
   .connect(
-    // database,
-    process.env.DB_URL,
+    database,
+    // process.env.DB_URL,
     {
       // useNewUrlParser: true,
       // useCreateIndex: true,
@@ -35,13 +35,5 @@ mongoose
 // -> Start the server
 
 app.listen(process.env.PORT || 4000, () => {
-  console.log(`Application is running on port ${process.env.PORT} `);
+  console.log(`Application is running on port ${process.env.PORT || 4000}  `);
 });
-
-// process.on('unhandledRejection', (err) => {
-//   console.log('UNHANDLED REJECTION!!! shutting down .....');
-//   console.log(err.name, err.message);
-//   server.close(() => {
-//     process.exit(1);
-//   });
-// });

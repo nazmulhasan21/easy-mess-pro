@@ -3,6 +3,7 @@ const Month = require('../models/monthModel');
 const User = require('../models/userModel');
 const AppError = require('../utils/appError');
 const meal = require('./userCashOrRichController');
+const moment = require('moment');
 
 exports.getMealList = meal.getList(Meal);
 exports.getMeal = meal.getOne(Meal, 'meal');
@@ -18,6 +19,23 @@ exports.createMeal = async (req, res, next) => {
     }).select('meals');
     if (!month)
       return next(new AppError(404, 'month', 'No found active month'));
+    // chack add now day meal in active month
+    const today = moment().startOf('day');
+    const meals = await Meal.find({
+      date: {
+        $gte: today.toDate(),
+        $lte: moment(today).endOf('day').toDate(),
+      },
+    });
+    //
+    if (meals)
+      return next(
+        new AppError(
+          401,
+          'meals',
+          'All ready add today meals. Please Try in next day or Update meals'
+        )
+      );
 
     //  3. daily Meal array to daily meal object
     dailyMealArray.forEach(async (myMeal) => {
@@ -43,6 +61,14 @@ exports.createMeal = async (req, res, next) => {
       status: 'success',
       message: `add meal successfully`,
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getOneDayMeal = async (req, res, next) => {
+  try {
+    const date = req.query.date || now.Date();
   } catch (error) {
     next(error);
   }

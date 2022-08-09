@@ -110,7 +110,27 @@ exports.deleteMe = async (req, res, next) => {
     next(error);
   }
 };
+// find user in email
+exports.getUserByEmail = async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return next(errors);
+    }
 
+    const { newUser } = req;
+    const user = {
+      name: newUser.name,
+      email: newUser.email,
+      avater: newUser.avater,
+    };
+    res.status(200).json({
+      user: user,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 // exports.getAllUsers = base.getAll(User);
 exports.getUser = base.getOne(User, 'user');
 exports.deleteUser = base.deleteOne(User);

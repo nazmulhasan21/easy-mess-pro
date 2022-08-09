@@ -22,7 +22,6 @@ module.exports = (err, req, res, next) => {
       });
     }
 
-    console.log(arrError);
     res.status(err.statusCode).json({
       status: err.status,
       error: obj,

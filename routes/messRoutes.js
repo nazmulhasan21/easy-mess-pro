@@ -5,8 +5,6 @@ const router = express.Router();
 const authController = require('../controllers/authController');
 const messContorller = require('../controllers/messController');
 
-const { addMemberEmailValidat } = require('../middleware/inputeValidation');
-
 // Protect all routes after this middleware
 
 router.use(authController.protect);
@@ -27,7 +25,7 @@ router.get('/member/:id', messContorller.getMember);
 // Only admin have prermission to access for the below APIs
 router.use(authController.restrictToAdmin);
 
-router.patch('/member', addMemberEmailValidat, messContorller.addMember);
+router.patch('/member', messContorller.addMember);
 
 // Only admin inter your password have prermission to access for the below APIs
 router.use(authController.chackPassword);
