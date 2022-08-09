@@ -66,13 +66,5 @@ exports.createMeal = async (req, res, next) => {
   }
 };
 
-exports.getOneDayMeal = async (req, res, next) => {
-  try {
-    const date = req.query.date || now.Date();
-  } catch (error) {
-    next(error);
-  }
-};
-
 exports.updateMeal = meal.updateOne(Meal, 'meal');
 exports.deleteMeal = meal.deleteOne(Meal, 'meal');

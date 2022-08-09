@@ -117,12 +117,6 @@ exports.createCost = async (req, res, next) => {
     const { user } = req;
     const { type, title, amount } = req.body;
     const date = new Date(req.body.date);
-    // console.log(date);
-    // const monthTitle = moment('2022-07-31T06:30:56.426Z').format(
-    //   'DD MMMM YYYY'
-    // );
-    // console.log(monthTitle);
-    // return;
 
     // 1. find active month;
     const month = await Month.findOne({
