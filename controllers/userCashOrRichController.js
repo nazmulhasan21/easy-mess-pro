@@ -133,7 +133,7 @@ exports.createOne = (Model, model) => async (req, res, next) => {
     // 1. find active month;
     const month = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
-    }).select('cashs richs');
+    }).select('cashs richs guestMeal');
     if (!month)
       return next(new AppError(404, 'month', 'Not found your active Month'));
 
@@ -145,7 +145,7 @@ exports.createOne = (Model, model) => async (req, res, next) => {
       addBy: user._id,
       userName: name,
       amount,
-      date: date || now.Date(),
+      date: date || moment(),
     });
     // 3. push active month cashs or richs
     if (model == 'rich') {
@@ -153,6 +153,9 @@ exports.createOne = (Model, model) => async (req, res, next) => {
     }
     if (model == 'cash') {
       month.cashs.push(doc);
+    }
+    if (model == 'guestMeal') {
+      month.guestMeals.push(doc);
     }
     // 4. save month
     await month.save();
@@ -188,7 +191,7 @@ exports.updateOne = (Model, model) => async (req, res, next) => {
     };
     const activeMonth = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
-    }).select('cashs richs meals');
+    }).select('cashs richs meals guestMeal');
     const doc = await Model.findOne({
       $and: [{ _id: req.params.id }, { monthId: activeMonth._id }],
     });
@@ -243,7 +246,7 @@ exports.deleteOne = (Model, model) => async (req, res, next) => {
     // 1. found cost and active month and addby user
     const activeMonth = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
-    }).select('cashs richs meals');
+    }).select('cashs richs meals guestMeal');
     const doc = await Model.findOne({
       $and: [{ _id: req.params.id }, { monthId: activeMonth._id }],
     });
@@ -266,6 +269,9 @@ exports.deleteOne = (Model, model) => async (req, res, next) => {
     }
     if (model == 'meal') {
       activeMonth.meals.pull(doc);
+    }
+    if (model == 'guestMeal') {
+      activeMonth.guestMeal.pull(doc);
     }
 
     // 5. save Month

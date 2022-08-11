@@ -35,7 +35,8 @@ const userSchema = new mongoose.Schema(
     },
     avater: {
       type: String,
-      default: '/images/mess_manager_profile_vector-01.png',
+      default:
+        'https://asset.cloudinary.com/messmanager/c061044e01bddf503d0a1d5391fcdb8a',
     },
 
     role: {
@@ -65,10 +66,10 @@ const userSchema = new mongoose.Schema(
       select: false,
     },
 
-    // emailVerified: {
-    //   type: Boolean,
-    //   default: false,
-    // },
+    emailVerified: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

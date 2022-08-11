@@ -4,7 +4,10 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 const AppError = require('../utils/appError');
 const Mess = require('../models/messModel');
-const Month = require('../models/monthModel');
+const OtpCode = require('../models/otpCodeModel');
+const { sendEmail } = require('../utils/sendEmail');
+const { createOtpCode } = require('../utils/fun');
+const fs = require('fs');
 
 // create jwt token
 const createToken = (id) => {
@@ -26,6 +29,30 @@ exports.login = async (req, res, next) => {
     if (!user || !(await user.correctPassword(password, user.password))) {
       return next(new AppError(401, 'password', 'Email or Password is wrong'));
     }
+    // chack email verification
+    if (!user.emailVerified) {
+      // create otp code
+      const otpCode = await createOtpCode(email);
+      if (otpCode) {
+        // send email verification code
+        const to = [{ email: user.email, name: user.name }];
+        const subject = 'Email varification';
+        const html = fs.readFileSync('./emailTemplate.html').toString();
+        const params = {
+          userName: user.name,
+          code: otpCode.code,
+        };
+        // send email
+        sendEmail(to, subject, html, params);
+
+        return res.status(401).json({
+          status: 'fail',
+          message: 'Please chack your email and verificd your account',
+          emailVerified: false,
+        });
+      }
+    }
+
     // -> 3 <- All correctc , send jwt to client
     const token = createToken(user.id);
     // Remove the password from the output
@@ -49,7 +76,8 @@ exports.signup = async (req, res, next) => {
       return next(errors);
     }
     const { name, email, phone, password, role } = req.body;
-
+    const html = fs.readFileSync('./emailTemplate.html').toString();
+    console.log(html);
     const user = await User.create({
       name,
       email,
@@ -57,21 +85,85 @@ exports.signup = async (req, res, next) => {
       password,
       role,
     });
-    // console.log(user);
-    // const token = createToken(user.id);
-    // user.password = undefined;
+    if (user) {
+      const otpCode = await createOtpCode(email);
+      if (otpCode) {
+        // send verification code email.
 
+        const to = [{ email, name }];
+        const subject = 'Email varification';
+        const html = fs.readFileSync('./emailTemplate.html').toString();
+        const params = {
+          userName: name,
+          code: otpCode.code,
+        };
+        // send email
+        sendEmail(to, subject, html, params);
+      }
+    }
     res.status(201).json({
       status: 'success',
-      message: 'user create successfully',
-      // token,
-      // data: {
-      //   user,
-      // },
+      message: 'Please chack your email and verificd your account',
+      emailVerified: false,
     });
   } catch (err) {
     err.statusCode = err.statusCode || 422;
     next(err);
+  }
+};
+
+exports.verification = async (req, res, next) => {
+  try {
+    const { email, code } = req.body;
+    if (email === '')
+      return next(new AppError(401, 'email', 'please input your email'));
+    if (code === '')
+      return next(new AppError(401, 'code', 'Please input your code'));
+    // find user
+    const user = await User.findOne({ email });
+    // find otp code
+    const otpCode = await OtpCode.findOne({ email, code });
+    if (!otpCode) {
+      return next(new AppError(401, 'code', `code is worng`));
+    }
+
+    // expired time
+    const expired = otpCode?.expiredAt - new Date().getTime();
+    if (expired < 0) {
+      await OtpCode.findByIdAndDelete(otpCode._id);
+      const otpCode = await createOtpCode(email);
+      const to = [{ email, name: user.name }];
+      const subject = 'Email varification';
+      const html = fs.readFileSync('./emailTemplate.html').toString();
+      const params = {
+        userName: user.name,
+        code: otpCode.code,
+      };
+      // send email
+      sendEmail(to, subject, html, params);
+      return next(
+        new AppError(401),
+        'code',
+        'code is expired. please chack email'
+      );
+    }
+
+    // -> 3 <- All correctc , send jwt to client
+    user.emailVerified = true;
+    await OtpCode.findByIdAndDelete(otpCode._id);
+    await user.save();
+    const token = createToken(user.id);
+    // Remove the password from the output
+    user.password = undefined;
+    res.status(200).json({
+      status: 'success',
+      token,
+      data: {
+        user,
+      },
+    });
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -174,3 +266,11 @@ exports.chackPassword = async (req, res, next) => {
 //   }
 //   next();
 // };
+
+// const email = 'hasankhan202525@gmail.com';
+// const name = 'Nazmul hasna';
+// const to = [{ email, name }];
+// const subject = 'Email varification';
+// const html = `<h1> 444 </h1> is your Mess Manager App Email verification code. This code will expire in 30 minutes`;
+// // send email
+// sendEmail(to, subject, html);

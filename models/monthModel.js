@@ -53,6 +53,13 @@ const monthSchema = mongoose.Schema(
         select: false,
       },
     ],
+    guestMeals: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'GuestMeal',
+        select: false,
+      },
+    ],
     costs: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -63,6 +70,19 @@ const monthSchema = mongoose.Schema(
     totalDeposit: {
       type: Number,
       default: 0.0,
+    },
+
+    totalBigCost: {
+      type: Number,
+      default: 0,
+    },
+    totalSmallCost: {
+      type: Number,
+      default: 0,
+    },
+    totalGuestMealAmount: {
+      type: Number,
+      default: 0,
     },
     totalMealCost: {
       type: Number,

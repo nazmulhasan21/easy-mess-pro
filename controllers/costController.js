@@ -115,8 +115,8 @@ exports.createCost = async (req, res, next) => {
       return next(errors);
     }
     const { user } = req;
-    const { type, title, amount } = req.body;
-    const date = new Date(req.body.date);
+    const { type, title, amount, date } = req.body;
+    // const date = new Date(req.body.date);
 
     // 1. find active month;
     const month = await Month.findOne({
@@ -133,7 +133,7 @@ exports.createCost = async (req, res, next) => {
       type,
       title,
       amount,
-      date: date,
+      date: date || moment(),
     });
     month.costs.push(cost);
 

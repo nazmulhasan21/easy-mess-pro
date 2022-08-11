@@ -7,6 +7,7 @@ const Meal = require('../models/mealModel');
 const Rich = require('../models/richModel');
 const Cost = require('../models/costModel');
 const Month = require('../models/monthModel');
+const OtpCode = require('../models/otpCodeModel');
 
 /**
  *
@@ -185,4 +186,25 @@ exports.deleteAllMonthData = async (monthId, allMember) => {
     user.months.pull(monthId);
     await user.save();
   });
+};
+
+// create otp code
+/**
+ *
+ * @param {emailString} email is user email
+ * @returns {object} otpCode object
+ */
+
+exports.createOtpCode = async (email) => {
+  // jenaret verification code
+  const code = Math.floor(1000 + Math.random() * 9000);
+  const expiredAt = new Date().getTime() + 30 * 60 * 1000;
+
+  // save this code in database
+  const otpCode = await OtpCode.create({
+    email: email,
+    code: code,
+    expiredAt: expiredAt,
+  });
+  return otpCode;
 };

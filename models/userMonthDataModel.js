@@ -18,7 +18,6 @@ const userMonthDataSchema = mongoose.Schema(
     userName: {
       type: String,
     },
-
     totalDeposit: {
       type: Number,
       default: 0,
@@ -38,6 +37,10 @@ const userMonthDataSchema = mongoose.Schema(
     otherCost: {
       type: Number,
       default: 0.0,
+    },
+    totalGuestMealAmount: {
+      type: Number,
+      default: 0,
     },
     totalDepostiRich: {
       type: Number,

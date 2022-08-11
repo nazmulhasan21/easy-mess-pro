@@ -53,21 +53,21 @@ exports.signupValidat = [
 exports.updateMeValidat = [
   body('name')
     .trim()
-    .isLength({ min: 3 })
+    .isLength({ min: 3, max: 20 })
     .withMessage('Plese name min length 3.')
     .matches(/^[a-zA-Z. ]+$/)
     .withMessage('Plese enter valid name'),
   body('address')
     .trim()
-    .isLength({ min: 3 })
+    .isLength({ min: 3, max: 50 })
     .withMessage('Type your address porperly.')
-    .matches(/^[a-zA-Z0-9. ]+$/)
+    .matches(/^[a-zA-Z0-9., ]+$/)
     .withMessage('Plese enter valid address'),
   body('institution')
     .trim()
-    .isLength({ min: 3 })
+    .isLength({ min: 3, max: 50 })
     .withMessage('Type institution properly')
-    .matches(/^[a-zA-Z0-9. ]+$/)
+    .matches(/^[a-zA-Z0-9., ]+$/)
     .withMessage('Plese enter valid institution'),
 ];
 
@@ -118,12 +118,14 @@ module.exports.addCostInputValidat = [
   body('title')
     .trim()
     .notEmpty()
-    .withMessage('Plese select any one cost type title.')
-    .matches(/^[a-zA-Z0-9. ]+$/)
+    .withMessage('Plese write any your cost type title.')
+    .isLength({ min: 3, max: 50 })
+    .withMessage('Plese your  title is max:50')
+    .matches(/^[a-zA-Z0-9., ]+$/)
     .withMessage('Plese enter valid Cost title'),
   body('amount')
     .trim()
-    .matches(/^[0-9.]+$/)
+    .matches(/^[0-9.-]+$/)
     .withMessage('Plese enter valid amount'),
   // body('date').isISO8601().toDate().withMessage('Plese value must be date'),
 ];
