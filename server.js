@@ -20,8 +20,8 @@ const database = 'mongodb://localhost:27017/node-api-structure';
 
 mongoose
   .connect(
-    database,
-    // process.env.DB_URL,
+  //  database,
+     process.env.DB_URL,
     {
       // useNewUrlParser: true,
       // useCreateIndex: true,
