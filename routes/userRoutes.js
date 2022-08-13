@@ -1,12 +1,32 @@
 const express = require('express');
 const router = express.Router();
 
-const { updateMeValidat } = require('../middleware/inputeValidation');
-
 const userController = require('../controllers/userController');
 const authController = require('../controllers/authController');
 const { json } = require('body-parser');
-const { addMemberEmailValidat } = require('../middleware/inputeValidation');
+const {
+  addMemberEmailValidat,
+  chPassInVali,
+  updateMeValidat,
+  emailCodeInVali,
+  emailVelit,
+  isEmailInput,
+} = require('../middleware/inputeValidation');
+
+// If any User forget her password then use after 3 router
+
+router.post(
+  '/send-forget-password-verficition-code',
+  isEmailInput,
+  userController.sendForgetPasswordVerfiCode
+);
+router.post(
+  '/forget-password-email-verification',
+  emailCodeInVali,
+  userController.emailVerification
+);
+
+router.patch('/reset-password', emailCodeInVali, userController.restePassword);
 
 // Protect all routes after this middleware
 router.use(authController.protect);
@@ -15,7 +35,16 @@ router
   .route('/me')
   .get(userController.me)
   .patch(updateMeValidat, userController.updateMe);
-router.patch('/avater', userController.updateAvater);
+router.patch('/me/avater', userController.updateAvater);
+router.patch('/me/password', chPassInVali, userController.changePassword);
+
+router.post(
+  '/me/send-email-change-verification-code',
+  emailVelit,
+  authController.sendEmailVerifiCode
+);
+router.patch('/me/email', emailCodeInVali, userController.changeEmail);
+
 // Only admin have permmission to access for the below APIs
 
 // router.route('/').get(userController.getAllUsers);

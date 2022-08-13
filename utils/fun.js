@@ -1,4 +1,6 @@
 const moment = require('moment');
+const fs = require('fs');
+const path = require('path');
 
 const User = require('../models/userModel');
 const UserMonthData = require('../models/userMonthDataModel');
@@ -8,6 +10,7 @@ const Rich = require('../models/richModel');
 const Cost = require('../models/costModel');
 const Month = require('../models/monthModel');
 const OtpCode = require('../models/otpCodeModel');
+const { sendEmail } = require('./sendEmail');
 
 /**
  *
@@ -196,6 +199,8 @@ exports.deleteAllMonthData = async (monthId, allMember) => {
  */
 
 exports.createOtpCode = async (email) => {
+  // find  this user before all otpCode and delete
+  await OtpCode.deleteMany({ email });
   // jenaret verification code
   const code = Math.floor(1000 + Math.random() * 9000);
   const expiredAt = new Date().getTime() + 30 * 60 * 1000;
@@ -207,4 +212,62 @@ exports.createOtpCode = async (email) => {
     expiredAt: expiredAt,
   });
   return otpCode;
+};
+
+// not work
+exports.chackOtpCode = async (email, htmlTemplates) => {
+  const otpCode = await OtpCode.findOne({ email, code });
+  if (!otpCode) {
+    return next(new AppError(401, 'code', `code is worng`));
+  }
+
+  // expired time
+  const expired = otpCode?.expiredAt - new Date().getTime();
+  if (expired < 0) {
+    await OtpCode.findByIdAndDelete(otpCode._id);
+    const otpCode = await createOtpCode(newEmail);
+    const to = [{ newEmail, name: user.name }];
+    const subject = 'Email varification';
+    const html = htmlTemplates;
+    const params = {
+      userName: user.name,
+      code: otpCode.code,
+    };
+    // send email
+    sendEmail(to, subject, html, params);
+    return next(
+      new AppError(401),
+      'code',
+      'code is expired. please chack email sending new code'
+    );
+  }
+};
+
+/**
+ *
+ * @param {object} to email object
+ * @param {string} subject  subject
+ * @param {string} templeteName email templete Name
+ * @returns
+ */
+exports.sendVerificationCode = async (to, subj, templeteName) => {
+  const otpCode = await this.createOtpCode(to.email);
+  const reciver = [to];
+  const subject = subj;
+  const filePath = path.join(
+    process.cwd(),
+    'emailTemplates',
+    `${templeteName}.html`
+  );
+
+  // get the html
+  const html = fs.readFileSync(filePath).toString();
+
+  const params = {
+    userName: to.name,
+    code: otpCode.code,
+    subject: subj,
+  };
+  // send email
+  sendEmail(reciver, subject, html, params);
 };

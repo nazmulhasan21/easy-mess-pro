@@ -36,7 +36,7 @@ const userSchema = new mongoose.Schema(
     avater: {
       type: String,
       default:
-        'https://asset.cloudinary.com/messmanager/c061044e01bddf503d0a1d5391fcdb8a',
+        'https://res.cloudinary.com/messmanager/image/upload/v1660195350/mess_manager_profile_vector-01_wiymk3.png',
     },
 
     role: {

@@ -5,9 +5,8 @@ const User = require('../models/userModel');
 const AppError = require('../utils/appError');
 const Mess = require('../models/messModel');
 const OtpCode = require('../models/otpCodeModel');
-const { sendEmail } = require('../utils/sendEmail');
-const { createOtpCode } = require('../utils/fun');
-const fs = require('fs');
+
+const { sendVerificationCode } = require('../utils/fun');
 
 // create jwt token
 const createToken = (id) => {
@@ -31,26 +30,17 @@ exports.login = async (req, res, next) => {
     }
     // chack email verification
     if (!user.emailVerified) {
-      // create otp code
-      const otpCode = await createOtpCode(email);
-      if (otpCode) {
-        // send email verification code
-        const to = [{ email: user.email, name: user.name }];
-        const subject = 'Email varification';
-        const html = fs.readFileSync('./emailTemplate.html').toString();
-        const params = {
-          userName: user.name,
-          code: otpCode.code,
-        };
-        // send email
-        sendEmail(to, subject, html, params);
+      const to = { email: email, name: user.name };
+      const subject = 'Email verification';
+      const templeteName = 'emailsingUp';
 
-        return res.status(401).json({
-          status: 'fail',
-          message: 'Please chack your email and verificd your account',
-          emailVerified: false,
-        });
-      }
+      sendVerificationCode(to, subject, templeteName);
+
+      return res.status(401).json({
+        status: 'fail',
+        message: 'Please chack your email and verificd your account',
+        emailVerified: false,
+      });
     }
 
     // -> 3 <- All correctc , send jwt to client
@@ -76,8 +66,7 @@ exports.signup = async (req, res, next) => {
       return next(errors);
     }
     const { name, email, phone, password, role } = req.body;
-    const html = fs.readFileSync('./emailTemplate.html').toString();
-    console.log(html);
+
     const user = await User.create({
       name,
       email,
@@ -86,20 +75,11 @@ exports.signup = async (req, res, next) => {
       role,
     });
     if (user) {
-      const otpCode = await createOtpCode(email);
-      if (otpCode) {
-        // send verification code email.
+      const to = { email: email, name: user.name };
+      const subject = 'Email verification';
+      const templeteName = 'emailsingUp';
 
-        const to = [{ email, name }];
-        const subject = 'Email varification';
-        const html = fs.readFileSync('./emailTemplate.html').toString();
-        const params = {
-          userName: name,
-          code: otpCode.code,
-        };
-        // send email
-        sendEmail(to, subject, html, params);
-      }
+      sendVerificationCode(to, subject, templeteName);
     }
     res.status(201).json({
       status: 'success',
@@ -115,10 +95,11 @@ exports.signup = async (req, res, next) => {
 exports.verification = async (req, res, next) => {
   try {
     const { email, code } = req.body;
-    if (email === '')
-      return next(new AppError(401, 'email', 'please input your email'));
-    if (code === '')
-      return next(new AppError(401, 'code', 'Please input your code'));
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return next(errors);
+    }
     // find user
     const user = await User.findOne({ email });
     // find otp code
@@ -130,21 +111,15 @@ exports.verification = async (req, res, next) => {
     // expired time
     const expired = otpCode?.expiredAt - new Date().getTime();
     if (expired < 0) {
-      await OtpCode.findByIdAndDelete(otpCode._id);
-      const otpCode = await createOtpCode(email);
-      const to = [{ email, name: user.name }];
-      const subject = 'Email varification';
-      const html = fs.readFileSync('./emailTemplate.html').toString();
-      const params = {
-        userName: user.name,
-        code: otpCode.code,
-      };
-      // send email
-      sendEmail(to, subject, html, params);
+      const to = { email: email, name: user.name };
+      const subject = 'Email verification';
+      const templeteName = 'emailsingUp';
+
+      sendVerificationCode(to, subject, templeteName);
       return next(
         new AppError(401),
         'code',
-        'code is expired. please chack email'
+        'code is expired. please chack email sending new code'
       );
     }
 
@@ -161,6 +136,33 @@ exports.verification = async (req, res, next) => {
       data: {
         user,
       },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.sendEmailVerifiCode = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return next(errors);
+    }
+
+    let to = { email: email };
+    if (req.user.name) {
+      to = { email: email, name: req.user.name };
+    }
+    const subject = 'Email verification';
+    const templeteName = 'sendEmailCode';
+
+    sendVerificationCode(to, subject, templeteName);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Please chack your email and verificd your email',
     });
   } catch (error) {
     next(error);
