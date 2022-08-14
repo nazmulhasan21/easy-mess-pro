@@ -6,11 +6,14 @@ const User = require('../models/userModel');
 const UserMonthData = require('../models/userMonthDataModel');
 const Cash = require('../models/cashModel');
 const Meal = require('../models/mealModel');
+const GuestMeal = require('../models/guestMealModel');
 const Rich = require('../models/richModel');
 const Cost = require('../models/costModel');
 const Month = require('../models/monthModel');
 const OtpCode = require('../models/otpCodeModel');
 const { sendEmail } = require('./sendEmail');
+const createPDF = require('./createPDF');
+const Mess = require('../models/messModel');
 
 /**
  *
@@ -36,6 +39,7 @@ module.exports.createMonth = async (user, mess) => {
   mess.allMember.forEach(async (user) => {
     await this.createUserMonthData(user._id, month, mess._id);
   });
+
   await month.save();
 };
 
@@ -57,7 +61,6 @@ module.exports.createUserMonthData = async (userId, month, messId) => {
   await userMonthData.save();
 
   // user.userMonthData.push(userMonthData);
-  month.userMonthData.push(userMonthData);
   user.months.push(month);
   user.messId = messId;
   await user.save();
@@ -270,4 +273,28 @@ exports.sendVerificationCode = async (to, subj, templeteName) => {
   };
   // send email
   sendEmail(reciver, subject, html, params);
+};
+
+// get pdf
+
+exports.getMonthPdf = async (monthId) => {
+  const data = await Month.findById(monthId).populate(
+    'manager',
+    'name role avater'
+  );
+
+  const userMonthData = await UserMonthData.find({ monthId: data._id });
+  const costs = await Cost.find({ monthId: monthId });
+  const meals = await Meal.find({ monthId: monthId });
+  const richs = await Rich.find({ monthId: monthId });
+  const cashs = await Cash.find({ monthId: monthId });
+  const guestMeals = await GuestMeal.find({ monthId: monthId });
+
+  data.userMonthData = userMonthData;
+  data.guestMeals = guestMeals;
+  data.costs = costs;
+  data.meals = meals;
+  data.richs = richs;
+  data.cashs = cashs;
+  await createPDF('index', data);
 };

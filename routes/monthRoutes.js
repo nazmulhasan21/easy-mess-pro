@@ -5,7 +5,7 @@ const authController = require('../controllers/authController');
 const monthContorller = require('../controllers/monthController');
 
 // Protect all routes after this middleware
-router.get('/pdf', monthContorller.getPDF);
+
 router.use(authController.protect);
 
 // Only manager have permission to access for the below APIs

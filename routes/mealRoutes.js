@@ -12,6 +12,7 @@ router.use(authController.protect);
 router.use(authController.restrictToMessId);
 
 router.get('/', mealContorller.getMealList);
+router.get('/lastday', mealContorller.getLastdayMeal);
 router.get('/:id', mealContorller.getMeal);
 
 // Only manager have permission to access for the below APIs

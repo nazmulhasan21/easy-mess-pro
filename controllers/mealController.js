@@ -5,6 +5,9 @@ const AppError = require('../utils/appError');
 const meal = require('./userCashOrRichController');
 const moment = require('moment');
 
+const { getLastDayUserMeal } = require('../utils/fun');
+const Mess = require('../models/messModel');
+
 exports.getMealList = meal.getList(Meal);
 exports.getMeal = meal.getOne(Meal, 'meal');
 
@@ -22,13 +25,19 @@ exports.createMeal = async (req, res, next) => {
     // chack add now day meal in active month
     const today = moment().startOf('day');
     const meals = await Meal.find({
-      date: {
-        $gte: today.toDate(),
-        $lte: moment(today).endOf('day').toDate(),
-      },
+      $and: [
+        { monthId: month._id },
+        {
+          date: {
+            $gte: today.toDate(),
+            $lte: moment(today).endOf('day').toDate(),
+          },
+        },
+      ],
     });
-    //
-    if (meals)
+    //c
+
+    if (meals.length > 0)
       return next(
         new AppError(
           401,
@@ -50,10 +59,6 @@ exports.createMeal = async (req, res, next) => {
         monthId: month._id,
         addBy: user._id,
       });
-
-      // push this userMeal in active month
-      month.meals.push(userMeal);
-      await month.save();
     });
 
     // 5. send res
@@ -65,6 +70,63 @@ exports.createMeal = async (req, res, next) => {
     next(error);
   }
 };
+exports.getLastdayMeal = async (req, res, next) => {
+  try {
+    const { user } = req;
+
+    // 1 . find user mess
+    const mess = await Mess.findOne(user.messId).select('allMember');
+    // 2. find user active month
+    const month = await Month.findOne({
+      $and: [{ messId: mess._id }, { active: true }],
+    });
+
+    const meals = await Promise.all(
+      mess.allMember.map(async (userId) => {
+        // find user meal
+        const userMeals = await Meal.find({
+          $and: [{ userId: userId }, { monthId: month._id }],
+        });
+
+        const userMeal = userMeals[userMeals.length - 1];
+        // create new
+        const meal = {
+          userId: userId,
+          breakfast: userMeal?.breakfast || 0,
+          lunch: userMeal?.lunch || 0,
+          dinner: userMeal?.dinner || 0,
+        };
+        return meal;
+      })
+    );
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        data: meals,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const month = {
+  _id: '62f896c095de0eabd15aef99',
+  messId: '62f896c095de0eabd15aef97',
+};
+
+const test = async (userId, monthId) => {
+  const usermeal = await Meal.find({
+    $and: [{ monthId: monthId }, { userId: userId }],
+  });
+  const meal = usermeal[usermeal.length - 1];
+  return meal;
+};
+
+//const meall = test('62f8961795de0eabd15aef8c', month._id);
+
+//test('62f8a0c395de0eabd15aefa9', month._id);
 
 exports.updateMeal = meal.updateOne(Meal, 'meal');
 exports.deleteMeal = meal.deleteOne(Meal, 'meal');

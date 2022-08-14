@@ -222,7 +222,6 @@ exports.restrictToMessId = async (req, res, next) => {
 
 exports.restrictTo = (...roles) => {
   return (req, res, next) => {
-    console.log(...roles);
     if (!roles.includes(req.user.role)) {
       return next(new AppError(403, roles, `You are not ${roles}`));
     }

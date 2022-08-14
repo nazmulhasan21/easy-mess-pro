@@ -135,7 +135,6 @@ exports.createCost = async (req, res, next) => {
       amount,
       date: date || moment(),
     });
-    month.costs.push(cost);
 
     await month.save();
 

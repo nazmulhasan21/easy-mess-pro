@@ -133,7 +133,7 @@ exports.createOne = (Model, model) => async (req, res, next) => {
     // 1. find active month;
     const month = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
-    }).select('cashs richs guestMeal');
+    }).select('_id');
     if (!month)
       return next(new AppError(404, 'month', 'Not found your active Month'));
 
@@ -149,13 +149,14 @@ exports.createOne = (Model, model) => async (req, res, next) => {
     });
     // 3. push active month cashs or richs
     if (model == 'rich') {
-      month.richs.push(doc);
+      //calcu month and user
+      //  month.richs.push(doc);
     }
     if (model == 'cash') {
-      month.cashs.push(doc);
+      //  month.cashs.push(doc);
     }
     if (model == 'guestMeal') {
-      month.guestMeals.push(doc);
+      //   month.guestMeals.push(doc);
     }
     // 4. save month
     await month.save();

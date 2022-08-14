@@ -10,13 +10,10 @@ const GuestMeal = require('../models/guestMealModel');
 const Month = require('../models/monthModel');
 
 /**
- * claculation all user data in databaes
- * @param {User._id} userId mess member user id
- * @param {object} month  active month object
- * @param {Number} totalMember  mess total member
+ *
+ * @param {Object} month object
  */
-
-exports.calculator = async (userId, month, totalMember) => {
+exports.monthCal = async (month) => {
   // 1. calculate active month cost
   const costSum = await Cost.aggregate([
     {
@@ -91,6 +88,66 @@ exports.calculator = async (userId, month, totalMember) => {
   ]);
   const monthGuestMeal = monthGuestMealSum[0];
 
+  // 6. calculate month total fixed meal
+  const monthFixedMealSum = await UserMonthData.aggregate([
+    {
+      $match: {
+        $and: [
+          { monthId: new mongoose.Types.ObjectId(month._id) },
+          { messId: new mongoose.Types.ObjectId(month.messId) },
+        ],
+      },
+    },
+    { $group: { _id: '$monthId', total: { $sum: '$fixedMeal' } } },
+  ]);
+  const monthFixedMeal = monthFixedMealSum[0];
+
+  // 7. calcutate month total border;
+  const totalMemberSum = await UserMonthData.aggregate([
+    {
+      $match: {
+        $and: [
+          { monthId: new mongoose.Types.ObjectId(month._id) },
+          { messId: new mongoose.Types.ObjectId(month.messId) },
+        ],
+      },
+    },
+    { $group: { _id: '$monthId', total: { $sum: 1 } } },
+  ]);
+  const totalMember = totalMemberSum[0];
+
+  // 10. update month Modeal
+  month.totalDeposit = monthCash?.total || 0;
+  month.totalRich = monthRich?.total || 0;
+  month.totalGuestMealAmount = monthGuestMeal?.total || 0;
+  month.totalBigCost = cost?.bigCost || 0;
+  month.totalSmallCost = cost?.smallCost || 0;
+  month.totalMealCost =
+    month.totalBigCost + month.totalSmallCost - month.totalGuestMealAmount;
+  month.totalOtherCost = cost?.otherCost || 0;
+  month.otherCostPerPerson = (
+    month.totalOtherCost / totalMember?.total
+  ).toFixed(2);
+  month.totalCost =
+    month.totalBigCost + month.totalSmallCost + month.totalOtherCost;
+  month.balance = month.totalDeposit - month.totalCost || 0;
+  month.totalMeal = monthMeal?.total || 1;
+  month.richBalance = month.totalRich - month.totalMeal || 0;
+
+  month.totalFixedMeal = monthFixedMeal?.total;
+
+  month.mealRate = (month.totalMealCost / month.totalFixedMeal).toFixed(2);
+  await month.save();
+};
+
+/**
+ * claculation all user data in databaes
+ * @param {User._id} userId mess member user id
+ * @param {object} month  active month object
+ * @param {Number} totalMember  mess total member
+ */
+
+exports.userMonthCal = async (userId, month) => {
   // 6. calculate user Cash
   const cashSum = await Cash.aggregate([
     {
@@ -153,40 +210,6 @@ exports.calculator = async (userId, month, totalMember) => {
     $and: [{ userId: userId }, { monthId: month._id }],
   });
 
-  // 10. update month Modeal
-  month.totalDeposit = monthCash?.total || 0;
-  month.totalRich = monthRich?.total || 0;
-  month.totalGuestMealAmount = monthGuestMeal?.total || 0;
-  month.totalBigCost = cost?.bigCost || 0;
-  month.totalSmallCost = cost?.smallCost || 0;
-  month.totalMealCost =
-    month.totalBigCost + month.totalSmallCost - month.totalGuestMealAmount;
-  month.totalOtherCost = cost?.otherCost || 0;
-  month.otherCostPerPerson = (month.totalOtherCost / totalMember).toFixed(2);
-  month.totalCost =
-    month.totalBigCost + month.totalSmallCost + month.totalOtherCost;
-  month.balance = month.totalDeposit - month.totalCost || 0;
-  month.totalMeal = monthMeal?.total || 1;
-  month.richBalance = month.totalRich - month.totalMeal || 0;
-
-  // calculate month total fixed meal
-  const monthFixedMealSum = await UserMonthData.aggregate([
-    {
-      $match: {
-        $and: [
-          { monthId: new mongoose.Types.ObjectId(month._id) },
-          { messId: new mongoose.Types.ObjectId(month.messId) },
-        ],
-      },
-    },
-    { $group: { _id: '$monthId', total: { $sum: '$fixedMeal' } } },
-  ]);
-  const monthFixedMeal = monthFixedMealSum[0];
-
-  month.totalFixedMeal = monthFixedMeal?.total;
-
-  month.mealRate = (month.totalMealCost / month.totalFixedMeal).toFixed(2);
-
   // 11. update userMonthData Model
 
   // set value this porportes
@@ -216,6 +239,6 @@ exports.calculator = async (userId, month, totalMember) => {
   ).toFixed(2);
 
   // 12. save to databaes
-  await userMonthData.save();
-  await month.save();
+  const userdata = await userMonthData.save();
+  return userdata;
 };

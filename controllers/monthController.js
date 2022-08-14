@@ -15,10 +15,14 @@ const base = require('./baseController');
 // all utsils
 const AppError = require('../utils/appError');
 const APIFeatures = require('../utils/apiFeatures');
-const { createMonth, deleteAllMonthData } = require('../utils/fun');
+const {
+  createMonth,
+  deleteAllMonthData,
+  getMonthPdf,
+} = require('../utils/fun');
 const UserMonthData = require('../models/userMonthDataModel');
-const { calculator } = require('../utils/clculation');
-const createPDF = require('../utils/createPDF');
+const { monthCal, userMonthCal } = require('../utils/clculation');
+const Meal = require('../models/mealModel');
 
 exports.createMonth = async (req, res, next) => {
   try {
@@ -54,12 +58,18 @@ exports.createMonth = async (req, res, next) => {
 exports.addFixedMeal = async (req, res, next) => {
   try {
     const { user } = req;
+    const fixedMeal = req.body?.fixedMeal;
+    if (!fixedMeal && fixedMeal === '') {
+      return next(new AppError(401, 'fixedMeal', 'input not velited'));
+    }
+
     //1. find active month and update fixed meal
-    await Month.findOneAndUpdate(
+    const month = await Month.findOneAndUpdate(
       { $and: [{ messId: user.messId }, { active: true }] },
       { $set: { fixedMeal: req.body.fixedMeal } }
     );
-
+    if (!month)
+      return next(new AppError(404, 'month', 'Not found your active month'));
     res.status(200).json({
       status: 'success',
       message: 'Add Fixed Meal Your month successfully',
@@ -73,28 +83,29 @@ exports.addFixedMeal = async (req, res, next) => {
 exports.getActiveMonth = async (req, res, next) => {
   try {
     const { user } = req;
+
     // ** GET mess all member user Id
     const mess = await Mess.findById(user.messId).select('allMember');
 
     // 1. Get active Month
     const month = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
-    }).populate('manager userMonthData', 'userId name email phone');
+    }).populate('manager', 'userId name email phone');
     // .populate('userMonthData');
-    const totalMember = month.userMonthData.length;
-    month.userMonthData.forEach(async ({ userId }) => {
-      calculator(userId, month, totalMember);
+
+    await monthCal(month);
+    await month.save();
+
+    mess.allMember.map(async (userId) => {
+      await userMonthCal(userId, month);
     });
-    // const totalMember = mess.allMember.length;
-    // mess.allMember.forEach(async (userId) => {
-    //   calculator(userId, month, totalMember);
-    // });
+    await userMonthCal(user._id, month);
 
     // 2. Get active Month User Month data
     const userMonthData = await UserMonthData.findOne({
       $and: [{ userId: user._id }, { monthId: month._id }],
-    }).populate('userId', 'name role');
-    month.userMonthData = undefined;
+    }).populate('userId', 'name role avater');
+    await userMonthData.save();
     res.status(200).json({
       status: 'success',
       data: {
@@ -106,6 +117,37 @@ exports.getActiveMonth = async (req, res, next) => {
     next(error);
   }
 };
+
+// test
+const test = async (month, userId) => {
+  const monthMealSum = await Meal.aggregate([
+    {
+      $match: {
+        $and: [
+          { monthId: new mongoose.Types.ObjectId(month._id) },
+          { messId: new mongoose.Types.ObjectId(month.messId) },
+          { userId: new mongoose.Types.ObjectId(userId) },
+        ],
+      },
+    },
+    {
+      $group: {
+        _id: '$date',
+        breakfast: { $sum: '$breakfast' },
+        lunch: { $sum: '$lunch' },
+        dinner: { $sum: '$dinner' },
+        total: { $sum: '$total' },
+      },
+    },
+  ]);
+  //  const monthMeal = monthMealSum[0];
+  console.log(monthMealSum);
+};
+const month = {
+  _id: '62f896c095de0eabd15aef99',
+  messId: '62f896c095de0eabd15aef97',
+};
+//test(month, '62f8961795de0eabd15aef8c');
 
 // delete month is month manager
 
@@ -192,16 +234,17 @@ exports.getMonthList = async (req, res, next) => {
 exports.getPDF = async (req, res, next) => {
   try {
     const { user } = req;
-    const data = await Month.findOne({
-      // _id: '62e61103e1b34fce918db78d',
+    const month = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
-    }).populate('costs meals richs cashs userMonthData manager');
-    await createPDF('index', data);
+    });
+
+    getMonthPdf(month._id);
 
     const filePath = path.join(
       process.cwd(),
-      `${data.monthTitle}- ${data.messId}.pdf`
+      `${month.monthTitle}- ${month.messId}.pdf`
     );
+
     res.download(filePath);
   } catch (error) {
     next(error);
