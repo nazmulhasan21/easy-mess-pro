@@ -25,48 +25,81 @@ const monthSchema = mongoose.Schema(
     monthTitle: {
       type: String,
     },
-    userMonthData: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'UserMonthData',
-        select: false,
-      },
-    ],
-    cashs: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Cash',
-        select: false,
-      },
-    ],
-    richs: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Rich',
-        select: false,
-      },
-    ],
-    meals: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Meal',
-        select: false,
-      },
-    ],
-    guestMeals: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'GuestMeal',
-        select: false,
-      },
-    ],
-    costs: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Cost',
-        select: false,
-      },
-    ],
+
+    // After Array  for pdf
+    userMonthData: {
+      type: Array,
+      select: false,
+    },
+    cashs: {
+      type: Array,
+      select: false,
+    },
+    richs: {
+      type: Array,
+      select: false,
+    },
+    meals: {
+      type: Array,
+      select: false,
+    },
+    guestMeals: {
+      type: Array,
+      select: false,
+    },
+    costs: {
+      type: Array,
+      select: false,
+    },
+    extraRich: {
+      type: Array,
+      select: false,
+    },
+
+    // userMonthData: [
+    //   {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: 'UserMonthData',
+    //     select: false,
+    //   },
+    // ],
+    // cashs: [
+    //   {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: 'Cash',
+    //     select: false,
+    //   },
+    // ],
+    // richs: [
+    //   {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: 'Rich',
+    //     select: false,
+    //   },
+    // ],
+    // meals: [
+    //   {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: 'Meal',
+    //     select: false,
+    //   },
+    // ],
+    // guestMeals: [
+    //   {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: 'GuestMeal',
+    //     select: false,
+    //   },
+    // ],
+    // costs: [
+    //   {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: 'Cost',
+    //     select: false,
+    //   },
+    // ],
+
+    // user this creat pdf
     totalDeposit: {
       type: Number,
       default: 0.0,

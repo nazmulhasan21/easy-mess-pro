@@ -5,13 +5,6 @@ const fs = require('fs-extra');
 const moment = require('moment');
 //...
 
-hbs.registerHelper('dateFormat', function (date, options) {
-  const formatToUse =
-    (arguments[1] && arguments[1].hash && arguments[1].hash.format) ||
-    'DD/MM/YYYY';
-  return moment(date).format(formatToUse);
-});
-
 const compile = async function (templeteName, data) {
   const filePath = path.join(process.cwd(), 'templates', `${templeteName}.hbs`);
 
@@ -20,6 +13,12 @@ const compile = async function (templeteName, data) {
   return hbs.compile(html)(data.toObject());
 };
 
+/**
+ *
+ * @param {string} templeteName
+ * @param {Array} data
+ * @returns
+ */
 module.exports = async (templeteName, data) => {
   const browser = await Puppeteer.launch({
     headless: true,
@@ -30,7 +29,7 @@ module.exports = async (templeteName, data) => {
   const content = await compile(templeteName, data);
   await page.setContent(content);
   await page.pdf({
-    path: `${data.monthTitle}- ${data.messId}.pdf`,
+    path: `monthDetails.pdf`,
     format: 'A4',
     printBackground: true,
   });
@@ -38,4 +37,5 @@ module.exports = async (templeteName, data) => {
   console.log('Done create pdf');
 
   await browser.close();
+  return true;
 };

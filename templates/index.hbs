@@ -92,6 +92,31 @@
       </table>
       {{! rich Table }}
 
+      {{! extra rich table }}
+      <h6 class='text-center'>Extra Rich Table</h6>
+      <table class='table table-bordered table-striped'>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>quantity</th>
+            <th>date</th>
+
+          </tr>
+        </thead>
+        <tbody>
+
+          {{#each extraRichs as |extraRich|}}
+            <tr>
+              <td>{{extraRich.userId.name}}</td>
+              <td>{{extraRich.amount}}</td>
+              <td>{{dateFormat extraRich.date}}</td>
+
+            </tr>
+          {{/each}}
+        </tbody>
+
+      </table>
+      {{!extra rich Table }}
       {{! cash table }}
       <h6 class='text-center'>Cash Table</h6>
       <table class='table table-bordered table-striped'>
@@ -107,7 +132,7 @@
 
           {{#each cashs as |cash|}}
             <tr>
-              <td>{{cash.userName}}</td>
+              <td>{{cash.userId.name}}</td>
               <td>{{cash.amount}}</td>
               <td>{{dateFormat cash.date}}</td>
               {{!-- <td>{{cash.date.substring(0,15)}}</td> --}}
@@ -119,14 +144,12 @@
       </table>
       {{! cash table }}
 
-      {{! cost table }}
-      <h6 class='text-center'>Cost Table</h6>
+      {{! Guest Meal table }}
+      <h6 class='text-center'>Guest Meal Table</h6>
       <table class='table table-bordered table-striped'>
         <thead>
           <tr>
-
-            <th>title</th>
-            <th>type</th>
+            <th>Name</th>
             <th>amount</th>
             <th>date</th>
 
@@ -134,22 +157,43 @@
         </thead>
         <tbody>
 
-          {{#each costs as |cost|}}
-
+          {{#each guestMeals as |guestMeal|}}
             <tr>
-              <td>{{cost.title}}</td>
-              <td>{{cost.type}}</td>
-              <td>{{cost.amount}}</td>
-              <td>{{dateFormat cost.date}}</td>
+              <td>{{guestMeal.userId.name}}</td>
+              <td>{{guestMeal.amount}}</td>
+              <td>{{dateFormat guestMeal.date}}</td>
               {{!-- <td>{{cash.date.substring(0,15)}}</td> --}}
 
             </tr>
-
           {{/each}}
-
         </tbody>
 
       </table>
+      {{! guest meal Table }}
+
+      {{! cost table }}
+      {{#each costs}}
+        <h6 class='text-center'>{{name}}</h6>
+        <table class='table table-bordered table-striped'>
+          <thead>
+            <tr>
+              <th>title</th>
+              <th>amount</th>
+              <th>date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#details}}
+              <tr>
+                <td>{{title}}</td>
+                <td>{{amount}}</td>
+                <td>{{dateFormat date}}</td>
+              </tr>
+            {{/details}}
+          </tbody>
+          <thead><tr><th>total</th><th>{{total}}</th><th></th></tr></thead>
+        </table>
+      {{/each}}
       {{! cost table }}
 
       {{! meal table }}
@@ -170,7 +214,7 @@
 
           {{#each meals as |meal|}}
             <tr>
-              <td>{{meal.userName}}</td>
+              <td>{{meal.userId.name}}</td>
               <td>{{meal.breakfast}}</td>
               <td>{{meal.lunch}}</td>
               <td>{{meal.dinner}}</td>

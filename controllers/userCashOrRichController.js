@@ -1,6 +1,5 @@
 // node modules
 const mongoose = require('mongoose');
-const { validationResult } = require('express-validator');
 
 // all Models
 const Month = require('../models/monthModel');
@@ -8,7 +7,7 @@ const Month = require('../models/monthModel');
 // all utsils
 const AppError = require('../utils/appError');
 const APIFeatures = require('../utils/apiFeatures');
-const User = require('../models/userModel');
+
 const moment = require('moment');
 
 // get cost one
@@ -92,9 +91,7 @@ exports.getList = (Model) => async (req, res, next) => {
     const features = new APIFeatures(
       Model.find({
         $and: [{ monthId: activMonth._id }, date, filteramount],
-      })
-        .populate('addBy editBy userId', 'name avater role')
-        .select({ userName: 0 }),
+      }).populate('addBy editBy userId', 'name avater role'),
       req.query
     )
       .sort()
@@ -129,7 +126,7 @@ exports.createOne = (Model, model) => async (req, res, next) => {
     const { user } = req;
     const { userId, amount, date } = req.body;
     // **** find user
-    const { name } = await User.findById(userId).select('name');
+    // const { name } = await User.findById(userId).select('name');
     // 1. find active month;
     const month = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
@@ -143,7 +140,6 @@ exports.createOne = (Model, model) => async (req, res, next) => {
       monthId: month._id,
       userId,
       addBy: user._id,
-      userName: name,
       amount,
       date: date || moment(),
     });
@@ -247,7 +243,7 @@ exports.deleteOne = (Model, model) => async (req, res, next) => {
     // 1. found cost and active month and addby user
     const activeMonth = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
-    }).select('cashs richs meals guestMeal');
+    }).select('_id');
     const doc = await Model.findOne({
       $and: [{ _id: req.params.id }, { monthId: activeMonth._id }],
     });
@@ -261,22 +257,22 @@ exports.deleteOne = (Model, model) => async (req, res, next) => {
     // 3. delete Cost
     await Model.findByIdAndDelete(req.params.id);
 
-    // 4. delete month in rich or cash
-    if (model == 'rich') {
-      activeMonth.richs.pull(doc);
-    }
-    if (model == 'cash') {
-      activeMonth.cashs.pull(doc);
-    }
-    if (model == 'meal') {
-      activeMonth.meals.pull(doc);
-    }
-    if (model == 'guestMeal') {
-      activeMonth.guestMeal.pull(doc);
-    }
+    // // 4. delete month in rich or cash
+    // if (model == 'rich') {
+    //   activeMonth.richs.pull(doc);
+    // }
+    // if (model == 'cash') {
+    //   activeMonth.cashs.pull(doc);
+    // }
+    // if (model == 'meal') {
+    //   activeMonth.meals.pull(doc);
+    // }
+    // if (model == 'guestMeal') {
+    //   activeMonth.guestMeal.pull(doc);
+    // }
 
     // 5. save Month
-    await activeMonth.save();
+    // await activeMonth.save();
 
     res.status(200).json({
       status: 'success',

@@ -46,6 +46,10 @@ const userMonthDataSchema = mongoose.Schema(
       type: Number,
       default: 0.0,
     },
+    totalExtraRich: {
+      type: Number,
+      default: 0.0,
+    },
     richBalance: {
       type: Number,
       default: 0.0,

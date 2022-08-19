@@ -55,6 +55,10 @@ exports.createMess = async (req, res, next) => {
 
     await createMonth(user, mess);
 
+    // 4. set user mess admin
+    user.isMessAdmin = true;
+    await user.save();
+
     res.status(201).json({
       status: 'success',
       message: 'Create Your mess successfully',
@@ -211,20 +215,28 @@ exports.changeAdmin = async (req, res, next) => {
     const userId = req.params.id;
     const isValid = mongoose.Types.ObjectId.isValid(userId);
     if (!isValid) return next(new AppError(400, '_id', 'Id is not valid '));
-    // 1. chack user mess admin
-    const messAdmin = await Mess.findOne({ admin: user._id }).select('admin');
-    if (!messAdmin)
-      return next(new AppError(403, 'admin', 'You are not mess admin'));
-    // chack is user in mass member
-    const equal = JSON.stringify(user._id) === JSON.stringify(userId);
-    if (equal) return next(new AppError(401, 'admin', 'You are allrady admin'));
+    // ** find user in database
+    const findUser = await User.findById(userId);
+    if (findUser) {
+      // // 1. chack user mess admin
+      // const messAdmin = await Mess.findOne({ admin: user._id }).select('admin');
+      // if (!messAdmin)
+      //   return next(new AppError(403, 'admin', 'You are not mess admin'));
+      // chack is user in mass member
+      const equal = JSON.stringify(user._id) === JSON.stringify(userId);
+      if (equal)
+        return next(new AppError(401, 'admin', 'You are allrady admin'));
 
-    const isMessMember = await Mess.findOne({ allMember: userId });
-    if (isMessMember && !equal) {
-      isMessMember.admin = userId;
-      await isMessMember.save();
+      const isMessMember = await Mess.findOne({ allMember: userId });
+      if (isMessMember && !equal) {
+        isMessMember.admin = userId;
+        await isMessMember.save();
+      }
+      user.isMessAdmin = false;
+      await user.save();
+      findUser.isMessAdmin = true;
+      await findUser.save();
     }
-
     res.status(200).json({
       status: 'success',
       message: 'Change in your mess Admin successfully',

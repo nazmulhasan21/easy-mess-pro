@@ -28,6 +28,7 @@ router.use(authController.restrictToAdmin);
 router.patch('/member', messContorller.addMember);
 
 // Only admin inter your password have prermission to access for the below APIs
+router.use(authController.restrictToAdmin);
 router.use(authController.chackPassword);
 router.delete('/member/:id', messContorller.deleteMember);
 

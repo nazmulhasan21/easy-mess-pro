@@ -1,8 +1,7 @@
 const mongoose = require('mongoose');
 
-const mealSchema = mongoose.Schema(
+const extraRichSchema = mongoose.Schema(
   {
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     messId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Mess',
@@ -10,6 +9,10 @@ const mealSchema = mongoose.Schema(
     monthId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Month',
+    },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
     },
     addBy: {
       type: mongoose.Schema.Types.ObjectId,
@@ -19,13 +22,15 @@ const mealSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
     },
-    breakfast: { type: Number, default: 0 },
-    lunch: { type: Number, default: 0 },
-    dinner: { type: Number, default: 0 },
-    total: { type: Number, default: 0 },
-    date: { type: Date },
+    amount: {
+      type: Number,
+      default: 0,
+    },
+    date: {
+      type: Date,
+    },
   },
   { timestamps: true }
 );
-const Meal = mongoose.model('Meal', mealSchema);
-module.exports = Meal;
+const ExtraRich = mongoose.model('ExtraRich', extraRichSchema);
+module.exports = ExtraRich;

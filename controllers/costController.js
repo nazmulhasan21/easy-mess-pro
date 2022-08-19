@@ -1,5 +1,6 @@
 // node modules
 const mongoose = require('mongoose');
+const _ = require('lodash');
 const moment = require('moment');
 const { validationResult } = require('express-validator');
 
@@ -85,6 +86,7 @@ exports.getCostList = async (req, res, next) => {
     const activMonth = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
     });
+
     // 2. get all cost in active month
     const features = new APIFeatures(
       Cost.find({
@@ -121,7 +123,7 @@ exports.createCost = async (req, res, next) => {
     // 1. find active month;
     const month = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
-    }).select('costs');
+    }).select('_id');
     if (!month)
       return next(new AppError(404, 'month', 'Not found your active Month'));
 

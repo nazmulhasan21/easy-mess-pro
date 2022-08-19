@@ -7,6 +7,7 @@ const Meal = require('../models/mealModel');
 const Rich = require('../models/richModel');
 const Cost = require('../models/costModel');
 const GuestMeal = require('../models/guestMealModel');
+const ExtraRich = require('../models/extraRichModel');
 const Month = require('../models/monthModel');
 
 /**
@@ -59,6 +60,20 @@ exports.monthCal = async (month) => {
     { $group: { _id: '$monthId', total: { $sum: '$amount' } } },
   ]);
   const monthRich = monthRichSum[0];
+  // **** calculate active month extra Rich
+
+  const monthExtraRichSum = await ExtraRich.aggregate([
+    {
+      $match: {
+        $and: [
+          { monthId: new mongoose.Types.ObjectId(month._id) },
+          { messId: new mongoose.Types.ObjectId(month.messId) },
+        ],
+      },
+    },
+    { $group: { _id: '$monthId', total: { $sum: '$amount' } } },
+  ]);
+  const monthExtraRich = monthExtraRichSum[0];
 
   //4. calculate active month meal
   const monthMealSum = await Meal.aggregate([
@@ -132,7 +147,8 @@ exports.monthCal = async (month) => {
     month.totalBigCost + month.totalSmallCost + month.totalOtherCost;
   month.balance = month.totalDeposit - month.totalCost || 0;
   month.totalMeal = monthMeal?.total || 1;
-  month.richBalance = month.totalRich - month.totalMeal || 0;
+  month.richBalance =
+    month.totalRich - month.totalMeal - monthExtraRich?.total || 0;
 
   month.totalFixedMeal = monthFixedMeal?.total;
 
@@ -177,6 +193,21 @@ exports.userMonthCal = async (userId, month) => {
   ]);
   const rich = richSum[0];
 
+  // *****  calculate user extra rich
+
+  const extraRichSum = await ExtraRich.aggregate([
+    {
+      $match: {
+        $and: [
+          { monthId: new mongoose.Types.ObjectId(month._id) },
+          { userId: new mongoose.Types.ObjectId(userId) },
+        ],
+      },
+    },
+    { $group: { _id: '$userId', total: { $sum: '$amount' } } },
+  ]);
+  const extraRich = extraRichSum[0];
+
   // 8. calculate user Guest Meal
 
   const guestMealSum = await GuestMeal.aggregate([
@@ -220,9 +251,12 @@ exports.userMonthCal = async (userId, month) => {
       : month.fixedMeal;
   userMonthData.totalDeposit = cash?.total || 0;
   userMonthData.totalDepositRich = rich?.total || 0;
+  userMonthData.totalExtraRich = extraRich?.total || 0;
 
   userMonthData.richBalance =
-    userMonthData.totalDepositRich - userMonthData.totalMeal;
+    userMonthData.totalDepositRich -
+    userMonthData.totalMeal -
+    userMonthData.totalExtraRich;
 
   userMonthData.mealCost = (userMonthData.fixedMeal * month.mealRate).toFixed(
     2

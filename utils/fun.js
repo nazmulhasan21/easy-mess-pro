@@ -1,4 +1,6 @@
 const moment = require('moment');
+const _ = require('lodash');
+const hbs = require('handlebars');
 const fs = require('fs');
 const path = require('path');
 
@@ -14,18 +16,20 @@ const OtpCode = require('../models/otpCodeModel');
 const { sendEmail } = require('./sendEmail');
 const createPDF = require('./createPDF');
 const Mess = require('../models/messModel');
+const ExtraRich = require('../models/extraRichModel');
 
 /**
  *
  * @param {object} user req user object
  * @param {object} mess user mess object
+ * @param {string} title month title
  */
 
 // create month and other data
-module.exports.createMonth = async (user, mess) => {
+module.exports.createMonth = async (user, mess, title) => {
   //  1. create  your active month
 
-  const monthTitle = moment().format('MMMM YYYY');
+  const monthTitle = moment(title).format('MMMM YYYY');
   const month = await Month.create({
     messId: mess._id,
     monthTitle,
@@ -64,8 +68,6 @@ module.exports.createUserMonthData = async (userId, month, messId) => {
   user.months.push(month);
   user.messId = messId;
   await user.save();
-
-  await month.save();
 };
 
 /**
@@ -276,25 +278,103 @@ exports.sendVerificationCode = async (to, subj, templeteName) => {
 };
 
 // get pdf
-
+/**
+ *
+ * @param {ObjectId} monthId
+ * @returns
+ */
 exports.getMonthPdf = async (monthId) => {
   const data = await Month.findById(monthId).populate(
     'manager',
     'name role avater'
   );
 
-  const userMonthData = await UserMonthData.find({ monthId: data._id });
+  const userMonthData = await UserMonthData.find({ monthId: monthId });
   const costs = await Cost.find({ monthId: monthId });
-  const meals = await Meal.find({ monthId: monthId });
-  const richs = await Rich.find({ monthId: monthId });
-  const cashs = await Cash.find({ monthId: monthId });
-  const guestMeals = await GuestMeal.find({ monthId: monthId });
+  const bigCost = _.filter(costs, ['type', 'bigCost']);
+  const smallCost = _.filter(costs, ['type', 'smallCost']);
+  const otherCost = _.filter(costs, ['type', 'otherCost']);
+  // sub
+  const bigCostSum = _.sumBy(bigCost, 'amount');
+  const smallCostSum = _.sumBy(smallCost, 'amount');
+  const otherCostSum = _.sumBy(otherCost, 'amount');
+
+  const meals = await Meal.find({ monthId: monthId }).populate(
+    'userId',
+    'name avater'
+  );
+  const richs = await Rich.find({ monthId: monthId }).populate(
+    'userId',
+    'name avater'
+  );
+  const cashs = await Cash.find({ monthId: monthId }).populate(
+    'userId',
+    'name avater'
+  );
+  const guestMeals = await GuestMeal.find({ monthId: monthId }).populate(
+    'userId',
+    'name avater'
+  );
+  const extraRich = await ExtraRich.find({ monthId: monthId }).populate(
+    'userId',
+    'name avater'
+  );
 
   data.userMonthData = userMonthData;
   data.guestMeals = guestMeals;
-  data.costs = costs;
+  data.extraRich = extraRich;
+  data.costs = [
+    { name: 'Bajar cost Table', details: bigCost, total: bigCostSum },
+    { name: 'Small cost Table', details: smallCost, total: smallCostSum },
+    { name: 'Other cost Table', details: otherCost, total: otherCostSum },
+  ];
   data.meals = meals;
   data.richs = richs;
   data.cashs = cashs;
-  await createPDF('index', data);
+  const pdf = await createPDF('index', data);
+  if (pdf) {
+    return true;
+  }
 };
+
+// test/////
+const tt = async () => {
+  const name = 'Md Nazmul ';
+  const randomNum = Math.floor(10 + Math.random() * 90).toString();
+
+  const username = name.split(' ').join('');
+  const Md = username.split('Md')[1];
+  const md = username.split('md')[1];
+  const Mst = username.split('Mst')[1];
+  const mst = username.split('mst')[1];
+  const dot = username.split('.')[1];
+  let finalUserName = '';
+
+  if (dot) {
+    finalUserName = dot;
+    finalUserName += randomNum;
+  } else if (Md || md) {
+    finalUserName = Md || md + randomNum;
+    finalUserName += randomNum;
+  } else if (Mst || mst) {
+    finalUserName = Mst || mst + randomNum;
+    finalUserName += randomNum;
+  } else {
+    finalUserName = username + randomNum;
+    finalUserName += randomNum;
+  }
+
+  console.log(finalUserName.toLowerCase());
+
+  return finalUserName;
+};
+
+//tt();
+
+// date formet in hbs template
+hbs.registerHelper('dateFormat', function (date, options) {
+  const formatToUse =
+    (arguments[1] && arguments[1].hash && arguments[1].hash.format) ||
+    'DD/MM/YYYY';
+  return moment(date).format(formatToUse);
+});

@@ -27,6 +27,7 @@ const Meal = require('../models/mealModel');
 exports.createMonth = async (req, res, next) => {
   try {
     const { user } = req;
+    const { title } = req.body;
 
     // 1. find active Month
     const activeMonth = await Month.findOne({
@@ -42,7 +43,7 @@ exports.createMonth = async (req, res, next) => {
       .select('allMember month');
 
     //  3. create  your active month
-    await createMonth(user, mess);
+    await createMonth(user, mess, title);
 
     // send response
     res.status(201).json({
@@ -106,6 +107,9 @@ exports.getActiveMonth = async (req, res, next) => {
       $and: [{ userId: user._id }, { monthId: month._id }],
     }).populate('userId', 'name role avater');
     await userMonthData.save();
+
+    // test
+
     res.status(200).json({
       status: 'success',
       data: {
@@ -238,14 +242,12 @@ exports.getPDF = async (req, res, next) => {
       $and: [{ messId: user.messId }, { active: true }],
     });
 
-    getMonthPdf(month._id);
+    const getpdf = await getMonthPdf(month._id);
+    if (getpdf) {
+      const filePath = path.join(process.cwd(), `monthDetails.pdf`);
 
-    const filePath = path.join(
-      process.cwd(),
-      `${month.monthTitle}- ${month.messId}.pdf`
-    );
-
-    res.download(filePath);
+      res.download(filePath);
+    }
   } catch (error) {
     next(error);
   }

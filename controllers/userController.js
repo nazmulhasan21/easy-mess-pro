@@ -1,26 +1,23 @@
-const { validationResult, Result } = require('express-validator');
+const { validationResult } = require('express-validator');
 const cloudinary = require('cloudinary').v2;
 
 const User = require('../models/userModel');
 const OtpCode = require('../models/otpCodeModel');
 const AppError = require('../utils/appError');
 const base = require('./baseController');
-const { sendEmail } = require('../utils/sendEmail');
-const { createOtpCode, sendVerificationCode } = require('../utils/fun');
+
+const { sendVerificationCode } = require('../utils/fun');
 
 // user/me
 
 exports.me = async (req, res, next) => {
   try {
     const { user } = req;
-    user.months = undefined;
-    const nes = await User.findById(user._id).populate('months');
 
     res.status(200).json({
       status: 'success',
       data: {
         user,
-        nes,
       },
     });
   } catch (error) {

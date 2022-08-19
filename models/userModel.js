@@ -59,6 +59,7 @@ const userSchema = new mongoose.Schema(
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Month',
+        select: false,
       },
     ],
     FCMToken: {
@@ -67,6 +68,10 @@ const userSchema = new mongoose.Schema(
     },
 
     emailVerified: {
+      type: Boolean,
+      default: false,
+    },
+    isMessAdmin: {
       type: Boolean,
       default: false,
     },
