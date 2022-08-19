@@ -30,6 +30,7 @@ const Meal = require('../models/mealModel');
 exports.createMess = async (req, res, next) => {
   try {
     const { body, user } = req;
+    const { title } = req.body;
     const isValidMessname = body.messName.match(/^[a-zA-Z0-9. ]+$/);
     if (!isValidMessname)
       return next(
@@ -53,7 +54,7 @@ exports.createMess = async (req, res, next) => {
 
     // 3. create your month
 
-    await createMonth(user, mess);
+    await createMonth(user, mess, title);
 
     // 4. set user mess admin
     user.isMessAdmin = true;

@@ -48,12 +48,10 @@ exports.createMeal = async (req, res, next) => {
 
     //  3. daily Meal array to daily meal object
     dailyMealArray.forEach(async (myMeal) => {
-      const { name } = await User.findById(myMeal.userId).select('name');
       const total = myMeal.breakfast + myMeal.lunch + myMeal.dinner;
       // 4. post daily meal
       const userMeal = await Meal.create({
         ...myMeal,
-        userName: name,
         total: total,
         messId: user.messId,
         monthId: month._id,
@@ -86,12 +84,13 @@ exports.getLastdayMeal = async (req, res, next) => {
         // find user meal
         const userMeals = await Meal.find({
           $and: [{ userId: userId }, { monthId: month._id }],
-        });
+        }).populate('userId', 'name avater');
 
         const userMeal = userMeals[userMeals.length - 1];
         // create new
         const meal = {
           userId: userId,
+          user: { name: userId.name, role: userId.role, avater: userId.avater },
           breakfast: userMeal?.breakfast || 0,
           lunch: userMeal?.lunch || 0,
           dinner: userMeal?.dinner || 0,
