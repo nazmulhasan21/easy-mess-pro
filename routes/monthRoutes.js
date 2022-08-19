@@ -27,5 +27,7 @@ router.delete(
   authController.chackPassword,
   monthContorller.deleteMonth
 );
+router.use(authController.restrictToAdmin);
+router.patch('/:id/status', monthContorller.changeMonthStatus);
 
 module.exports = router;

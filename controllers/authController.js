@@ -80,12 +80,12 @@ exports.signup = async (req, res, next) => {
       const templeteName = 'emailsingUp';
 
       sendVerificationCode(to, subject, templeteName);
+      res.status(201).json({
+        status: 'success',
+        message: 'Please chack your email and verificd your account',
+        emailVerified: false,
+      });
     }
-    res.status(201).json({
-      status: 'success',
-      message: 'Please chack your email and verificd your account',
-      emailVerified: false,
-    });
   } catch (err) {
     err.statusCode = err.statusCode || 422;
     next(err);

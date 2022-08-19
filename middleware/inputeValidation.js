@@ -3,6 +3,7 @@ const User = require('../models/userModel');
 
 exports.signupValidat = [
   body('email')
+    .trim()
     .isEmail()
     .withMessage((value) => {
       return `'${value}' not a valid email.`;
@@ -18,6 +19,7 @@ exports.signupValidat = [
     })
     .normalizeEmail(),
   body('phone')
+    .trim()
     .isMobilePhone('bn-BD')
     .withMessage((value) => {
       return `'${value}' not a valid phone Number.`;
@@ -60,9 +62,9 @@ exports.updateMeValidat = [
   body('address')
     .trim()
     .isLength({ min: 3, max: 50 })
-    .withMessage('Type your address porperly.')
-    .matches(/^[a-zA-Z0-9., ]+$/)
-    .withMessage('Plese enter valid address'),
+    .withMessage('Type your address porperly.'),
+  // .matches(/^[a-zA-Z0-9., ]+$/)
+  // .withMessage('Plese enter valid address'),
   body('institution')
     .trim()
     .isLength({ min: 3, max: 50 })
@@ -73,6 +75,7 @@ exports.updateMeValidat = [
 
 module.exports.addMemberEmailValidat = [
   body('email')
+    .trim()
     .custom(async (value, { req }) => {
       const user = await User.findOne({ email: value });
       if (!user) {
@@ -120,9 +123,9 @@ module.exports.addCostInputValidat = [
     .notEmpty()
     .withMessage('Plese write any your cost type title.')
     .isLength({ min: 3, max: 50 })
-    .withMessage('Plese your  title is max:50')
-    .matches(/^[a-zA-Z0-9., ]+$/)
-    .withMessage('Plese enter valid Cost title'),
+    .withMessage('Plese your  title is max:50'),
+  // .matches(/^[a-zA-Z0-9., ]+$/)
+  // .withMessage('Plese enter valid Cost title'),
   body('amount')
     .trim()
     .matches(/^[0-9.-]+$/)
@@ -146,6 +149,7 @@ exports.chPassInVali = [
 
 exports.emailCodeInVali = [
   body('email')
+    .trim()
     .isEmail()
     .withMessage((value) => {
       return `'${value}' not a valid email.`;
@@ -161,6 +165,7 @@ exports.emailCodeInVali = [
 
 exports.emailVelit = [
   body('email')
+    .trim()
     .isEmail()
     .withMessage((value) => {
       return `'${value}' not a valid email.`;
@@ -178,6 +183,7 @@ exports.emailVelit = [
 ];
 exports.isEmailInput = [
   body('email')
+    .trim()
     .isEmail()
     .withMessage((value) => {
       return `'${value}' not a valid email.`;

@@ -9,6 +9,7 @@ const AppError = require('../utils/appError');
 const APIFeatures = require('../utils/apiFeatures');
 
 const moment = require('moment');
+const Cost = require('../models/costModel');
 
 // get cost one
 
@@ -91,17 +92,20 @@ exports.getList = (Model) => async (req, res, next) => {
     const features = new APIFeatures(
       Model.find({
         $and: [{ monthId: activMonth._id }, date, filteramount],
-      }).populate('addBy editBy userId', 'name avater role'),
+      })
+        .populate('addBy editBy userId', 'name avater role')
+        .sort({ createdAt: -1 }),
       req.query
-    )
-      .sort()
-      .paginate();
+    ).paginate();
     const doc = await features.query;
+    const results = await Model.countDocuments({
+      $and: [{ monthId: activMonth._id }, date, filteramount],
+    });
 
     // 3. send res
     res.status(200).json({
       status: 'success',
-      results: doc.length,
+      results: results,
       data: {
         data: doc,
       },
@@ -256,23 +260,6 @@ exports.deleteOne = (Model, model) => async (req, res, next) => {
 
     // 3. delete Cost
     await Model.findByIdAndDelete(req.params.id);
-
-    // // 4. delete month in rich or cash
-    // if (model == 'rich') {
-    //   activeMonth.richs.pull(doc);
-    // }
-    // if (model == 'cash') {
-    //   activeMonth.cashs.pull(doc);
-    // }
-    // if (model == 'meal') {
-    //   activeMonth.meals.pull(doc);
-    // }
-    // if (model == 'guestMeal') {
-    //   activeMonth.guestMeal.pull(doc);
-    // }
-
-    // 5. save Month
-    // await activeMonth.save();
 
     res.status(200).json({
       status: 'success',

@@ -137,8 +137,7 @@ exports.monthCal = async (month) => {
   month.totalGuestMealAmount = monthGuestMeal?.total || 0;
   month.totalBigCost = cost?.bigCost || 0;
   month.totalSmallCost = cost?.smallCost || 0;
-  month.totalMealCost =
-    month.totalBigCost + month.totalSmallCost - month.totalGuestMealAmount;
+  month.totalMealCost = month.totalBigCost + month.totalSmallCost;
   month.totalOtherCost = cost?.otherCost || 0;
   month.otherCostPerPerson = (
     month.totalOtherCost / totalMember?.total

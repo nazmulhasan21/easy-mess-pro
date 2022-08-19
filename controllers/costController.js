@@ -91,16 +91,19 @@ exports.getCostList = async (req, res, next) => {
     const features = new APIFeatures(
       Cost.find({
         $and: [{ monthId: activMonth._id }, date, filteramount, typeFilter],
-      }).populate('addBy editBy', 'name avater role'),
+      })
+        .populate('addBy editBy', 'name avater role')
+        .sort({ createdAt: -1 }),
       req.query
-    )
-      .sort()
-      .paginate();
+    ).paginate();
     const doc = await features.query;
+    const results = await Cost.countDocuments({
+      $and: [{ monthId: activMonth._id }, date, filteramount, typeFilter],
+    });
     // 3. send res
     res.status(200).json({
       status: 'success',
-      results: doc.length,
+      results: results,
       data: {
         data: doc,
       },

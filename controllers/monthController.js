@@ -108,8 +108,6 @@ exports.getActiveMonth = async (req, res, next) => {
     }).populate('userId', 'name role avater');
     await userMonthData.save();
 
-    // test
-
     res.status(200).json({
       status: 'success',
       data: {
@@ -202,23 +200,17 @@ exports.getMonthList = async (req, res, next) => {
     // 1. chack this user admin
 
     const mess = await Mess.findOne({ admin: user._id }).select('admin');
-    if (mess && (user.role == 'manager' || user.role == 'border')) {
+    if (mess) {
       const features = new APIFeatures(
-        Month.find({ messId: mess._id }),
+        Month.find({ messId: mess._id }).sort({ createdAt: -1 }),
         req.query
-      )
-        .sort()
-        .paginate();
+      ).paginate();
       monthList = await features.query;
-    }
-    // 2 get month list in this user month manager
-    if (user.role == 'manager' && !mess) {
+    } else {
       const features = new APIFeatures(
         Month.find({ manager: user._id }),
         req.query
-      )
-        .sort()
-        .paginate();
+      ).paginate();
       // then month list
       monthList = await features.query;
     }
@@ -254,8 +246,40 @@ exports.getPDF = async (req, res, next) => {
 };
 
 // every end of month update all month in  active = false
-const deActiveMonth = async () => {
-  const month = await Month.updateMany({}, { active: false });
+exports.changeMonthStatus = async (req, res, next) => {
+  try {
+    const { user } = req;
+    const { active } = req.body;
+    //1. find is mess active month
+    const activeMonth = await Month.findOne({
+      $and: [{ messId: user.messId }, { active: true }],
+    });
+
+    //2. update any one  month status
+    const month = await Month.findOneAndUpdate(
+      { $and: [{ _id: req.params.id }, { messId: user.messId }] },
+      { active: active }
+    );
+    if (active) {
+      if (month.nModified || month.modifiedCount == 1) {
+        activeMonth.active = false;
+      }
+    } else if (!active) {
+      if (month.nModified || month.modifiedCount == 1) {
+        activeMonth.active = true;
+      }
+    }
+    await activeMonth.save();
+    res.status(200).json({
+      status: 'success',
+      message: 'chang month status successfuly',
+      data: {
+        data: month,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
   // console.log(month);
 };
 
