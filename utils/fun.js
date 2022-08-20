@@ -269,7 +269,7 @@ exports.sendVerificationCode = async (to, subj, templeteName) => {
   const html = fs.readFileSync(filePath).toString();
 
   const params = {
-    userName: to.name,
+    userName: to?.name,
     code: otpCode.code,
     subject: subj,
   };

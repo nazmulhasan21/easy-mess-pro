@@ -165,14 +165,13 @@ exports.sendEmailVerifiCode = async (req, res, next) => {
   try {
     const { email } = req.body;
 
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return next(errors);
-    }
     const user = await User.findOne({ email });
-    if (!user) return next(AppError(404, 'email', 'Your Email is wrong'));
-
-    to = { email: email, name: user?.name };
+    let to = {};
+    if (!user) {
+      to = { email: email };
+    } else {
+      to = { email: email, name: user?.name };
+    }
 
     const subject = 'Email verification';
     const templeteName = 'sendEmailCode';
