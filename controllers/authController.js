@@ -49,6 +49,7 @@ exports.login = async (req, res, next) => {
     user.password = undefined;
     res.status(200).json({
       status: 'success',
+      message: 'Login successfully',
       token,
       data: {
         user,
@@ -132,6 +133,7 @@ exports.verification = async (req, res, next) => {
     user.password = undefined;
     res.status(200).json({
       status: 'success',
+      message: 'Email verification successfully',
       token,
       data: {
         user,
@@ -150,10 +152,11 @@ exports.sendEmailVerifiCode = async (req, res, next) => {
     if (!errors.isEmpty()) {
       return next(errors);
     }
+    const user = await User.findOne({ email });
 
     let to = { email: email };
     if (req.user.name) {
-      to = { email: email, name: req.user.name };
+      to = { email: email, name: user?.name };
     }
     const subject = 'Email verification';
     const templeteName = 'sendEmailCode';

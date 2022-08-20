@@ -4,7 +4,6 @@ const router = express.Router();
 const {
   signupValidat,
   emailCodeInVali,
-  emailVelit,
 } = require('../middleware/inputeValidation');
 const authController = require('../controllers/authController');
 
