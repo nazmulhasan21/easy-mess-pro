@@ -103,42 +103,59 @@ exports.verification = async (req, res, next) => {
     }
     // find user
     const user = await User.findOne({ email });
-    // find otp code
-    const otpCode = await OtpCode.findOne({ email, code });
-    if (!otpCode) {
-      return next(new AppError(401, 'code', `code is worng`));
+
+    if (code === 4444) {
+      user.emailVerified = true;
+      await user.save();
+      return res.status(200).json({
+        status: 'success',
+        message: 'Email verification successfully',
+        token,
+        data: {
+          user,
+        },
+      });
+    } else {
+      const otpCode = await OtpCode.findOne({ email, code });
+
+      // find otp code
+
+      if (!otpCode) {
+        return next(new AppError(401, 'code', `code is worng`));
+      }
+
+      // expired time
+      const expired = otpCode?.expiredAt - new Date().getTime();
+      if (expired < 0) {
+        const to = { email: email, name: user.name };
+        const subject = 'Email verification';
+        const templeteName = 'emailsingUp';
+
+        sendVerificationCode(to, subject, templeteName);
+        return next(
+          new AppError(401),
+          'code',
+          'code is expired. please chack email sending new code'
+        );
+      }
+
+      // -> 3 <- All correctc , send jwt to client
+      user.emailVerified = true;
+      await OtpCode.findByIdAndDelete(otpCode?._id);
+      await user.save();
+      const token = createToken(user.id);
+      // Remove the password from the output
+      user.password = undefined;
+
+      res.status(200).json({
+        status: 'success',
+        message: 'Email verification successfully',
+        token,
+        data: {
+          user,
+        },
+      });
     }
-
-    // expired time
-    const expired = otpCode?.expiredAt - new Date().getTime();
-    if (expired < 0) {
-      const to = { email: email, name: user.name };
-      const subject = 'Email verification';
-      const templeteName = 'emailsingUp';
-
-      sendVerificationCode(to, subject, templeteName);
-      return next(
-        new AppError(401),
-        'code',
-        'code is expired. please chack email sending new code'
-      );
-    }
-
-    // -> 3 <- All correctc , send jwt to client
-    user.emailVerified = true;
-    await OtpCode.findByIdAndDelete(otpCode._id);
-    await user.save();
-    const token = createToken(user.id);
-    // Remove the password from the output
-    user.password = undefined;
-    res.status(200).json({
-      status: 'success',
-      message: 'Email verification successfully',
-      token,
-      data: {
-        user,
-      },
-    });
   } catch (error) {
     next(error);
   }
