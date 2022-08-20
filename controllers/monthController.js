@@ -195,25 +195,15 @@ exports.deleteMonth = async (req, res, next) => {
 exports.getMonthList = async (req, res, next) => {
   try {
     const { user } = req;
-    let monthList;
 
-    // 1. chack this user admin
-
-    const mess = await Mess.findOne({ admin: user._id }).select('admin');
-    if (mess) {
-      const features = new APIFeatures(
-        Month.find({ messId: mess._id }).sort({ createdAt: -1 }),
-        req.query
-      ).paginate();
-      monthList = await features.query;
-    } else {
-      const features = new APIFeatures(
-        Month.find({ manager: user._id }),
-        req.query
-      ).paginate();
-      // then month list
-      monthList = await features.query;
-    }
+    // 1.
+    const features = new APIFeatures(
+      Month.find({ messId: user.messId })
+        .populate('manager', 'name avater')
+        .sort({ createdAt: -1 }),
+      req.query
+    ).paginate();
+    const monthList = await features.query;
 
     res.status(200).json({
       status: 'success',

@@ -19,7 +19,7 @@ exports.login = async (req, res, next) => {
     // -> 1 <- check if email and password exist
     if (!email || !password) {
       return next(
-        new AppError(404, 'email', 'Please provide email or password', 'fail')
+        new AppError(400, 'email', 'Please provide email or password', 'fail')
       );
     }
 
@@ -36,7 +36,7 @@ exports.login = async (req, res, next) => {
 
       sendVerificationCode(to, subject, templeteName);
 
-      return res.status(401).json({
+      return res.status(200).json({
         status: 'fail',
         message: 'Please chack your email and verificd your account',
         emailVerified: false,
@@ -87,7 +87,7 @@ exports.signup = async (req, res, next) => {
       });
     }
   } catch (err) {
-    err.statusCode = err.statusCode || 422;
+    err.statusCode = err.statusCode || 400;
     next(err);
   }
 };
