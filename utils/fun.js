@@ -286,7 +286,7 @@ exports.sendVerificationCode = async (to, subj, templeteName) => {
 exports.getMonthPdf = async (monthId) => {
   const data = await Month.findById(monthId).populate(
     'manager',
-    'name role avater'
+    'name role avatar'
   );
 
   const userMonthData = await UserMonthData.find({ monthId: monthId });
@@ -301,23 +301,23 @@ exports.getMonthPdf = async (monthId) => {
 
   const meals = await Meal.find({ monthId: monthId }).populate(
     'userId',
-    'name avater'
+    'name avatar'
   );
   const richs = await Rich.find({ monthId: monthId }).populate(
     'userId',
-    'name avater'
+    'name avatar'
   );
   const cashs = await Cash.find({ monthId: monthId }).populate(
     'userId',
-    'name avater'
+    'name avatar'
   );
   const guestMeals = await GuestMeal.find({ monthId: monthId }).populate(
     'userId',
-    'name avater'
+    'name avatar'
   );
   const extraRich = await ExtraRich.find({ monthId: monthId }).populate(
     'userId',
-    'name avater'
+    'name avatar'
   );
 
   data.userMonthData = userMonthData;
@@ -339,10 +339,11 @@ exports.getMonthPdf = async (monthId) => {
 
 // test/////
 const tt = async () => {
-  const name = 'Md Nazmul ';
+  const name = 'Md Nazmul hasan ';
   const randomNum = Math.floor(10 + Math.random() * 90).toString();
 
   const username = name.split(' ').join('');
+  Md.Nazmulhasan;
   const Md = username.split('Md')[1];
   const md = username.split('md')[1];
   const Mst = username.split('Mst')[1];

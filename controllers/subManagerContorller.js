@@ -71,7 +71,7 @@ exports.getSubManagerList = async (req, res, next) => {
     const features = new APIFeatures(
       User.find({
         $and: [{ messId: user.messId }, { role: 'subManager' }],
-      }).select('name email phone avater'),
+      }).select('name email phone avatar'),
       req.query
     )
       .sort()

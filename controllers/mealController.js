@@ -84,13 +84,13 @@ exports.getLastdayMeal = async (req, res, next) => {
         // find user meal
         const userMeals = await Meal.find({
           $and: [{ userId: userId }, { monthId: month._id }],
-        }).populate('userId', 'name avater');
+        }).populate('userId', 'name avatar');
 
         const userMeal = userMeals[userMeals.length - 1];
         // create new
         const meal = {
           userId: userId,
-          user: { name: userId.name, role: userId.role, avater: userId.avater },
+          user: { name: userId.name, role: userId.role, avatar: userId.avatar },
           breakfast: userMeal?.breakfast || 0,
           lunch: userMeal?.lunch || 0,
           dinner: userMeal?.dinner || 0,

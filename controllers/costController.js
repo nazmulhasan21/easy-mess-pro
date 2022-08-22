@@ -26,7 +26,7 @@ exports.getCost = async (req, res, next) => {
     // 1. find cost
     const doc = await Cost.findOne({
       $and: [{ _id: req.params.id }, { messId: user.messId }],
-    }).populate('addBy editBy monthId', 'name avater role monthTitle');
+    }).populate('addBy editBy monthId', 'name avatar role monthTitle');
     if (!doc)
       return next(new AppError(404, 'cost', 'No cost found with that id'));
 
@@ -92,7 +92,7 @@ exports.getCostList = async (req, res, next) => {
       Cost.find({
         $and: [{ monthId: activMonth._id }, date, filteramount, typeFilter],
       })
-        .populate('addBy editBy', 'name avater role')
+        .populate('addBy editBy', 'name avatar role')
         .sort({ createdAt: -1 }),
       req.query
     ).paginate();

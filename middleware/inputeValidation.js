@@ -160,7 +160,7 @@ exports.emailCodeInVali = [
   body('code')
     .trim()
     .isLength({ min: 4 })
-    .withMessage('write your code proparly.'),
+    .withMessage('Write your code proparly.'),
 ];
 
 exports.emailVelit = [

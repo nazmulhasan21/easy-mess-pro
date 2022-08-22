@@ -105,7 +105,7 @@ exports.getActiveMonth = async (req, res, next) => {
     // 2. Get active Month User Month data
     const userMonthData = await UserMonthData.findOne({
       $and: [{ userId: user._id }, { monthId: month._id }],
-    }).populate('userId', 'name role avater');
+    }).populate('userId', 'name role avatar');
     await userMonthData.save();
 
     res.status(200).json({
@@ -199,7 +199,7 @@ exports.getMonthList = async (req, res, next) => {
     // 1.
     const features = new APIFeatures(
       Month.find({ messId: user.messId })
-        .populate('manager', 'name avater')
+        .populate('manager', 'name avatar')
         .sort({ createdAt: -1 }),
       req.query
     ).paginate();

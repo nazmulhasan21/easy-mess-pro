@@ -33,7 +33,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: 'NOT_SET_YET',
     },
-    avater: {
+    avatar: {
       type: String,
       default:
         'https://res.cloudinary.com/messmanager/image/upload/v1660195350/mess_manager_profile_vector-01_wiymk3.png',

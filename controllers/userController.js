@@ -56,19 +56,19 @@ exports.updateMe = async (req, res, next) => {
 
 // upload profile
 
-exports.updateAvater = async (req, res, next) => {
+exports.updateAvatar = async (req, res, next) => {
   try {
     const { user } = req;
     const { files } = req;
     if (!files)
       return next(
-        new AppError(404, 'avater', 'Please upload your profile image')
+        new AppError(404, 'avatar', 'Please upload your profile image')
       );
 
     cloudinary.uploader.upload(
-      files.avater.tempFilePath,
+      files.avatar.tempFilePath,
       async (error, result) => {
-        user.avater = result.url;
+        user.avatar = result.url;
         await user.save();
         res.status(200).json({
           status: 'success',
@@ -247,6 +247,7 @@ exports.restePassword = async (req, res, next) => {
 
     user.password = newPassword;
     await user.save();
+    await OtpCode.findByIdAndDelete(otpCode?._id);
     res.status(200).json({
       status: 'success',
       message: 'Reset your password successfuly',
@@ -272,11 +273,17 @@ exports.logOut = async (req, res, next) => {
 
 exports.deleteMe = async (req, res, next) => {
   try {
-    await User.findByIdAndUpdate(req.user._id, {
-      active: false,
-    });
+    const { user } = req;
+    //1. user join any mess
+    if (user.messId)
+      return next(
+        new AppError(401, 'user', 'Please leave your mess. Then try again')
+      );
+
+    await User.findByIdAndDelete(user._id);
     res.status(204).json({
       status: 'success',
+      message: 'Your account delete successfully',
       data: null,
     });
   } catch (error) {
@@ -295,7 +302,7 @@ exports.getUserByEmail = async (req, res, next) => {
     const user = {
       name: newUser.name,
       email: newUser.email,
-      avater: newUser.avater,
+      avatar: newUser.avatar,
     };
     res.status(200).json({
       user: user,

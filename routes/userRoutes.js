@@ -35,7 +35,7 @@ router
   .route('/me')
   .get(userController.me)
   .patch(updateMeValidat, userController.updateMe);
-router.patch('/me/avater', userController.updateAvater);
+router.patch('/me/avatar', userController.updateAvatar);
 router.patch('/me/password', chPassInVali, userController.changePassword);
 
 router.post(
@@ -49,6 +49,11 @@ router.patch('/me/email', emailCodeInVali, userController.changeEmail);
 
 // router.route('/').get(userController.getAllUsers);
 router.delete('/log-out', userController.logOut);
+router.delete(
+  '/me/delete',
+  authController.chackPassword,
+  userController.deleteMe
+);
 router.route('/:id').get(userController.getUser);
 router.post('/email', addMemberEmailValidat, userController.getUserByEmail);
 module.exports = router;
