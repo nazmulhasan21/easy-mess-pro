@@ -86,8 +86,7 @@ exports.getActiveMonth = async (req, res, next) => {
     const { user } = req;
 
     // ** GET mess all member user Id
-    const mess = await Mess.findById(user.messId).select('allMember');
-
+    const mess = await Mess.findById(user.messId).select('messName allMember');
     // 1. Get active Month
     const month = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
@@ -105,12 +104,13 @@ exports.getActiveMonth = async (req, res, next) => {
     // 2. Get active Month User Month data
     const userMonthData = await UserMonthData.findOne({
       $and: [{ userId: user._id }, { monthId: month._id }],
-    }).populate('userId', 'name role avatar');
+    }).populate('userId', 'name role avatar phone messId isMessAdmin');
     await userMonthData.save();
 
     res.status(200).json({
       status: 'success',
       data: {
+        mess,
         month,
         userMonthData,
       },

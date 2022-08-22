@@ -64,7 +64,6 @@ module.exports.createUserMonthData = async (userId, month, messId) => {
   });
   await userMonthData.save();
 
-  // user.userMonthData.push(userMonthData);
   user.months.push(month);
   user.messId = messId;
   await user.save();
