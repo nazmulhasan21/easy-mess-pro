@@ -227,13 +227,13 @@ exports.protect = async (req, res, next) => {
 exports.restrictToMessId = async (req, res, next) => {
   let messId = req.user.messId || false;
   if (!messId) {
-    return next(
-      new AppError(
-        403,
-        'mess',
-        `You are not join any mess. Please Contact your mess manager`
-      )
-    );
+    return res.status(200).json({
+      status: 'success',
+      message: 'You are not join any mess. Please Contact your mess manager',
+      data: {
+        user: req.user,
+      },
+    });
   }
   next();
 };

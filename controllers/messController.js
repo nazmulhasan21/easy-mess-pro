@@ -108,7 +108,7 @@ exports.addMember = async (req, res, next) => {
 
     const { user } = req;
     // find new User by email;
-    const newUser = await User.findOne({ email: req.body.email });
+    const newUser = req.newUser;
 
     // #### change newUser role
     newUser.role = 'border';
@@ -129,19 +129,8 @@ exports.addMember = async (req, res, next) => {
     // 4. create user Month data
     await createUserMonthData(newUser._id, month, mess._id);
 
-    // 5. create user now day meal
-    // const userMeal = await Meal.create({
-    //   userId: newUser._id,
-    //   userName: newUser.name,
-    //   total: total,
-    //   messId: user.messId,
-    //   monthId: month._id,
-    //   addBy: user._id,
-    //   date: now.Date(),
-    // });
-    // // push this userMeal in active month
-    // month.meals.push(userMeal);
     await month.save();
+    await newUser.save();
 
     res.status(201).json({
       status: 'success',
