@@ -18,7 +18,6 @@ const AppError = require('../utils/appError');
 const {
   createUserMonthData,
   deleteUserMonthData,
-  deleteOtherDataInActiveMonth,
   deleteAll,
   createMonth,
 } = require('../utils/fun');
@@ -148,6 +147,12 @@ exports.deleteMember = async (req, res, next) => {
     const delUserId = req.params.id;
     const isValid = mongoose.Types.ObjectId.isValid(delUserId);
     if (!isValid) return next(new AppError(400, '_id', 'Id is not valid '));
+
+    // ## del user if mess admin
+    const findUser = await User.findById(delUserId);
+    if (findUser.isMessAdmin)
+      return next(new AppError(401, 'admin', 'You are admin'));
+
     // ## find  member is active month manager yes or not
     const month = await Month.findOne({
       $and: [{ manager: delUserId }, { active: true }],
@@ -177,11 +182,8 @@ exports.deleteMember = async (req, res, next) => {
       $and: [{ messId: user.messId }, { active: true }],
     });
 
-    // 4. delete delUser active Month data
+    // 4. delete delUser active Month data Cash, Meal, Rich in delUser
     await deleteUserMonthData(delUserId, activeMonth);
-
-    // 5. delete  active Month => Cash, Meal, Rich in delUser
-    await deleteOtherDataInActiveMonth(delUserId, activeMonth);
 
     await activeMonth.save();
     await mess.save();
@@ -189,8 +191,6 @@ exports.deleteMember = async (req, res, next) => {
     res.status(200).json({
       status: 'success',
       message: 'Deleted member in your mess successfully',
-      activeMonth,
-      mess,
     });
   } catch (error) {
     next(error);

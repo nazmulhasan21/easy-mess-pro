@@ -75,62 +75,24 @@ module.exports.createUserMonthData = async (userId, month, messId) => {
  * @param {object} month active month object
  */
 module.exports.deleteUserMonthData = async (userId, month) => {
-  const userMonthData = await UserMonthData.findOneAndDelete({
+  await UserMonthData.findOneAndDelete({
     $and: [{ userId: userId }, { monthId: month._id }],
   });
-
-  month.userMonthData.pull(userMonthData._id);
-
-  const user = await User.findOne({
-    $and: [{ _id: userId }, { messId: userMonthData.messId }],
+  await Rich.deleteMany({ $and: [{ userId: userId }, { monthId: month._id }] });
+  await Cash.deleteMany({ $and: [{ userId: userId }, { monthId: month._id }] });
+  await Meal.deleteMany({ $and: [{ userId: userId }, { monthId: month._id }] });
+  await GuestMeal.deleteMany({
+    $and: [{ userId: userId }, { monthId: month._id }],
   });
+  await ExtraRich.deleteMany({
+    $and: [{ userId: userId }, { monthId: month._id }],
+  });
+  const user = await User.findOne({ _id: userId });
   user.months = [];
   user.role = 'border';
   user.messId = undefined;
 
-  await month.save();
   await user.save();
-};
-
-/**
- *
- * @param {User._id} userId mess member user id
- * @param {object} month active month object
- */
-
-module.exports.deleteOtherDataInActiveMonth = async (userId, month) => {
-  // 1. find all delete user cashs
-
-  const cashs = await Cash.find({
-    $and: [{ userId: userId }, { monthId: month._id }],
-  });
-  // 2. delete all cash in active month cashs array
-  cashs.forEach((cash) => {
-    month.cashs.pull(cash._id);
-  });
-
-  // 3. find all delete user meals
-
-  const meals = await Meal.find({
-    $and: [{ userId: userId }, { monthId: month._id }],
-  });
-
-  // 4. delete all meals in active month meals array
-  meals.forEach((meal) => {
-    month.meals.pull(meal._id);
-  });
-
-  // 5 . find all delete user richs
-  const richs = await Rich.find({
-    $and: [{ userId: userId }, { monthId: month._id }],
-  });
-
-  // 6. delete all richs in active month richs array
-  richs.forEach((rich) => {
-    month.richs.pull(rich._id);
-  });
-
-  await month.save();
 };
 
 /**
