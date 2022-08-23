@@ -58,7 +58,6 @@ module.exports.createUserMonthData = async (userId, month, messId) => {
   const user = await User.findById(userId);
   const userMonthData = new UserMonthData({
     userId,
-    userName: user.name,
     monthId: month._id,
     messId,
   });

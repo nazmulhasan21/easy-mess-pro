@@ -121,9 +121,7 @@ exports.addMember = async (req, res, next) => {
     // 3. find active month
     const month = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
-    })
-      .populate('userMonthData')
-      .select('userMonthData meals');
+    });
 
     // 4. create user Month data
     await createUserMonthData(newUser._id, month, mess._id);
