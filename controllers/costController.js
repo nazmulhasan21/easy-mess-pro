@@ -216,9 +216,6 @@ exports.deleteCost = async (req, res, next) => {
     // 3. delete Cost
     await Cost.findByIdAndDelete(req.params.id);
 
-    //4. delete this cost id in active Month
-    activeMonth.costs.pull(cost);
-
     res.status(200).json({
       status: 'success',
       message: 'Delete Cost successfully',
