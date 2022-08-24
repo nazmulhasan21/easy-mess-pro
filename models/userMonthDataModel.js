@@ -42,15 +42,15 @@ const userMonthDataSchema = mongoose.Schema(
       type: Number,
       default: 0,
     },
-    totalDepostiRich: {
+    totalDepostiRice: {
       type: Number,
       default: 0.0,
     },
-    totalExtraRich: {
+    totalExtraRice: {
       type: Number,
       default: 0.0,
     },
-    richBalance: {
+    riceBalance: {
       type: Number,
       default: 0.0,
     },

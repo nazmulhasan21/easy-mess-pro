@@ -2,7 +2,7 @@ const Meal = require('../models/mealModel');
 const Month = require('../models/monthModel');
 const User = require('../models/userModel');
 const AppError = require('../utils/appError');
-const meal = require('./userCashOrRichController');
+const meal = require('./userCashOrRiceController');
 const moment = require('moment');
 
 const { getLastDayUserMeal } = require('../utils/fun');
@@ -22,7 +22,7 @@ exports.createMeal = async (req, res, next) => {
     }).select('meals');
     if (!month)
       return next(new AppError(404, 'month', 'No found active month'));
-    // chack add now day meal in active month
+    // check add now day meal in active month
     const today = moment().startOf('day');
     const meals = await Meal.find({
       $and: [
@@ -68,7 +68,7 @@ exports.createMeal = async (req, res, next) => {
     next(error);
   }
 };
-exports.getLastdayMeal = async (req, res, next) => {
+exports.getLastDayMeal = async (req, res, next) => {
   try {
     const { user } = req;
 

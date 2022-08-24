@@ -1,5 +1,5 @@
 const GuestMeal = require('../models/guestMealModel');
-const guestMeal = require('./userCashOrRichController');
+const guestMeal = require('./userCashOrRiceController');
 
 exports.getGuestMealList = guestMeal.getList(GuestMeal);
 exports.getGuestMeal = guestMeal.getOne(GuestMeal, 'guestMeal');

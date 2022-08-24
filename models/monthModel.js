@@ -31,11 +31,11 @@ const monthSchema = mongoose.Schema(
       type: Array,
       select: false,
     },
-    cashs: {
+    cashes: {
       type: Array,
       select: false,
     },
-    richs: {
+    rices: {
       type: Array,
       select: false,
     },
@@ -51,7 +51,7 @@ const monthSchema = mongoose.Schema(
       type: Array,
       select: false,
     },
-    extraRich: {
+    extraRice: {
       type: Array,
       select: false,
     },
@@ -70,10 +70,10 @@ const monthSchema = mongoose.Schema(
     //     select: false,
     //   },
     // ],
-    // richs: [
+    // rices: [
     //   {
     //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: 'Rich',
+    //     ref: 'Rice',
     //     select: false,
     //   },
     // ],
@@ -133,11 +133,11 @@ const monthSchema = mongoose.Schema(
       type: Number,
       default: 0,
     },
-    totalRich: {
+    totalRice: {
       type: Number,
       default: 0,
     },
-    richBalance: {
+    riceBalance: {
       type: Number,
       default: 0,
     },

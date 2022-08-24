@@ -6,7 +6,7 @@ const Month = require('../models/monthModel');
 const User = require('../models/userModel');
 // all Controllers
 
-// all utsils
+// all utils
 const AppError = require('../utils/appError');
 const APIFeatures = require('../utils/apiFeatures');
 
@@ -37,7 +37,7 @@ exports.deleteSubManager = async (req, res, next) => {
     if (!isValid)
       return next(new AppError(400, 'userId', 'userId is not valid '));
 
-    // 1 .chack user is active month manager
+    // 1 .check user is active month manager
     const activeMonthManager = await Month.findOne({
       $and: [{ manager: req.params.userId }, { active: true }],
     });

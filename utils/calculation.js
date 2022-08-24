@@ -4,10 +4,10 @@ const User = require('../models/userModel');
 const UserMonthData = require('../models/userMonthDataModel');
 const Cash = require('../models/cashModel');
 const Meal = require('../models/mealModel');
-const Rich = require('../models/richModel');
+const Rice = require('../models/riceModel');
 const Cost = require('../models/costModel');
 const GuestMeal = require('../models/guestMealModel');
-const ExtraRich = require('../models/extraRichModel');
+const ExtraRice = require('../models/extraRiceModel');
 const Month = require('../models/monthModel');
 
 /**
@@ -47,8 +47,8 @@ exports.monthCal = async (month) => {
   ]);
   const monthCash = monthCashSum[0];
 
-  //3. calculate active month rich
-  const monthRichSum = await Rich.aggregate([
+  //3. calculate active month rice
+  const monthRiceSum = await Rice.aggregate([
     {
       $match: {
         $and: [
@@ -59,10 +59,10 @@ exports.monthCal = async (month) => {
     },
     { $group: { _id: '$monthId', total: { $sum: '$amount' } } },
   ]);
-  const monthRich = monthRichSum[0];
-  // **** calculate active month extra Rich
+  const monthRice = monthRiceSum[0];
+  // **** calculate active month extra Rice
 
-  const monthExtraRichSum = await ExtraRich.aggregate([
+  const monthExtraRiceSum = await ExtraRice.aggregate([
     {
       $match: {
         $and: [
@@ -73,7 +73,7 @@ exports.monthCal = async (month) => {
     },
     { $group: { _id: '$monthId', total: { $sum: '$amount' } } },
   ]);
-  const monthExtraRich = monthExtraRichSum[0];
+  const monthExtraRice = monthExtraRiceSum[0];
 
   //4. calculate active month meal
   const monthMealSum = await Meal.aggregate([
@@ -133,7 +133,7 @@ exports.monthCal = async (month) => {
 
   // 10. update month Modeal
   month.totalDeposit = monthCash?.total || 0;
-  month.totalRich = monthRich?.total || 0;
+  month.totalRice = monthRice?.total || 0;
   month.totalGuestMealAmount = monthGuestMeal?.total || 0;
   month.totalBigCost = cost?.bigCost || 0;
   month.totalSmallCost = cost?.smallCost || 0;
@@ -146,8 +146,8 @@ exports.monthCal = async (month) => {
     month.totalBigCost + month.totalSmallCost + month.totalOtherCost;
   month.balance = month.totalDeposit - month.totalCost || 0;
   month.totalMeal = monthMeal?.total || 1;
-  month.richBalance =
-    month.totalRich - month.totalMeal - monthExtraRich?.total || 0;
+  month.riceBalance =
+    month.totalRice - month.totalMeal - monthExtraRice?.total || 0;
 
   month.totalFixedMeal = monthFixedMeal?.total;
 
@@ -177,9 +177,9 @@ exports.userMonthCal = async (userId, month) => {
   ]);
   const cash = cashSum[0];
 
-  // 7. calculate user rich
+  // 7. calculate user rice
 
-  const richSum = await Rich.aggregate([
+  const riceSum = await Rice.aggregate([
     {
       $match: {
         $and: [
@@ -190,11 +190,11 @@ exports.userMonthCal = async (userId, month) => {
     },
     { $group: { _id: '$userId', total: { $sum: '$amount' } } },
   ]);
-  const rich = richSum[0];
+  const rice = riceSum[0];
 
-  // *****  calculate user extra rich
+  // *****  calculate user extra rice
 
-  const extraRichSum = await ExtraRich.aggregate([
+  const extraRiceSum = await ExtraRice.aggregate([
     {
       $match: {
         $and: [
@@ -205,7 +205,7 @@ exports.userMonthCal = async (userId, month) => {
     },
     { $group: { _id: '$userId', total: { $sum: '$amount' } } },
   ]);
-  const extraRich = extraRichSum[0];
+  const extraRice = extraRiceSum[0];
 
   // 8. calculate user Guest Meal
 
@@ -249,13 +249,13 @@ exports.userMonthCal = async (userId, month) => {
       ? userMonthData.totalMeal
       : month.fixedMeal;
   userMonthData.totalDeposit = cash?.total || 0;
-  userMonthData.totalDepositRich = rich?.total || 0;
-  userMonthData.totalExtraRich = extraRich?.total || 0;
+  userMonthData.totalDepositRice = rice?.total || 0;
+  userMonthData.totalExtraRice = extraRice?.total || 0;
 
-  userMonthData.richBalance =
-    userMonthData.totalDepositRich -
+  userMonthData.riceBalance =
+    userMonthData.totalDepositRice -
     userMonthData.totalMeal -
-    userMonthData.totalExtraRich;
+    userMonthData.totalExtraRice;
 
   userMonthData.mealCost = (userMonthData.fixedMeal * month.mealRate).toFixed(
     2

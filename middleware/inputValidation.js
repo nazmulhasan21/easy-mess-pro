@@ -1,7 +1,7 @@
 const { body } = require('express-validator');
 const User = require('../models/userModel');
 
-exports.signupValidat = [
+exports.signupValidate = [
   body('email')
     .trim()
     .isEmail()
@@ -9,7 +9,7 @@ exports.signupValidat = [
       return `'${value}' not a valid email.`;
     })
     .notEmpty()
-    .withMessage('Plese enter any valid email.')
+    .withMessage('Please enter any valid email.')
     .custom((value, { req }) => {
       return User.findOne({ email: value }).then((userDoc) => {
         if (userDoc) {
@@ -25,7 +25,7 @@ exports.signupValidat = [
       return `'${value}' not a valid phone Number.`;
     })
     .notEmpty()
-    .withMessage('Plese write any valid phone Number.')
+    .withMessage('Please write any valid phone Number.')
     .custom((value, { req }) => {
       return User.findOne({ phone: value }).then((userDoc) => {
         if (userDoc) {
@@ -37,7 +37,7 @@ exports.signupValidat = [
   body('password')
     .trim()
     .isLength({ min: 8 })
-    .withMessage('password  min length 8.'),
+    .withMessage('Password  min length 8.'),
   ///.isStrongPassword({ returnScore: false })
   // .withMessage(
   //   'Password must be greater than 8 and contain at least one uppercase letter, one lowercase letter, and one number'
@@ -45,39 +45,39 @@ exports.signupValidat = [
   body('name')
     .trim()
     .isLength({ min: 3 })
-    .withMessage('Plese name min length 3.')
+    .withMessage('Please name min length 3.')
     .matches(/^[a-zA-Z. ]+$/)
-    .withMessage('Plese enter valid name'),
+    .withMessage('Please enter valid name'),
   body('role')
     .trim()
     .isIn(['border', 'manager', 'admin'])
-    .withMessage("Plese select right role In 'border or manager' own.")
+    .withMessage("Please select right role In 'border or manager' own.")
     .notEmpty()
-    .withMessage('Plese select any one is your role.'),
+    .withMessage('Please select any one is your role.'),
 ];
 
-exports.updateMeValidat = [
+exports.updateMeValidate = [
   body('name')
     .trim()
     .isLength({ min: 3, max: 20 })
-    .withMessage('Plese name min length 3.')
+    .withMessage('Please name min length 3.')
     .matches(/^[a-zA-Z. ]+$/)
-    .withMessage('Plese enter valid name'),
+    .withMessage('Please enter valid name'),
   body('address')
     .trim()
     .isLength({ min: 3, max: 50 })
-    .withMessage('Type your address porperly.'),
+    .withMessage('Type your address properly.'),
   // .matches(/^[a-zA-Z0-9., ]+$/)
-  // .withMessage('Plese enter valid address'),
+  // .withMessage('Please enter valid address'),
   body('institution')
     .trim()
     .isLength({ min: 3, max: 50 })
     .withMessage('Type institution properly')
     .matches(/^[a-zA-Z0-9., ]+$/)
-    .withMessage('Plese enter valid institution'),
+    .withMessage('Please enter valid institution'),
 ];
 
-module.exports.addMemberEmailValidat = [
+module.exports.addMemberEmailValidated = [
   body('email')
     .trim()
     .custom(async (value, { req }) => {
@@ -85,7 +85,7 @@ module.exports.addMemberEmailValidat = [
       if (!user) {
         return Promise.reject('User not found!');
       }
-      // const equalss = user.messId.equals(req.user.messId);
+      // const equal = user.messId.equals(req.user.messId);
       const messId = user.messId || false;
       // if(messId ){}
       const equal = JSON.stringify(messId) === JSON.stringify(req.user.messId);
@@ -108,39 +108,39 @@ module.exports.addMemberEmailValidat = [
       return `'${value}' not a valid email.`;
     })
     .notEmpty()
-    .withMessage('Plese enter any valid email.')
+    .withMessage('Please enter any valid email.')
 
     .normalizeEmail(),
 ];
 
-module.exports.addCostInputValidat = [
+module.exports.addCostInputValidated = [
   body('type')
     .trim()
     .isIn(['bigCost', 'smallCost', 'otherCost'])
     .withMessage(
-      "Plese select right role In 'bigCost or smallCost or otherCost' own."
+      "Please select right role In 'bigCost or smallCost or otherCost' own."
     )
     .notEmpty()
-    .withMessage('Plese select any one cost type.'),
+    .withMessage('Please select any one cost type.'),
   body('title')
     .trim()
     .notEmpty()
-    .withMessage('Plese write any your cost type title.')
+    .withMessage('Please write any your cost type title.')
     .isLength({ min: 3, max: 50 })
-    .withMessage('Plese your  title is max:50'),
+    .withMessage('Please your  title is max:50'),
   // .matches(/^[a-zA-Z0-9., ]+$/)
-  // .withMessage('Plese enter valid Cost title'),
+  // .withMessage('Please enter valid Cost title'),
   body('amount')
     .trim()
     .matches(/^[0-9.-]+$/)
-    .withMessage('Plese enter valid amount'),
-  // body('date').isISO8601().toDate().withMessage('Plese value must be date'),
+    .withMessage('Please enter valid amount'),
+  // body('date').isISO8601().toDate().withMessage('Please value must be date'),
 ];
 
-// exports.addRichOrCashInputValidat = [
-//   body('amount').trim().withMessage('Plese ').notEmpty().withMessage('Plese '),
+// exports.addRiceOrCashInputValidate = [
+//   body('amount').trim().withMessage('Please ').notEmpty().withMessage('Please '),
 // ];
-exports.chPassInVali = [
+exports.chPassInValid = [
   body('password')
     .trim()
     .isLength({ min: 8 })
@@ -151,7 +151,7 @@ exports.chPassInVali = [
     .withMessage('newPassword  min length 8.'),
 ];
 
-exports.emailCodeInVali = [
+exports.emailCodeInValid = [
   body('email')
     .trim()
     .isEmail()
@@ -159,15 +159,15 @@ exports.emailCodeInVali = [
       return `'${value}' not a valid email.`;
     })
     .notEmpty()
-    .withMessage('Plese enter any valid email.')
+    .withMessage('Please enter any valid email.')
     .normalizeEmail(),
   body('code')
     .trim()
     .isLength({ min: 4 })
-    .withMessage('Write your code proparly.'),
+    .withMessage('Write your code properly.'),
 ];
 
-exports.emailVelit = [
+exports.emailValid = [
   body('email')
     .trim()
     .isEmail()
@@ -175,7 +175,7 @@ exports.emailVelit = [
       return `'${value}' not a valid email.`;
     })
     .notEmpty()
-    .withMessage('Plese enter any valid email.')
+    .withMessage('Please enter any valid email.')
     .custom((value, { req }) => {
       return User.findOne({ email: value }).then((userDoc) => {
         if (userDoc) {
@@ -193,6 +193,6 @@ exports.isEmailInput = [
       return `'${value}' not a valid email.`;
     })
     .notEmpty()
-    .withMessage('Plese enter any valid email.')
+    .withMessage('Please enter any valid email.')
     .normalizeEmail(),
 ];

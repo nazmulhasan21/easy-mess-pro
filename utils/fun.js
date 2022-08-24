@@ -9,14 +9,14 @@ const UserMonthData = require('../models/userMonthDataModel');
 const Cash = require('../models/cashModel');
 const Meal = require('../models/mealModel');
 const GuestMeal = require('../models/guestMealModel');
-const Rich = require('../models/richModel');
+const Rice = require('../models/riceModel');
 const Cost = require('../models/costModel');
 const Month = require('../models/monthModel');
 const OtpCode = require('../models/otpCodeModel');
 const { sendEmail } = require('./sendEmail');
 const createPDF = require('./createPDF');
 const Mess = require('../models/messModel');
-const ExtraRich = require('../models/extraRichModel');
+const ExtraRice = require('../models/extraRiceModel');
 
 /**
  *
@@ -77,13 +77,13 @@ module.exports.deleteUserMonthData = async (userId, month) => {
   await UserMonthData.findOneAndDelete({
     $and: [{ userId: userId }, { monthId: month._id }],
   });
-  await Rich.deleteMany({ $and: [{ userId: userId }, { monthId: month._id }] });
+  await Rice.deleteMany({ $and: [{ userId: userId }, { monthId: month._id }] });
   await Cash.deleteMany({ $and: [{ userId: userId }, { monthId: month._id }] });
   await Meal.deleteMany({ $and: [{ userId: userId }, { monthId: month._id }] });
   await GuestMeal.deleteMany({
     $and: [{ userId: userId }, { monthId: month._id }],
   });
-  await ExtraRich.deleteMany({
+  await ExtraRice.deleteMany({
     $and: [{ userId: userId }, { monthId: month._id }],
   });
   const user = await User.findOne({ _id: userId });
@@ -102,8 +102,8 @@ module.exports.deleteAll = async (messId) => {
   // 1. delete all meal in mess
   await Meal.deleteMany({ messId: messId });
 
-  // 2. delete all Rich in mess
-  await Rich.deleteMany({ messId: messId });
+  // 2. delete all Rice in mess
+  await Rice.deleteMany({ messId: messId });
 
   // 3. delete all cash in mess
   await Cash.deleteMany({ messId: messId });
@@ -133,7 +133,7 @@ module.exports.deleteAll = async (messId) => {
  * @param {Array} allMember all member array
  */
 exports.deleteAllMonthData = async (monthId, allMember) => {
-  // 1. delete this month cashs
+  // 1. delete this month cashes
   await Cash.deleteMany({ monthId: monthId });
 
   // 2. delete this month costs
@@ -142,8 +142,8 @@ exports.deleteAllMonthData = async (monthId, allMember) => {
   // 3. delete this month meals
   await Meal.deleteMany({ monthId: monthId });
 
-  // 4. delete this month richs
-  await Rich.deleteMany({ monthId: monthId });
+  // 4. delete this month rices
+  await Rice.deleteMany({ monthId: monthId });
 
   // 5. delete this month User month data
   await UserMonthData.deleteMany({ monthId: monthId });
@@ -180,10 +180,10 @@ exports.createOtpCode = async (email) => {
 };
 
 // not work
-exports.chackOtpCode = async (email, htmlTemplates) => {
+exports.checkOtpCode = async (email, htmlTemplates) => {
   const otpCode = await OtpCode.findOne({ email, code });
   if (!otpCode) {
-    return next(new AppError(401, 'code', `code is worng`));
+    return next(new AppError(401, 'code', `code is wrong`));
   }
 
   // expired time
@@ -203,7 +203,7 @@ exports.chackOtpCode = async (email, htmlTemplates) => {
     return next(
       new AppError(401),
       'code',
-      'code is expired. please chack email sending new code'
+      'Code is expired. please check email sending new code'
     );
   }
 };
@@ -212,17 +212,17 @@ exports.chackOtpCode = async (email, htmlTemplates) => {
  *
  * @param {object} to email object
  * @param {string} subject  subject
- * @param {string} templeteName email templete Name
+ * @param {string} templateName email templete Name
  * @returns
  */
-exports.sendVerificationCode = async (to, subj, templeteName) => {
+exports.sendVerificationCode = async (to, subj, templateName) => {
   const otpCode = await this.createOtpCode(to.email);
   const reciver = [to];
   const subject = subj;
   const filePath = path.join(
     process.cwd(),
     'emailTemplates',
-    `${templeteName}.html`
+    `${templateName}.html`
   );
 
   // get the html
@@ -263,11 +263,11 @@ exports.getMonthPdf = async (monthId) => {
     'userId',
     'name avatar'
   );
-  const richs = await Rich.find({ monthId: monthId }).populate(
+  const rices = await Rice.find({ monthId: monthId }).populate(
     'userId',
     'name avatar'
   );
-  const cashs = await Cash.find({ monthId: monthId }).populate(
+  const cashes = await Cash.find({ monthId: monthId }).populate(
     'userId',
     'name avatar'
   );
@@ -275,22 +275,22 @@ exports.getMonthPdf = async (monthId) => {
     'userId',
     'name avatar'
   );
-  const extraRich = await ExtraRich.find({ monthId: monthId }).populate(
+  const extraRice = await ExtraRice.find({ monthId: monthId }).populate(
     'userId',
     'name avatar'
   );
 
   data.userMonthData = userMonthData;
   data.guestMeals = guestMeals;
-  data.extraRich = extraRich;
+  data.extraRice = extraRice;
   data.costs = [
-    { name: 'Bajar cost Table', details: bigCost, total: bigCostSum },
+    { name: 'Bajer cost Table', details: bigCost, total: bigCostSum },
     { name: 'Small cost Table', details: smallCost, total: smallCostSum },
     { name: 'Other cost Table', details: otherCost, total: otherCostSum },
   ];
   data.meals = meals;
-  data.richs = richs;
-  data.cashs = cashs;
+  data.rices = rices;
+  data.cashes = cashes;
   const pdf = await createPDF('index', data);
   if (pdf) {
     return true;

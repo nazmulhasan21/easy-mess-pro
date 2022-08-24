@@ -13,7 +13,7 @@ router.get('/', subManagerContorller.getSubManagerList);
 
 // Only active month manager have permission to access for the below APIs
 router.use(authController.restrictTo('manager'));
-router.use(authController.chackPassword);
+router.use(authController.checkPassword);
 router
   .route('/:userId')
   .patch(subManagerContorller.addSubManager)

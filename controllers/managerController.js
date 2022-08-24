@@ -5,7 +5,7 @@ const { default: mongoose } = require('mongoose');
 const User = require('../models/userModel');
 // all Controllers
 
-// all utsils
+// all utils
 const AppError = require('../utils/appError');
 
 const Mess = require('../models/messModel');
@@ -16,7 +16,7 @@ exports.changeManager = async (req, res, next) => {
     const isValid = mongoose.Types.ObjectId.isValid(req.params.userId);
     if (!isValid)
       return next(new AppError(400, 'userId', 'userId is not valid '));
-    //  1 chack your mess and alrady exit this user in mess manager
+    //  1 check your mess and already exit this user in mess manager
     const mess = await Mess.findOne({
       $and: [{ _id: user.messId }, { manager: req.params.userId }],
     }).select('manager');
@@ -25,10 +25,10 @@ exports.changeManager = async (req, res, next) => {
         new AppError(
           403,
           'manager',
-          'This user is alrady this mess manager, selete another user'
+          'This user is already this mess manager, select another user'
         )
       );
-    // update brfore manager role border
+    // update before manager role border
     await User.findByIdAndUpdate(mess.manager, { role: 'border' });
 
     // update mess manager

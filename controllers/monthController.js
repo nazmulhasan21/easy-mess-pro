@@ -12,7 +12,7 @@ const Month = require('../models/monthModel');
 
 const base = require('./baseController');
 
-// all utsils
+// all utils
 const AppError = require('../utils/appError');
 const APIFeatures = require('../utils/apiFeatures');
 const {
@@ -21,7 +21,7 @@ const {
   getMonthPdf,
 } = require('../utils/fun');
 const UserMonthData = require('../models/userMonthDataModel');
-const { monthCal, userMonthCal } = require('../utils/clculation');
+const { monthCal, userMonthCal } = require('../utils/calculation');
 const Meal = require('../models/mealModel');
 
 exports.createMonth = async (req, res, next) => {
@@ -61,7 +61,7 @@ exports.addFixedMeal = async (req, res, next) => {
     const { user } = req;
     const fixedMeal = req.body?.fixedMeal;
     if (!fixedMeal && fixedMeal === '') {
-      return next(new AppError(401, 'fixedMeal', 'input not velited'));
+      return next(new AppError(401, 'fixedMeal', 'input not valeted'));
     }
 
     //1. find active month and update fixed meal
@@ -160,7 +160,7 @@ exports.deleteMonth = async (req, res, next) => {
     const isValid = mongoose.Types.ObjectId.isValid(req.params.id);
     if (!isValid) return next(new AppError(400, '_id', 'Id is not valid '));
 
-    // 1. chack this user this month manager
+    // 1. check this user this month manager
     const month = await Month.findOne({
       $and: [{ _id: req.params.id }, { manager: user._id }],
     });
@@ -173,7 +173,7 @@ exports.deleteMonth = async (req, res, next) => {
     // 3. delete mess months in this month id
     mess.month.pull(month);
 
-    // 4. delelte data in this month related
+    // 4. delete data in this month related
     await deleteAllMonthData(month._id, mess.allMember);
 
     // 5. delete month
@@ -224,8 +224,8 @@ exports.getPDF = async (req, res, next) => {
       $and: [{ messId: user.messId }, { active: true }],
     });
 
-    const getpdf = await getMonthPdf(month._id);
-    if (getpdf) {
+    const getPdf = await getMonthPdf(month._id);
+    if (getPdf) {
       const filePath = path.join(process.cwd(), `monthDetails.pdf`);
 
       res.download(filePath);
@@ -262,7 +262,7 @@ exports.changeMonthStatus = async (req, res, next) => {
     await activeMonth.save();
     res.status(200).json({
       status: 'success',
-      message: 'chang month status successfuly',
+      message: 'chang month status successfully',
       data: {
         data: month,
       },
@@ -277,7 +277,7 @@ const endOfMonth = moment().clone().endOf('month').format('DD');
 
 var j = schedule.scheduleJob(`00 20 21 */${endOfMonth} * * `, function () {
   deActiveMonth();
-  console.log('Your scheduled job at all month in unactive');
+  console.log('Your scheduled job at all month in unActive');
   const today = moment().format('YYYY-MM-DD hh:mm:ss');
   console.log(today);
 });

@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 // all Models
 const Month = require('../models/monthModel');
 
-// all utsils
+// all utils
 const AppError = require('../utils/appError');
 const APIFeatures = require('../utils/apiFeatures');
 
@@ -74,7 +74,7 @@ exports.getList = (Model) => async (req, res, next) => {
     }
     // amount filter
 
-    const filteramount = amount
+    const filterAmount = amount
       ? {
           amount: {
             $gte: amount.split('-')[0],
@@ -84,14 +84,14 @@ exports.getList = (Model) => async (req, res, next) => {
       : {};
 
     // 1. find active month
-    const activMonth = await Month.findOne({
+    const activeMonth = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
     });
 
     // 2. get all cost in active month
     const features = new APIFeatures(
       Model.find({
-        $and: [{ monthId: activMonth._id }, date, filteramount],
+        $and: [{ monthId: activeMonth._id }, date, filterAmount],
       })
         .populate('addBy editBy userId', 'name avatar role')
         .sort({ createdAt: -1 }),
@@ -99,7 +99,7 @@ exports.getList = (Model) => async (req, res, next) => {
     ).paginate();
     const doc = await features.query;
     const results = await Model.countDocuments({
-      $and: [{ monthId: activMonth._id }, date, filteramount],
+      $and: [{ monthId: activeMonth._id }, date, filterAmount],
     });
 
     // 3. send res
@@ -129,8 +129,9 @@ exports.createOne = (Model, model) => async (req, res, next) => {
     // }
     const { user } = req;
     const { userId, amount, date } = req.body;
-    // **** find user
-    // const { name } = await User.findById(userId).select('name');
+
+    const isValid = mongoose.Types.ObjectId.isValid(userId);
+    if (!isValid) return next(new AppError(400, '_id', 'Id is not valid '));
     // 1. find active month;
     const month = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
@@ -147,19 +148,9 @@ exports.createOne = (Model, model) => async (req, res, next) => {
       amount,
       date: date || moment(),
     });
-    // 3. push active month cashs or richs
-    if (model == 'rich') {
-      //calcu month and user
-      //  month.richs.push(doc);
-    }
-    if (model == 'cash') {
-      //  month.cashs.push(doc);
-    }
-    if (model == 'guestMeal') {
-      //   month.guestMeals.push(doc);
-    }
+
     // 4. save month
-    await month.save();
+
     // 5. send res
     res.status(201).json({
       status: 'success',
@@ -186,13 +177,13 @@ exports.updateOne = (Model, model) => async (req, res, next) => {
     const isValid = mongoose.Types.ObjectId.isValid(req.params.id);
     if (!isValid) return next(new AppError(400, '_id', 'Id is not valid '));
     // 1. create new cost body in new data
-    let newdoc = {
+    let newDoc = {
       ...body,
       editBy: user._id,
     };
     const activeMonth = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
-    }).select('cashs richs meals guestMeal');
+    });
     const doc = await Model.findOne({
       $and: [{ _id: req.params.id }, { monthId: activeMonth._id }],
     });
@@ -203,7 +194,7 @@ exports.updateOne = (Model, model) => async (req, res, next) => {
       const lunch = body?.lunch || doc.lunch;
       const dinner = body?.dinner || doc.dinner;
       const total = breakfast + lunch + dinner;
-      newdoc = {
+      newDoc = {
         breakfast,
         lunch,
         dinner,
@@ -215,7 +206,7 @@ exports.updateOne = (Model, model) => async (req, res, next) => {
     if (!doc || !activeMonth)
       return next(new AppError(404, model, `Do not update this ${model}`));
 
-    const updoc = await Model.findByIdAndUpdate(req.params.id, newdoc, {
+    const upDoc = await Model.findByIdAndUpdate(req.params.id, newDoc, {
       new: true,
       runValidators: true,
     });
@@ -224,7 +215,7 @@ exports.updateOne = (Model, model) => async (req, res, next) => {
     res.status(200).json({
       status: 'success',
       data: {
-        updoc,
+        upDoc,
       },
     });
   } catch (error) {
@@ -244,7 +235,7 @@ exports.deleteOne = (Model, model) => async (req, res, next) => {
     const isValid = mongoose.Types.ObjectId.isValid(req.params.id);
     if (!isValid) return next(new AppError(400, '_id', 'Id is not valid '));
 
-    // 1. found cost and active month and addby user
+    // 1. found cost and active month and addBy user
     const activeMonth = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
     }).select('_id');
@@ -253,7 +244,7 @@ exports.deleteOne = (Model, model) => async (req, res, next) => {
     });
 
     const addBy = JSON.stringify(doc?.addBy) === JSON.stringify(user._id);
-    // 2. Not found any cost or activ Month or add by user
+    // 2. Not found any cost or active Month or add by user
 
     if (!doc || !activeMonth || !addBy)
       return next(new AppError(404, model, `Do not delete this ${model}`));

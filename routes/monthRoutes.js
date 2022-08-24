@@ -25,7 +25,7 @@ router.patch('/', monthContorller.addFixedMeal);
 
 router.delete(
   '/:id',
-  authController.chackPassword,
+  authController.checkPassword,
   monthContorller.deleteMonth
 );
 router.use(authController.restrictToAdmin);

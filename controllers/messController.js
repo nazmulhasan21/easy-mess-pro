@@ -13,7 +13,7 @@ const User = require('../models/userModel');
 const base = require('./baseController');
 const APIFeatures = require('./baseController');
 
-// all utsils
+// all utils
 const AppError = require('../utils/appError');
 const {
   createUserMonthData,
@@ -21,17 +21,15 @@ const {
   deleteAll,
   createMonth,
 } = require('../utils/fun');
-const UserMonthData = require('../models/userMonthDataModel');
-const Meal = require('../models/mealModel');
 
 // ********** Start Mess Controller *************** //
 
 exports.createMess = async (req, res, next) => {
   try {
     const { body, user } = req;
-    const { title } = req.body;
-    const isValidMessname = body.messName.match(/^[a-zA-Z0-9. ]+$/);
-    if (!isValidMessname)
+    const { title } = req.body.trim();
+    const isValidMessName = body.messName.match(/^[a-zA-Z0-9. ]+$/);
+    if (!isValidMessName)
       return next(
         new AppError(422, 'messName', 'Please inter your valid mess name')
       );
@@ -40,7 +38,7 @@ exports.createMess = async (req, res, next) => {
     const oldMess = await Mess.findById(user.messId);
 
     if (oldMess) {
-      return next(new AppError(400, 'mess', 'Your mess alrady exit'));
+      return next(new AppError(400, 'mess', 'Your mess already exit'));
     }
 
     //  2. create  your mess
@@ -138,7 +136,7 @@ exports.addMember = async (req, res, next) => {
   }
 };
 
-// delete member in your mess and delete memerb data in active month
+// delete member in your mess and delete member data in active month
 exports.deleteMember = async (req, res, next) => {
   try {
     const { user } = req;
@@ -180,7 +178,7 @@ exports.deleteMember = async (req, res, next) => {
       $and: [{ messId: user.messId }, { active: true }],
     });
 
-    // 4. delete delUser active Month data Cash, Meal, Rich in delUser
+    // 4. delete delUser active Month data Cash, Meal, Rice in delUser
     await deleteUserMonthData(delUserId, activeMonth);
 
     await activeMonth.save();
@@ -206,14 +204,14 @@ exports.changeAdmin = async (req, res, next) => {
     // ** find user in database
     const findUser = await User.findById(userId);
     if (findUser) {
-      // // 1. chack user mess admin
+      // // 1. check user mess admin
       // const messAdmin = await Mess.findOne({ admin: user._id }).select('admin');
       // if (!messAdmin)
       //   return next(new AppError(403, 'admin', 'You are not mess admin'));
-      // chack is user in mass member
+      // check is user in mass member
       const equal = JSON.stringify(user._id) === JSON.stringify(userId);
       if (equal)
-        return next(new AppError(401, 'admin', 'You are allrady admin'));
+        return next(new AppError(401, 'admin', 'You are allReady admin'));
 
       const isMessMember = await Mess.findOne({ allMember: userId });
       if (isMessMember && !equal) {
@@ -245,7 +243,7 @@ exports.deleteMess = async (req, res, next) => {
     // 2. delete all in other data in mess
     await deleteAll(user.messId);
 
-    // 3. finaly delete your mess
+    // 3. finally delete your mess
     await Mess.findByIdAndDelete(user.messId);
 
     res.status(201).json({

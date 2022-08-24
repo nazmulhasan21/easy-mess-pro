@@ -11,10 +11,10 @@ const Cost = require('../models/costModel');
 
 // all Controllers
 
-// all utsils
+// all utils
 const AppError = require('../utils/appError');
 const APIFeatures = require('../utils/apiFeatures');
-const { calculator } = require('../utils/clculation');
+const { calculator } = require('../utils/calculation');
 // const { createMonth, deleteAllMonthData } = require('../utils/fun');
 
 // get cost one
@@ -71,7 +71,7 @@ exports.getCostList = async (req, res, next) => {
 
     // 1 filter in amount
 
-    const filteramount = amount
+    const filterAmount = amount
       ? {
           amount: {
             $gte: amount.split('-')[0],
@@ -83,14 +83,14 @@ exports.getCostList = async (req, res, next) => {
     const typeFilter = type ? { type } : {};
 
     // 1. find active month
-    const activMonth = await Month.findOne({
+    const activeMonth = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
     });
 
     // 2. get all cost in active month
     const features = new APIFeatures(
       Cost.find({
-        $and: [{ monthId: activMonth._id }, date, filteramount, typeFilter],
+        $and: [{ monthId: activeMonth._id }, date, filterAmount, typeFilter],
       })
         .populate('addBy editBy', 'name avatar role')
         .sort({ createdAt: -1 }),
@@ -98,7 +98,7 @@ exports.getCostList = async (req, res, next) => {
     ).paginate();
     const doc = await features.query;
     const results = await Cost.countDocuments({
-      $and: [{ monthId: activMonth._id }, date, filteramount, typeFilter],
+      $and: [{ monthId: activeMonth._id }, date, filterAmount, typeFilter],
     });
     // 3. send res
     res.status(200).json({
@@ -199,7 +199,7 @@ exports.deleteCost = async (req, res, next) => {
     const isValid = mongoose.Types.ObjectId.isValid(req.params.id);
     if (!isValid) return next(new AppError(400, '_id', 'Id is not valid '));
 
-    // 1. found cost and active month and addby user
+    // 1. found cost and active month and addBy user
     const activeMonth = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
     });
@@ -208,7 +208,7 @@ exports.deleteCost = async (req, res, next) => {
     });
 
     const addBy = JSON.stringify(cost.addBy) === JSON.stringify(user._id);
-    // 2. Not found any cost or activ Month or add by user
+    // 2. Not found any cost or active Month or add by user
 
     if (!cost || !activeMonth || !addBy)
       return next(new AppError(404, 'cost', 'Do not delete this Cost'));

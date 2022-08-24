@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 // middleware
-const { addRichOrCashInputValidat } = require('../middleware/inputeValidation');
+const { addRiceOrCashInputValidate } = require('../middleware/inputValidation');
 
 const authController = require('../controllers/authController');
 const cashContorller = require('../controllers/cashController');
@@ -20,6 +20,6 @@ router.use(authController.restrictTo('manager', 'subManager'));
 
 router.post('/', cashContorller.createCash);
 router.route('/:id').patch(cashContorller.updateCash);
-router.delete('/:id', authController.chackPassword, cashContorller.deleteCash);
+router.delete('/:id', authController.checkPassword, cashContorller.deleteCash);
 
 module.exports = router;

@@ -5,28 +5,28 @@ const userController = require('../controllers/userController');
 const authController = require('../controllers/authController');
 const { json } = require('body-parser');
 const {
-  addMemberEmailValidat,
-  chPassInVali,
-  updateMeValidat,
-  emailCodeInVali,
-  emailVelit,
+  addMemberEmailValidated,
+  chPassInValid,
+  updateMeValidate,
+  emailCodeInValid,
+  emailValid,
   isEmailInput,
-} = require('../middleware/inputeValidation');
+} = require('../middleware/inputValidation');
 
 // If any User forget her password then use after 3 router
 
 router.post(
   '/send-forget-password-verficition-code',
   isEmailInput,
-  userController.sendForgetPasswordVerfiCode
+  userController.sendForgetPasswordVerificationCode
 );
 router.post(
   '/forget-password-email-verification',
-  emailCodeInVali,
+  emailCodeInValid,
   userController.emailVerification
 );
 
-router.patch('/reset-password', emailCodeInVali, userController.restePassword);
+router.patch('/reset-password', emailCodeInValid, userController.resatPassword);
 
 // Protect all routes after this middleware
 router.use(authController.protect);
@@ -34,16 +34,16 @@ router.use(authController.protect);
 router
   .route('/me')
   .get(userController.me)
-  .patch(updateMeValidat, userController.updateMe);
+  .patch(updateMeValidate, userController.updateMe);
 router.patch('/me/avatar', userController.updateAvatar);
-router.patch('/me/password', chPassInVali, userController.changePassword);
+router.patch('/me/password', chPassInValid, userController.changePassword);
 
 router.post(
   '/me/send-email-change-verification-code',
-  emailVelit,
-  authController.sendEmailVerifiCode
+  emailValid,
+  authController.sendEmailVerificationCode
 );
-router.patch('/me/email', emailCodeInVali, userController.changeEmail);
+router.patch('/me/email', emailCodeInValid, userController.changeEmail);
 
 // Only admin have permmission to access for the below APIs
 
@@ -51,9 +51,9 @@ router.patch('/me/email', emailCodeInVali, userController.changeEmail);
 router.delete('/log-out', userController.logOut);
 router.delete(
   '/me/delete',
-  authController.chackPassword,
+  authController.checkPassword,
   userController.deleteMe
 );
 router.route('/:id').get(userController.getUser);
-router.post('/email', addMemberEmailValidat, userController.getUserByEmail);
+router.post('/email', addMemberEmailValidated, userController.getUserByEmail);
 module.exports = router;

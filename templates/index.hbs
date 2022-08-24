@@ -18,7 +18,7 @@
       <h5 class='text-center'>Manager Name:{{manager.name}}</h5>
 
       <h6 class='text-center'>Month Title:{{monthTitle}}</h6>
-      <h6 class='text-center'>Rich Balance:{{richBalance}}</h6>
+      <h6 class='text-center'>Rice Balance:{{riceBalance}}</h6>
       <h6 class='text-center'>MealRate:{{mealRate}}</h6>
 
       <table class='table table-bordered table-striped'>
@@ -32,7 +32,7 @@
             <th>totalCost</th>
             <th>Deposit</th>
             <th>balance</th>
-            <th>rich</th>
+            <th>rice</th>
           </tr>
         </thead>
         <tbody>
@@ -46,7 +46,7 @@
               <td>{{member.totalCost}}</td>
               <td>{{member.totalDeposit}}</td>
               <td>{{member.balance}}</td>
-              <td>{{member.richBalance}}</td>
+              <td>{{member.riceBalance}}</td>
             </tr>
           {{/each}}
         </tbody>
@@ -60,13 +60,13 @@
             <th>{{totalCost}}</th>
             <th>{{totalDeposit}}</th>
             <th>{{balance}}</th>
-            <th>{{richBalance}}</th>
+            <th>{{riceBalance}}</th>
 
           </tr>
         </thead>
       </table>
-      {{! rich table }}
-      <h6 class='text-center'>Rich Table</h6>
+      {{! rice table }}
+      <h6 class='text-center'>Rice Table</h6>
       <table class='table table-bordered table-striped'>
         <thead>
           <tr>
@@ -78,11 +78,11 @@
         </thead>
         <tbody>
 
-          {{#each richs as |rich|}}
+          {{#each rices as |rice|}}
             <tr>
-              <td>{{rich.userName}}</td>
-              <td>{{rich.amount}}</td>
-              <td>{{dateFormat rich.date}}</td>
+              <td>{{rice.userName}}</td>
+              <td>{{rice.amount}}</td>
+              <td>{{dateFormat rice.date}}</td>
               {{!-- <td>{{cash.date.substring(0,15)}}</td> --}}
 
             </tr>
@@ -90,10 +90,10 @@
         </tbody>
 
       </table>
-      {{! rich Table }}
+      {{! rice Table }}
 
-      {{! extra rich table }}
-      <h6 class='text-center'>Extra Rich Table</h6>
+      {{! extra rice table }}
+      <h6 class='text-center'>Extra Rice Table</h6>
       <table class='table table-bordered table-striped'>
         <thead>
           <tr>
@@ -105,18 +105,18 @@
         </thead>
         <tbody>
 
-          {{#each extraRichs as |extraRich|}}
+          {{#each extraRices as |extraRice|}}
             <tr>
-              <td>{{extraRich.userId.name}}</td>
-              <td>{{extraRich.amount}}</td>
-              <td>{{dateFormat extraRich.date}}</td>
+              <td>{{extraRice.userId.name}}</td>
+              <td>{{extraRice.amount}}</td>
+              <td>{{dateFormat extraRice.date}}</td>
 
             </tr>
           {{/each}}
         </tbody>
 
       </table>
-      {{!extra rich Table }}
+      {{!extra rice Table }}
       {{! cash table }}
       <h6 class='text-center'>Cash Table</h6>
       <table class='table table-bordered table-striped'>
@@ -130,7 +130,7 @@
         </thead>
         <tbody>
 
-          {{#each cashs as |cash|}}
+          {{#each cashes as |cash|}}
             <tr>
               <td>{{cash.userId.name}}</td>
               <td>{{cash.amount}}</td>

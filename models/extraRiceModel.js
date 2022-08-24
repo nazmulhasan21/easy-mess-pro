@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const extraRichSchema = mongoose.Schema(
+const extraRiceSchema = mongoose.Schema(
   {
     messId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -32,5 +32,5 @@ const extraRichSchema = mongoose.Schema(
   },
   { timestamps: true }
 );
-const ExtraRich = mongoose.model('ExtraRich', extraRichSchema);
-module.exports = ExtraRich;
+const ExtraRice = mongoose.model('ExtraRice', extraRiceSchema);
+module.exports = ExtraRice;

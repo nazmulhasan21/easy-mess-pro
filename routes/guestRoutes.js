@@ -20,7 +20,7 @@ router.post('/', guestContorller.createGuestMeal);
 router.route('/:id').patch(guestContorller.updateGuestMeal);
 router.delete(
   '/:id',
-  authController.chackPassword,
+  authController.checkPassword,
   guestContorller.deleteGuestMeal
 );
 

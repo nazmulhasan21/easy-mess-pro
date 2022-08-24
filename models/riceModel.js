@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const richSchema = mongoose.Schema(
+const riceSchema = mongoose.Schema(
   {
     messId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -32,5 +32,5 @@ const richSchema = mongoose.Schema(
   },
   { timestamps: true }
 );
-const Rich = mongoose.model('Rich', richSchema);
-module.exports = Rich;
+const Rice = mongoose.model('Rice', riceSchema);
+module.exports = Rice;

@@ -1,5 +1,5 @@
 const Cash = require('../models/cashModel');
-const cash = require('./userCashOrRichController');
+const cash = require('./userCashOrRiceController');
 
 exports.getCashList = cash.getList(Cash);
 exports.getCash = cash.getOne(Cash, 'cash');

@@ -28,22 +28,22 @@ exports.login = async (req, res, next) => {
     if (!user || !(await user.correctPassword(password, user.password))) {
       return next(new AppError(401, 'password', 'Email or Password is wrong'));
     }
-    // chack email verification
+    // check email verification
     if (!user.emailVerified) {
       const to = { email: email, name: user.name };
       const subject = 'Email verification';
-      const templeteName = 'emailsingUp';
+      const templateName = 'emailSingUp';
 
-      sendVerificationCode(to, subject, templeteName);
+      sendVerificationCode(to, subject, templateName);
 
       return res.status(200).json({
         status: 'fail',
-        message: 'Please chack your email and verificd your account',
+        message: 'Please check your email and verified your account',
         emailVerified: false,
       });
     }
 
-    // -> 3 <- All correctc , send jwt to client
+    // -> 3 <- All correct , send jwt to client
     const token = createToken(user.id);
     // Remove the password from the output
     user.password = undefined;
@@ -78,12 +78,12 @@ exports.signup = async (req, res, next) => {
     if (user) {
       const to = { email: email, name: user.name };
       const subject = 'Email verification';
-      const templeteName = 'emailsingUp';
+      const templateName = 'emailSingUp';
 
-      sendVerificationCode(to, subject, templeteName);
+      sendVerificationCode(to, subject, templateName);
       res.status(201).json({
         status: 'success',
-        message: 'Please chack your email and verificd your account',
+        message: 'Please check your email and verified your account',
         emailVerified: false,
       });
     }
@@ -95,7 +95,8 @@ exports.signup = async (req, res, next) => {
 
 exports.verification = async (req, res, next) => {
   try {
-    const { email, code } = req.body;
+    const { code } = req.body;
+    const email = req.body.email.trim();
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -121,7 +122,7 @@ exports.verification = async (req, res, next) => {
       // find otp code
 
       if (!otpCode) {
-        return next(new AppError(401, 'code', `code is worng`));
+        return next(new AppError(401, 'code', `code is wrong`));
       }
 
       // expired time
@@ -129,17 +130,17 @@ exports.verification = async (req, res, next) => {
       if (expired < 0) {
         const to = { email: email, name: user.name };
         const subject = 'Email verification';
-        const templeteName = 'emailsingUp';
+        const templateName = 'emailSingUp';
 
-        sendVerificationCode(to, subject, templeteName);
+        sendVerificationCode(to, subject, templateName);
         return next(
           new AppError(401),
           'code',
-          'code is expired. please chack email sending new code'
+          'Code is expired. please check email sending new code'
         );
       }
 
-      // -> 3 <- All correctc , send jwt to client
+      // -> 3 <- All correct , send jwt to client
       user.emailVerified = true;
       await OtpCode.findByIdAndDelete(otpCode?._id);
       await user.save();
@@ -161,9 +162,9 @@ exports.verification = async (req, res, next) => {
   }
 };
 
-exports.sendEmailVerifiCode = async (req, res, next) => {
+exports.sendEmailVerificationCode = async (req, res, next) => {
   try {
-    const { email } = req.body;
+    const email = req.body.email.trim();
 
     const user = await User.findOne({ email });
     let to = {};
@@ -174,13 +175,13 @@ exports.sendEmailVerifiCode = async (req, res, next) => {
     }
 
     const subject = 'Email verification';
-    const templeteName = 'sendEmailCode';
+    const templateName = 'sendEmailCode';
 
-    sendVerificationCode(to, subject, templeteName);
+    sendVerificationCode(to, subject, templateName);
 
     res.status(200).json({
       status: 'success',
-      message: 'Please chack your email and verificd your email',
+      message: 'Please check your email and verified your email',
     });
   } catch (error) {
     next(error);
@@ -205,7 +206,7 @@ exports.protect = async (req, res, next) => {
         new AppError(
           401,
           'token',
-          'You are not logged in! Please login in to contine'
+          'You are not logged in! Please login in to continue'
         )
       );
     }
@@ -230,9 +231,7 @@ exports.restrictToMessId = async (req, res, next) => {
     return res.status(200).json({
       status: 'success',
       message: 'You are not join any mess. Please Contact your mess manager',
-      data: {
-        user: req.user,
-      },
+      data: null,
     });
   }
   next();
@@ -256,7 +255,7 @@ exports.restrictToAdmin = async (req, res, next) => {
   next();
 };
 
-exports.chackPassword = async (req, res, next) => {
+exports.checkPassword = async (req, res, next) => {
   const { body } = req;
   const user = await User.findById(req.user._id).select('password');
 

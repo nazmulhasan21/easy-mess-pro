@@ -2,26 +2,26 @@ const express = require('express');
 const router = express.Router();
 
 // middleware
-const { addRichOrCashInputValidat } = require('../middleware/inputeValidation');
+const { addRiceOrCashInputValidate } = require('../middleware/inputValidation');
 
 const authController = require('../controllers/authController');
-const richContorller = require('../controllers/richController');
+const riceController = require('../controllers/riceController');
 
 // Protect all routes after this middleware
 
 router.use(authController.protect);
 
 router.use(authController.restrictToMessId);
-router.get('/', richContorller.getRichList);
-router.get('/:id', richContorller.getRich);
+router.get('/', riceController.getRiceList);
+router.get('/:id', riceController.getRice);
 
 // Only manager have permission to access for the below APIs
 router.use(authController.restrictTo('manager', 'subManager'));
 
-router.post('/', richContorller.createRich);
+router.post('/', riceController.createRice);
 router
   .route('/:id')
-  .patch(richContorller.updateRich)
-  .delete(richContorller.deleteRich);
+  .patch(riceController.updateRice)
+  .delete(riceController.deleteRice);
 
 module.exports = router;

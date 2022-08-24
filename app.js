@@ -79,7 +79,7 @@ app.use('/api/v1', api);
 
 // handle undefined Routes
 app.use('*', (req, res, next) => {
-  const err = new AppError(404, 'fail', 'undefiend route');
+  const err = new AppError(404, 'fail', 'undefined route');
   next(err, req, res, next);
 });
 

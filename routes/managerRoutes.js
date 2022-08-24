@@ -9,7 +9,7 @@ const managerContorller = require('../controllers/managerController');
 router.use(authController.protect);
 router.use(authController.restrictToMessId);
 router.use(authController.restrictToAdmin);
-router.use(authController.chackPassword);
+router.use(authController.checkPassword);
 
 router.route('/:userId').patch(managerContorller.changeManager);
 

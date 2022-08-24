@@ -5,8 +5,8 @@ const fs = require('fs-extra');
 const moment = require('moment');
 //...
 
-const compile = async function (templeteName, data) {
-  const filePath = path.join(process.cwd(), 'templates', `${templeteName}.hbs`);
+const compile = async function (templateName, data) {
+  const filePath = path.join(process.cwd(), 'templates', `${templateName}.hbs`);
 
   // get the html
   const html = await fs.readFile(filePath, 'utf8');
@@ -15,18 +15,18 @@ const compile = async function (templeteName, data) {
 
 /**
  *
- * @param {string} templeteName
+ * @param {string} templateName
  * @param {Array} data
  * @returns
  */
-module.exports = async (templeteName, data) => {
+module.exports = async (templateName, data) => {
   const browser = await Puppeteer.launch({
     headless: true,
     ignoreDefaultArgs: ['--disable-extensions'],
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
   });
   const page = await browser.newPage();
-  const content = await compile(templeteName, data);
+  const content = await compile(templateName, data);
   await page.setContent(content);
   await page.pdf({
     path: `monthDetails.pdf`,

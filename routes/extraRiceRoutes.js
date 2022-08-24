@@ -4,24 +4,24 @@ const router = express.Router();
 // middleware
 
 const authController = require('../controllers/authController');
-const extraRichContorller = require('../controllers/extraRichController');
+const extraRiceController = require('../controllers/extraRiceController');
 
 // Protect all routes after this middleware
 router.use(authController.protect);
 router.use(authController.restrictToMessId);
 
-router.get('/', extraRichContorller.getExtraRichList);
-router.get('/:id', extraRichContorller.getExtraRich);
+router.get('/', extraRiceController.getExtraRiceList);
+router.get('/:id', extraRiceController.getExtraRice);
 
 // Only manager have permission to access for the below APIs
 router.use(authController.restrictTo('manager', 'subManager'));
 
-router.post('/', extraRichContorller.createExtraRich);
-router.route('/:id').patch(extraRichContorller.updateExtraRich);
+router.post('/', extraRiceController.createExtraRice);
+router.route('/:id').patch(extraRiceController.updateExtraRice);
 router.delete(
   '/:id',
-  authController.chackPassword,
-  extraRichContorller.deleteExtraRich
+  authController.checkPassword,
+  extraRiceController.deleteExtraRice
 );
 
 module.exports = router;

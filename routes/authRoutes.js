@@ -2,14 +2,17 @@ const express = require('express');
 const router = express.Router();
 
 const {
-  signupValidat,
-  emailCodeInVali,
-} = require('../middleware/inputeValidation');
+  signupValidate,
+  emailCodeInValid,
+} = require('../middleware/inputValidation');
 const authController = require('../controllers/authController');
 
-router.post('/signup', signupValidat, authController.signup);
+router.post('/signup', signupValidate, authController.signup);
 
-router.post('/send-verification-code', authController.sendEmailVerifiCode);
-router.post('/verification', emailCodeInVali, authController.verification);
+router.post(
+  '/send-verification-code',
+  authController.sendEmailVerificationCode
+);
+router.post('/verification', emailCodeInValid, authController.verification);
 router.post('/login', authController.login);
 module.exports = router;
