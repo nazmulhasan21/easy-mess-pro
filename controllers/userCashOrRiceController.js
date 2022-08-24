@@ -127,8 +127,8 @@ exports.createOne = (Model, model) => async (req, res, next) => {
     // if (!errors.isEmpty()) {
     //   return next(errors);
     // }
-    const { user } = req;
-    const { userId, amount, date } = req.body;
+    const { user, body } = req;
+    const { userId, amount, date } = body;
 
     const isValid = mongoose.Types.ObjectId.isValid(userId);
     if (!isValid) return next(new AppError(400, '_id', 'Id is not valid '));

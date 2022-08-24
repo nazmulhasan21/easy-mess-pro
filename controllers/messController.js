@@ -27,7 +27,6 @@ const {
 exports.createMess = async (req, res, next) => {
   try {
     const { body, user } = req;
-    const { title } = req.body.trim();
     const isValidMessName = body.messName.match(/^[a-zA-Z0-9. ]+$/);
     if (!isValidMessName)
       return next(
@@ -51,7 +50,7 @@ exports.createMess = async (req, res, next) => {
 
     // 3. create your month
 
-    await createMonth(user, mess, title);
+    await createMonth(user, mess);
 
     // 4. set user mess admin
     user.isMessAdmin = true;

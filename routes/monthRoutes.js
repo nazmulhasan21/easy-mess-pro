@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const authController = require('../controllers/authController');
-const monthContorller = require('../controllers/monthController');
+const monthController = require('../controllers/monthController');
 
 // Protect all routes after this middleware
 
@@ -12,23 +12,23 @@ router.use(authController.protect);
 
 router.use(authController.restrictToMessId);
 
-router.get('/pdf', monthContorller.getPDF);
-// router.get('/', monthContorller.getMonthList);
-router.get('/:id', monthContorller.getMonth);
-router.get('/', monthContorller.getActiveMonth);
-router.get('/month-list', monthContorller.getMonthList);
+router.get('/pdf', monthController.getPDF);
+// router.get('/', monthController.getMonthList);
+router.get('/:id', monthController.getMonth);
+router.get('/', monthController.getActiveMonth);
+router.get('/month-list', monthController.getMonthList);
 
 router.use(authController.restrictTo('manager'));
 
-router.post('/', monthContorller.createMonth);
-router.patch('/', monthContorller.addFixedMeal);
+router.post('/', monthController.createMonth);
+router.patch('/', monthController.addFixedMeal);
 
 router.delete(
   '/:id',
   authController.checkPassword,
-  monthContorller.deleteMonth
+  monthController.deleteMonth
 );
 router.use(authController.restrictToAdmin);
-router.patch('/:id/status', monthContorller.changeMonthStatus);
+router.patch('/:id/status', monthController.changeMonthStatus);
 
 module.exports = router;

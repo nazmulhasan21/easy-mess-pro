@@ -26,10 +26,10 @@ const ExtraRice = require('../models/extraRiceModel');
  */
 
 // create month and other data
-module.exports.createMonth = async (user, mess, title) => {
+module.exports.createMonth = async (user, mess) => {
   //  1. create  your active month
 
-  const monthTitle = moment(title).format('MMMM YYYY');
+  const monthTitle = moment().format('MMMM YYYY');
   const month = await Month.create({
     messId: mess._id,
     monthTitle,
