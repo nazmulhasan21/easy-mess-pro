@@ -114,11 +114,11 @@ module.exports.deleteAll = async (messId) => {
   // 5. delete all cost in mess
   await Cost.deleteMany({ messId: messId });
 
-  // 6. delete all add user months and messId proparty
+  // 6. delete all add user months and messId property
 
   // 6.1 find user
   const users = await User.find({ messId: messId }).select('messId months');
-  // 6.2 set user proparty months = [] and messId = undefind
+  // 6.2 set user property months = [] and messId = undefined
   users.forEach(async (user) => {
     user.months = [];
     user.messId = undefined;
@@ -166,7 +166,7 @@ exports.deleteAllMonthData = async (monthId, allMember) => {
 exports.createOtpCode = async (email) => {
   // find  this user before all otpCode and delete
   await OtpCode.deleteMany({ email });
-  // jenaret verification code
+  // generate verification code
   const code = Math.floor(1000 + Math.random() * 9000);
   const expiredAt = new Date().getTime() + 30 * 60 * 1000;
 
@@ -192,7 +192,7 @@ exports.checkOtpCode = async (email, htmlTemplates) => {
     await OtpCode.findByIdAndDelete(otpCode._id);
     const otpCode = await createOtpCode(newEmail);
     const to = [{ newEmail, name: user.name }];
-    const subject = 'Email varification';
+    const subject = 'Email verification';
     const html = htmlTemplates;
     const params = {
       userName: user.name,
@@ -212,12 +212,12 @@ exports.checkOtpCode = async (email, htmlTemplates) => {
  *
  * @param {object} to email object
  * @param {string} subject  subject
- * @param {string} templateName email templete Name
+ * @param {string} templateName email template Name
  * @returns
  */
 exports.sendVerificationCode = async (to, subj, templateName) => {
   const otpCode = await this.createOtpCode(to.email);
-  const reciver = [to];
+  const receiver = [to];
   const subject = subj;
   const filePath = path.join(
     process.cwd(),
@@ -234,7 +234,7 @@ exports.sendVerificationCode = async (to, subj, templateName) => {
     subject: subj,
   };
   // send email
-  sendEmail(reciver, subject, html, params);
+  sendEmail(receiver, subject, html, params);
 };
 
 // get pdf
@@ -284,7 +284,7 @@ exports.getMonthPdf = async (monthId) => {
   data.guestMeals = guestMeals;
   data.extraRice = extraRice;
   data.costs = [
-    { name: 'Bajer cost Table', details: bigCost, total: bigCostSum },
+    { name: 'Bajar cost Table', details: bigCost, total: bigCostSum },
     { name: 'Small cost Table', details: smallCost, total: smallCostSum },
     { name: 'Other cost Table', details: otherCost, total: otherCostSum },
   ];
@@ -332,7 +332,7 @@ const tt = async () => {
 
 //tt();
 
-// date formet in hbs template
+// date format in hbs template
 hbs.registerHelper('dateFormat', function (date, options) {
   const formatToUse =
     (arguments[1] && arguments[1].hash && arguments[1].hash.format) ||

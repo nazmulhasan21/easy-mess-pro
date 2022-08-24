@@ -117,7 +117,7 @@ exports.monthCal = async (month) => {
   ]);
   const monthFixedMeal = monthFixedMealSum[0];
 
-  // 7. calcutate month total border;
+  // 7. calculated month total border;
   const totalMemberSum = await UserMonthData.aggregate([
     {
       $match: {
@@ -131,7 +131,7 @@ exports.monthCal = async (month) => {
   ]);
   const totalMember = totalMemberSum[0];
 
-  // 10. update month Modeal
+  // 10. update month Model
   month.totalDeposit = monthCash?.total || 0;
   month.totalRice = monthRice?.total || 0;
   month.totalGuestMealAmount = monthGuestMeal?.total || 0;
@@ -156,7 +156,7 @@ exports.monthCal = async (month) => {
 };
 
 /**
- * claculation all user data in databaes
+ * calculation all user data in database
  * @param {User._id} userId mess member user id
  * @param {object} month  active month object
  * @param {Number} totalMember  mess total member
@@ -242,7 +242,7 @@ exports.userMonthCal = async (userId, month) => {
 
   // 11. update userMonthData Model
 
-  // set value this porportes
+  // set value this property
   userMonthData.totalMeal = meal?.total || 1;
   userMonthData.fixedMeal =
     userMonthData.totalMeal > month.fixedMeal
@@ -271,7 +271,7 @@ exports.userMonthCal = async (userId, month) => {
     userMonthData.totalDeposit - userMonthData.totalCost
   ).toFixed(2);
 
-  // 12. save to databaes
-  const userdata = await userMonthData.save();
-  return userdata;
+  // 12. save to database
+  const userData = await userMonthData.save();
+  return userData;
 };

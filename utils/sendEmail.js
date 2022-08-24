@@ -2,7 +2,7 @@ const Sib = require('sib-api-v3-sdk');
 
 /**
  *
- * @param {array} to this is a email recver arrayobject [{}]
+ * @param {array} to this is a email receiver arrayObject [{}]
  * @param {emailSubject} subject this is a email subject
  * @param {htmlContent} html this is a email html content
  * @param {objectParams} params this is email object params
@@ -10,7 +10,7 @@ const Sib = require('sib-api-v3-sdk');
 
 exports.sendEmail = (to, subject, html, params) => {
   const client = Sib.ApiClient.instance;
-  // 1. Configure API key authoriaztion : api-key
+  // 1. Configure API key authentications : api-key
 
   const apiKey = client.authentications['api-key'];
   apiKey.apiKey = process.env.SENDINBLUE_API_KEY;
