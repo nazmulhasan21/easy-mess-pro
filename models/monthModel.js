@@ -63,7 +63,7 @@ const monthSchema = mongoose.Schema(
     //     select: false,
     //   },
     // ],
-    // cashs: [
+    // cashes: [
     //   {
     //     type: mongoose.Schema.Types.ObjectId,
     //     ref: 'Cash',
@@ -99,7 +99,7 @@ const monthSchema = mongoose.Schema(
     //   },
     // ],
 
-    // user this creat pdf
+    // user this create pdf
     totalDeposit: {
       type: Number,
       default: 0.0,

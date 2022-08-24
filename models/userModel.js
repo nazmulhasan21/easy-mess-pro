@@ -81,7 +81,7 @@ const userSchema = new mongoose.Schema(
 // encrypt the password using 'bcryptjs'
 // Mongoose -> Document Middleware
 userSchema.pre('save', async function (next) {
-  // check the password if it is modifed
+  // check the password if it is modified
   if (!this.isModified('password')) {
     return next();
   }
@@ -96,9 +96,9 @@ userSchema.pre('save', async function (next) {
 // This is Instance Method that is gonna be available on all documents in a certain collection
 userSchema.methods.correctPassword = async function (
   typedPassword,
-  orginalPassword
+  originalPassword
 ) {
-  return await bcrypt.compare(typedPassword, orginalPassword);
+  return await bcrypt.compare(typedPassword, originalPassword);
 };
 const User = mongoose.model('User', userSchema);
 module.exports = User;

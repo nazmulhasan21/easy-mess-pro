@@ -42,7 +42,7 @@ const userMonthDataSchema = mongoose.Schema(
       type: Number,
       default: 0,
     },
-    totalDepostiRice: {
+    totalDepositRice: {
       type: Number,
       default: 0.0,
     },
