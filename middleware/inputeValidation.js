@@ -4,7 +4,7 @@ const User = require('../models/userModel');
 exports.signupValidat = [
   body('email')
     .trim()
-    // .isEmail({ require_display_name: true })
+    .isEmail()
     .withMessage((value) => {
       return `'${value}' not a valid email.`;
     })
@@ -37,11 +37,11 @@ exports.signupValidat = [
   body('password')
     .trim()
     .isLength({ min: 8 })
-    .withMessage('password  min length 8.')
-    ///.isStrongPassword({ returnScore: false })
-    .withMessage(
-      'Password must be greater than 8 and contain at least one uppercase letter, one lowercase letter, and one number'
-    ),
+    .withMessage('password  min length 8.'),
+  ///.isStrongPassword({ returnScore: false })
+  // .withMessage(
+  //   'Password must be greater than 8 and contain at least one uppercase letter, one lowercase letter, and one number'
+  // ),
   body('name')
     .trim()
     .isLength({ min: 3 })
