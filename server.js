@@ -14,13 +14,13 @@ process.env.PUPPETEER_SKIP_DOWNLOAD;
 
 const app = require('./app');
 // const app = require('express');
-const database = 'mongodb://localhost:27017/node-api-structure';
+const database = 'mongodb://0.0.0.0:27017/easy-mess';
 
 // -> Connect the database
 
 mongoose
   .connect(
-    // database,
+    //  database,
     process.env.DB_URL,
 
     {
@@ -35,6 +35,6 @@ mongoose
 
 // -> Start the server
 
-app.listen(process.env.PORT || 4000, () => {
-  console.log(`Application is running on port ${process.env.PORT || 4000}  `);
+app.listen(process.env.PORT || 8000, () => {
+  console.log(`Application is running on port ${process.env.PORT || 8000}  `);
 });

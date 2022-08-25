@@ -9,7 +9,6 @@ const AppError = require('../utils/appError');
 const APIFeatures = require('../utils/apiFeatures');
 
 const moment = require('moment');
-const Cost = require('../models/costModel');
 
 // get cost one
 
@@ -19,7 +18,7 @@ const Cost = require('../models/costModel');
  * @param {modelNameString} model
  * @returns {object}
  */
-exports.getOne = (Model, model) => async (req, res, next) => {
+exports.getOne = (Model) => async (req, res, next) => {
   try {
     const { user } = req;
     const isValid = mongoose.Types.ObjectId.isValid(req.params.id);
@@ -29,12 +28,12 @@ exports.getOne = (Model, model) => async (req, res, next) => {
       $and: [{ _id: req.params.id }, { messId: user.messId }],
     }).populate('addBy editBy userId', 'name avatar role');
     if (!doc)
-      return next(new AppError(404, model, `No ${model} found with that id`));
+      return next(new AppError(404, 'data', `No data found with that id`));
     doc.userName = undefined;
     // 2. send res
     res.status(200).json({
       status: 'success',
-      message: `${model} found`,
+      message: `Data found successfully`,
       data: {
         doc,
       },
@@ -53,7 +52,7 @@ exports.getOne = (Model, model) => async (req, res, next) => {
 exports.getList = (Model) => async (req, res, next) => {
   try {
     const { user, query } = req;
-    const { startDate, endDate, day, amount } = query;
+    const { startDate, endDate, day } = query;
     // filter
     // 1. filter in date
     let date = {};
@@ -73,7 +72,7 @@ exports.getList = (Model) => async (req, res, next) => {
       };
     }
     // amount filter
-
+    const amount = req.query.amount || '';
     const filterAmount = amount
       ? {
           amount: {
@@ -83,6 +82,10 @@ exports.getList = (Model) => async (req, res, next) => {
         }
       : {};
 
+    // type filter
+    const type = req.query.type || '';
+    const typeFilter = type ? { type } : {};
+
     // 1. find active month
     const activeMonth = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
@@ -91,7 +94,7 @@ exports.getList = (Model) => async (req, res, next) => {
     // 2. get all cost in active month
     const features = new APIFeatures(
       Model.find({
-        $and: [{ monthId: activeMonth._id }, date, filterAmount],
+        $and: [{ monthId: activeMonth._id }, date, filterAmount, typeFilter],
       })
         .populate('addBy editBy userId', 'name avatar role')
         .sort({ createdAt: -1 }),
@@ -99,7 +102,7 @@ exports.getList = (Model) => async (req, res, next) => {
     ).paginate();
     const doc = await features.query;
     const results = await Model.countDocuments({
-      $and: [{ monthId: activeMonth._id }, date, filterAmount],
+      $and: [{ monthId: activeMonth._id }, date, filterAmount, typeFilter],
     });
 
     // 3. send res
@@ -121,48 +124,48 @@ exports.getList = (Model) => async (req, res, next) => {
  * @param {modelNameString} model
  * @returns {object}
  */
-exports.createOne = (Model, model) => async (req, res, next) => {
-  try {
-    // const errors = validationResult(req);
-    // if (!errors.isEmpty()) {
-    //   return next(errors);
-    // }
-    const { user, body } = req;
-    const { userId, amount, date } = body;
+// exports.createOne = (Model, model) => async (req, res, next) => {
+//   try {
+//     // const errors = validationResult(req);
+//     // if (!errors.isEmpty()) {
+//     //   return next(errors);
+//     // }
+//     const { user, body } = req;
+//     const { userId, amount, date } = body;
 
-    const isValid = mongoose.Types.ObjectId.isValid(userId);
-    if (!isValid) return next(new AppError(400, '_id', 'Id is not valid '));
-    // 1. find active month;
-    const month = await Month.findOne({
-      $and: [{ messId: user.messId }, { active: true }],
-    }).select('_id');
-    if (!month)
-      return next(new AppError(404, 'month', 'Not found your active Month'));
+//     const isValid = mongoose.Types.ObjectId.isValid(userId);
+//     if (!isValid) return next(new AppError(400, '_id', 'Id is not valid '));
+//     // 1. find active month;
+//     const month = await Month.findOne({
+//       $and: [{ messId: user.messId }, { active: true }],
+//     }).select('_id');
+//     if (!month)
+//       return next(new AppError(404, 'month', 'Not found your active Month'));
 
-    // 2. add Market Cost
-    const doc = await Model.create({
-      messId: user.messId,
-      monthId: month._id,
-      userId,
-      addBy: user._id,
-      amount,
-      date: date || moment(),
-    });
+//     // 2. add Market Cost
+//     const doc = await Model.create({
+//       messId: user.messId,
+//       monthId: month._id,
+//       userId,
+//       addBy: user._id,
+//       amount,
+//       date: date || moment(),
+//     });
 
-    // 4. save month
+//     // 4. save month
 
-    // 5. send res
-    res.status(201).json({
-      status: 'success',
-      message: `add ${model} successfully`,
-      data: {
-        doc,
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+//     // 5. send res
+//     res.status(201).json({
+//       status: 'success',
+//       message: `add ${model} successfully`,
+//       data: {
+//         doc,
+//       },
+//     });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
 
 /**
  *
@@ -212,8 +215,9 @@ exports.updateOne = (Model, model) => async (req, res, next) => {
     });
 
     // 3. send res
-    res.status(200).json({
+    return res.status(200).json({
       status: 'success',
+      message: 'Update data successfully',
       data: {
         upDoc,
       },

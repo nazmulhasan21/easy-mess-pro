@@ -137,9 +137,19 @@ module.exports.addCostInputValidated = [
   // body('date').isISO8601().toDate().withMessage('Please value must be date'),
 ];
 
-// exports.addRiceOrCashInputValidate = [
-//   body('amount').trim().withMessage('Please ').notEmpty().withMessage('Please '),
-// ];
+module.exports.addMonthMemberDataInputValidated = [
+  body('type')
+    .trim()
+    .isIn(['cash', 'rice', 'extraRice', 'guestMeal'])
+    .withMessage('Please select cash or rice or extraRice or guestMeal')
+    .notEmpty()
+    .withMessage('Please select any one data type.'),
+  body('amount')
+    .trim()
+    .matches(/^[0-9.-]+$/)
+    .withMessage('Please enter valid amount'),
+  // body('date').isISO8601().toDate().withMessage('Please value must be date'),
+];
 exports.chPassInValid = [
   body('password')
     .trim()

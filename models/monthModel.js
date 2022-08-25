@@ -31,11 +31,7 @@ const monthSchema = mongoose.Schema(
       type: Array,
       select: false,
     },
-    cashes: {
-      type: Array,
-      select: false,
-    },
-    rices: {
+    monthMemberData: {
       type: Array,
       select: false,
     },
@@ -43,62 +39,10 @@ const monthSchema = mongoose.Schema(
       type: Array,
       select: false,
     },
-    guestMeals: {
-      type: Array,
-      select: false,
-    },
     costs: {
       type: Array,
       select: false,
     },
-    extraRice: {
-      type: Array,
-      select: false,
-    },
-
-    // userMonthData: [
-    //   {
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: 'UserMonthData',
-    //     select: false,
-    //   },
-    // ],
-    // cashes: [
-    //   {
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: 'Cash',
-    //     select: false,
-    //   },
-    // ],
-    // rices: [
-    //   {
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: 'Rice',
-    //     select: false,
-    //   },
-    // ],
-    // meals: [
-    //   {
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: 'Meal',
-    //     select: false,
-    //   },
-    // ],
-    // guestMeals: [
-    //   {
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: 'GuestMeal',
-    //     select: false,
-    //   },
-    // ],
-    // costs: [
-    //   {
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: 'Cost',
-    //     select: false,
-    //   },
-    // ],
-
     // user this create pdf
     totalDeposit: {
       type: Number,
@@ -164,7 +108,6 @@ const monthSchema = mongoose.Schema(
     active: {
       type: Boolean,
       default: true,
-      select: false,
     },
   },
   { timestamps: true }

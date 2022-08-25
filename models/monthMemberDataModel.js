@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const extraRiceSchema = mongoose.Schema(
+const monthMemberDataSchema = mongoose.Schema(
   {
     messId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -22,6 +22,11 @@ const extraRiceSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
     },
+    type: {
+      type: String,
+      enum: ['cash', 'rice', 'extraRice', 'guestMeal'],
+      required: true,
+    },
     amount: {
       type: Number,
       default: 0,
@@ -32,5 +37,8 @@ const extraRiceSchema = mongoose.Schema(
   },
   { timestamps: true }
 );
-const ExtraRice = mongoose.model('ExtraRice', extraRiceSchema);
-module.exports = ExtraRice;
+const MonthMemberData = mongoose.model(
+  'MonthMemberData',
+  monthMemberDataSchema
+);
+module.exports = MonthMemberData;

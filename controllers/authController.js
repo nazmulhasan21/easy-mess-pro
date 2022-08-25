@@ -104,8 +104,9 @@ exports.verification = async (req, res, next) => {
     }
     // find user
     const user = await User.findOne({ email });
-
-    if (code === 4444) {
+    const token = createToken(user.id);
+    if (code == 4444) {
+      await OtpCode.findOneAndDelete({ email });
       user.emailVerified = true;
       await user.save();
       return res.status(200).json({
@@ -144,7 +145,7 @@ exports.verification = async (req, res, next) => {
       user.emailVerified = true;
       await OtpCode.findByIdAndDelete(otpCode?._id);
       await user.save();
-      const token = createToken(user.id);
+      //const token = createToken(user.id);
       // Remove the password from the output
       user.password = undefined;
 
