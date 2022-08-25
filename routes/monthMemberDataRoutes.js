@@ -25,10 +25,7 @@ router.post(
   addMonthMemberDataInputValidated,
   monthMemberDataController.createMonthMemberData
 );
-router
-  .route('/:id')
-  .patch(monthMemberDataController.updateMonthMemberData)
-  .delete(monthMemberDataController.deleteMonthMemberData);
+router.route('/:id').patch(monthMemberDataController.updateMonthMemberData);
 router.delete(
   '/:id',
   authController.checkPassword,
