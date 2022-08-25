@@ -18,6 +18,6 @@ api.use('/month', monthRoutes);
 api.use('/month-subManager', subManagerRoutes);
 api.use('/month-cost', costRoutes);
 api.use('/month-meal', mealRoutes);
-api.use('/month-member-data/', monthMemberDataRoutes);
+api.use('/month-member-data', monthMemberDataRoutes);
 
 module.exports = api;

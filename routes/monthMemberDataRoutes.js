@@ -29,5 +29,10 @@ router
   .route('/:id')
   .patch(monthMemberDataController.updateMonthMemberData)
   .delete(monthMemberDataController.deleteMonthMemberData);
+router.delete(
+  '/:id',
+  authController.checkPassword,
+  monthMemberDataController.deleteMonthMemberData
+);
 
 module.exports = router;
