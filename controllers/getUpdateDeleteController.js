@@ -55,25 +55,25 @@ exports.getList = (Model) => async (req, res, next) => {
     const { startDate, endDate, day } = query;
     // filter
     // 1. filter in date
-    let date = {};
+    let dateFilter = {};
     if (startDate || endDate) {
-      date = {
+      dateFilter = {
         date: {
           $gte: moment(startDate).startOf('day'),
           $lte: moment(endDate).endOf('day'),
         },
       };
     } else if (day) {
-      date = {
+      dateFilter = {
         date: {
           $gte: moment(day).startOf('day'),
           $lte: moment(day).endOf('day'),
         },
       };
     }
-    // amount filter
+    //2. amount filter
     const amount = req.query.amount || '';
-    const filterAmount = amount
+    const amountFilter = amount
       ? {
           amount: {
             $gte: amount.split('-')[0],
@@ -82,28 +82,37 @@ exports.getList = (Model) => async (req, res, next) => {
         }
       : {};
 
-    // type filter
+    //3. type filter
     const type = req.query.type || '';
     const typeFilter = type ? { type } : {};
+
+    ///4. user filter
+    const userId = req.query.userId || '';
+    const userIdFilter = userId ? { userId } : {};
 
     // 1. find active month
     const activeMonth = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
     });
-
+    /// find query
+    const findQuery = {
+      $and: [
+        { monthId: activeMonth._id },
+        dateFilter,
+        amountFilter,
+        typeFilter,
+        userIdFilter,
+      ],
+    };
     // 2. get all cost in active month
     const features = new APIFeatures(
-      Model.find({
-        $and: [{ monthId: activeMonth._id }, date, filterAmount, typeFilter],
-      })
+      Model.find(findQuery)
         .populate('addBy editBy userId', 'name avatar role')
         .sort({ createdAt: -1 }),
       req.query
     ).paginate();
     const doc = await features.query;
-    const results = await Model.countDocuments({
-      $and: [{ monthId: activeMonth._id }, date, filterAmount, typeFilter],
-    });
+    const results = await Model.countDocuments(findQuery);
 
     // 3. send res
     res.status(200).json({

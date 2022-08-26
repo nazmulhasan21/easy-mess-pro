@@ -14,7 +14,7 @@ exports.getMealList = async (req, res, next) => {
     const { startDate, endDate, day } = query;
     // filter
     // 1. filter in date
-    let date = {};
+    let dateFilter = {};
     if (startDate || endDate) {
       date = {
         date: {
@@ -23,42 +23,63 @@ exports.getMealList = async (req, res, next) => {
         },
       };
     } else if (day) {
-      date = {
+      dateFilter = {
         date: {
           $gte: moment(day).startOf('day'),
           $lte: moment(day).endOf('day'),
         },
       };
     }
-    // amount filter
+    /// user filter
+    const userId = req.query.userId || '';
+    const userIdFilter = userId ? { userId } : {};
+    // breakfast filter
+    const breakfast = req.query.breakfast || '';
+    const breakfastFilter = breakfast ? { breakfast } : {};
 
-    // const filterAmount = amount
-    //   ? {
-    //       amount: {
-    //         $gte: amount.split('-')[0],
-    //         $lte: amount.split('-')[1],
-    //       },
-    //     }
-    //   : {};
+    // lunch filter
+    const lunch = req.query.lunch || '';
+    const lunchFilter = lunch ? { lunch } : {};
 
+    // dinner filter
+    const dinner = req.query.dinner || '';
+    const dinnerFilter = dinner ? { dinner } : {};
+    // totalMeal filter
+    const total = req.query.total || '';
+    const totalFilter = total
+      ? {
+          total: {
+            $gte: total.split('-')[0],
+            $lte: total.split('-')[1],
+          },
+        }
+      : {};
     // 1. find active month
     const activeMonth = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
     });
 
+    // query
+    const findQuery = {
+      $and: [
+        { monthId: activeMonth._id },
+        dateFilter,
+        userIdFilter,
+        breakfastFilter,
+        lunchFilter,
+        dinnerFilter,
+        totalFilter,
+      ],
+    };
     // 2. get all cost in active month
     const features = new APIFeatures(
-      Meal.find({
-        $and: [{ monthId: activeMonth._id }, date],
-      })
+      Meal.find(findQuery)
         .populate('addBy editBy userId', 'name avatar role')
         .sort({ createdAt: -1 }),
       req.query
     ).paginate();
     const doc = await features.query;
-    const results = await Meal.countDocuments({
-      $and: [{ monthId: activeMonth._id }, date],
-    });
+    const results = await Meal.countDocuments(findQuery);
 
     // 3. send res
     res.status(200).json({

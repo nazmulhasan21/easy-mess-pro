@@ -45,7 +45,7 @@ exports.deleteSubManager = async (req, res, next) => {
     // 2. return this
     if (activeMonthManager)
       return next(
-        new AppError(403, 'manager', 'This is a active month manager', 'rong')
+        new AppError(403, 'manager', 'This is a active month manager', 'wrong')
       );
 
     // 1. find user and update this user role
@@ -71,7 +71,7 @@ exports.getSubManagerList = async (req, res, next) => {
     const features = new APIFeatures(
       User.find({
         $and: [{ messId: user.messId }, { role: 'subManager' }],
-      }).select('name email phone avatar'),
+      }).select('name email phone avatar role'),
       req.query
     )
       .sort()

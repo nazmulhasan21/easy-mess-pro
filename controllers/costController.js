@@ -86,20 +86,19 @@ exports.getCostList = async (req, res, next) => {
     const activeMonth = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
     });
-
+    // find query
+    const findQuery = {
+      $and: [{ monthId: activeMonth._id }, date, filterAmount, typeFilter],
+    };
     // 2. get all cost in active month
     const features = new APIFeatures(
-      Cost.find({
-        $and: [{ monthId: activeMonth._id }, date, filterAmount, typeFilter],
-      })
+      Cost.find(findQuery)
         .populate('addBy editBy', 'name avatar role')
         .sort({ createdAt: -1 }),
       req.query
     ).paginate();
     const doc = await features.query;
-    const results = await Cost.countDocuments({
-      $and: [{ monthId: activeMonth._id }, date, filterAmount, typeFilter],
-    });
+    const results = await Cost.countDocuments(findQuery);
     // 3. send res
     res.status(200).json({
       status: 'success',
