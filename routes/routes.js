@@ -15,7 +15,7 @@ api.use('/user', userRoutes);
 api.use('/mess', messRoutes);
 api.use('/mess-manager', managerRoutes);
 api.use('/month', monthRoutes);
-api.use('/month-subManager', subManagerRoutes);
+api.use('/month-sub-manager', subManagerRoutes);
 api.use('/month-cost', costRoutes);
 api.use('/month-meal', mealRoutes);
 api.use('/month-member-data', monthMemberDataRoutes);

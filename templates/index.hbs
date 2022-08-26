@@ -170,32 +170,36 @@
 
       </table>
       {{! guest meal Table }}
+      <div class='row'>
 
-      {{! cost table }}
-      {{#each costs}}
-        <h6 class='text-center'>{{name}}</h6>
-        <table class='table table-bordered table-striped'>
-          <thead>
-            <tr>
-              <th>title</th>
-              <th>amount</th>
-              <th>date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {{#details}}
-              <tr>
-                <td>{{title}}</td>
-                <td>{{amount}}</td>
-                <td>{{dateFormat date}}</td>
-              </tr>
-            {{/details}}
-          </tbody>
-          <thead><tr><th>total</th><th>{{total}}</th><th></th></tr></thead>
-        </table>
-      {{/each}}
-      {{! cost table }}
+        {{! cost table }}
+        {{#each costs}}
+          <div class='col-6'>
+            <h6 class='text-center'>{{name}}</h6>
+            <table class='table table-bordered table-striped'>
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>amount</th>
+                  <th>date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{#details}}
+                  <tr>
+                    <td>{{title}}</td>
+                    <td>{{amount}}</td>
+                    <td>{{dateFormat date}}</td>
+                  </tr>
+                {{/details}}
+              </tbody>
+              <thead><tr><th>total</th><th>{{total}}</th><th></th></tr></thead>
+            </table>
 
+            {{! cost table }}
+          </div>
+        {{/each}}
+      </div>
       {{! meal table }}
       <h6 class='text-center'>meal Table</h6>
       <table class='table table-bordered table-striped'>

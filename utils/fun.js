@@ -305,9 +305,9 @@ exports.getMonthPdf = async (monthId) => {
     ];
     month.meals = meals;
     month.costs = [
+      { name: 'Other cost Table', details: otherCost, total: otherCostSum },
       { name: 'Bajar cost Table', details: bigCost, total: bigCostSum },
       { name: 'Small cost Table', details: smallCost, total: smallCostSum },
-      { name: 'Other cost Table', details: otherCost, total: otherCostSum },
     ];
 
     const pdf = await createPDF('index', month);
