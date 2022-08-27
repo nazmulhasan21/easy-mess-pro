@@ -190,52 +190,6 @@ exports.deleteMonth = async (req, res, next) => {
   }
 };
 
-// get month list
-
-exports.getMonthList = async (req, res, next) => {
-  try {
-    const { user } = req;
-    /// status filter
-    const active = req.body.active || '';
-    const activeFilter = active ? { active } : {};
-    // manager filter
-    const manager = req.body.manager || '';
-    const managerFilter = manager ? { manager } : {};
-    const monthTitle = req.body.monthTitle || '';
-
-    const monthTitleFilter = monthTitle
-      ? { monthTitle: { $regex: monthTitle, $options: 'i' } }
-      : {};
-
-    const findQuery = {
-      $and: [
-        { messId: user.messId },
-        activeFilter,
-        managerFilter,
-        monthTitleFilter,
-      ],
-    };
-    // 1.
-    const features = new APIFeatures(
-      Month.find(findQuery)
-        .populate('manager', 'name avatar')
-        .sort({ createdAt: -1 }),
-      req.query
-    ).paginate();
-    const monthList = await features.query;
-    const results = await Model.countDocuments(findQuery);
-    res.status(200).json({
-      status: 'success',
-      results: results,
-      data: {
-        data: monthList,
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
 exports.getPDF = async (req, res, next) => {
   try {
     const { user } = req;

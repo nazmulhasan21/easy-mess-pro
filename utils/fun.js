@@ -266,7 +266,9 @@ exports.getMonthPdf = async (monthId) => {
       'name role avatar'
     );
 
-    const userMonthData = await UserMonthData.find({ monthId: monthId });
+    const userMonthData = await UserMonthData.find({
+      monthId: monthId,
+    }).populate('userId', 'name avatar');
     const costs = await Cost.find({ monthId: monthId });
     const bigCost = _.filter(costs, ['type', 'bigCost']);
     const smallCost = _.filter(costs, ['type', 'smallCost']);

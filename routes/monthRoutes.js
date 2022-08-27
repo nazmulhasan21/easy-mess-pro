@@ -16,7 +16,6 @@ router.get('/pdf', monthController.getPDF);
 // router.get('/', monthController.getMonthList);
 router.get('/:id', monthController.getMonth);
 router.get('/', monthController.getActiveMonth);
-router.get('/month-list', monthController.getMonthList);
 
 router.use(authController.restrictTo('manager', 'subManager'));
 router.patch('/', monthController.addFixedMeal);
