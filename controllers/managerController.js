@@ -18,7 +18,7 @@ exports.changeManager = async (req, res, next) => {
     if (!isValid)
       return next(new AppError(400, 'userId', 'userId is not valid '));
     //  1 check your mess and already exit this user in mess manager
-    const { manager } = await Mess.findOne({
+    const manager = await Mess.findOne({
       $and: [{ _id: user.messId }, { manager: userId }],
     }).select('manager');
     if (manager)
@@ -32,12 +32,14 @@ exports.changeManager = async (req, res, next) => {
     const mess = await Mess.findById(user.messId).select('manager');
     // update before manager role border
     await User.findByIdAndUpdate(mess.manager, { role: 'border' });
-
+    // 2 find user and change this user role manager
+    await User.findOneAndUpdate(
+      { $and: [{ _id: userId }, { messId: mess._id }] },
+      { role: 'manager' }
+    );
     // update mess manager
     await Mess.findByIdAndUpdate(user.messId, { manager: userId });
 
-    // 2 find user and change this user role manager
-    await User.findByIdAndUpdate(userId, { role: 'manager' });
     // send response
     res.status(201).json({
       status: 'success',
