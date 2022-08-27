@@ -13,7 +13,7 @@ const APIFeatures = require('../utils/apiFeatures');
 exports.addSubManager = async (req, res, next) => {
   try {
     const { user } = req;
-    const { userId } = req.params.userId;
+    const { userId } = req.params;
     const isValid = mongoose.Types.ObjectId.isValid(userId);
     if (!isValid)
       return next(new AppError(400, 'userId', 'userId is not valid '));
@@ -39,7 +39,7 @@ exports.addSubManager = async (req, res, next) => {
 exports.deleteSubManager = async (req, res, next) => {
   try {
     const { user } = req;
-    const { userId } = req.params.userId;
+    const { userId } = req.params;
     const isValid = mongoose.Types.ObjectId.isValid(userId);
     if (!isValid)
       return next(new AppError(400, 'userId', 'userId is not valid '));

@@ -13,8 +13,8 @@ const Mess = require('../models/messModel');
 exports.changeManager = async (req, res, next) => {
   try {
     const { user } = req;
-    const { userId } = req.params.userId;
-    const isValid = mongoose.Types.ObjectId.isValid(req.params.userId);
+    const { userId } = req.params;
+    const isValid = mongoose.Types.ObjectId.isValid(userId);
     if (!isValid)
       return next(new AppError(400, 'userId', 'userId is not valid '));
     //  1 check your mess and already exit this user in mess manager
