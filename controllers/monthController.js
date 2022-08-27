@@ -27,7 +27,6 @@ const Meal = require('../models/mealModel');
 exports.createMonth = async (req, res, next) => {
   try {
     const { user } = req;
-    const { title } = req.body;
 
     // 1. find active Month
     const activeMonth = await Month.findOne({
@@ -35,7 +34,7 @@ exports.createMonth = async (req, res, next) => {
     });
 
     if (activeMonth) {
-      return next(new AppError(400, 'month', 'Your month alrady exit'));
+      return next(new AppError(400, 'month', 'Your month already exit'));
     }
     // 2. find mess
     const mess = await Mess.findById(user.messId)
@@ -43,7 +42,7 @@ exports.createMonth = async (req, res, next) => {
       .select('allMember month');
 
     //  3. create  your active month
-    await createMonth(user, mess, title);
+    await createMonth(user, mess);
 
     // send response
     res.status(201).json({
@@ -99,12 +98,13 @@ exports.getActiveMonth = async (req, res, next) => {
     mess.allMember.map(async (userId) => {
       await userMonthCal(userId, month);
     });
+    // cal this user month data
     await userMonthCal(user._id, month);
 
     // 2. Get active Month User Month data
     const userMonthData = await UserMonthData.findOne({
       $and: [{ userId: user._id }, { monthId: month._id }],
-    }).populate('userId', 'name role avatar phone messId isMessAdmin');
+    });
     await userMonthData.save();
 
     res.status(200).json({
@@ -113,6 +113,7 @@ exports.getActiveMonth = async (req, res, next) => {
         mess,
         month,
         userMonthData,
+        user,
       },
     });
   } catch (error) {
@@ -183,7 +184,6 @@ exports.deleteMonth = async (req, res, next) => {
     res.status(200).json({
       status: 'success',
       message: 'Delete Your month successfully',
-      mess,
     });
   } catch (error) {
     next(error);
@@ -195,19 +195,38 @@ exports.deleteMonth = async (req, res, next) => {
 exports.getMonthList = async (req, res, next) => {
   try {
     const { user } = req;
+    /// status filter
+    const active = req.body.active || '';
+    const activeFilter = active ? { active } : {};
+    // manager filter
+    const manager = req.body.manager || '';
+    const managerFilter = manager ? { manager } : {};
+    const monthTitle = req.body.monthTitle || '';
 
+    const monthTitleFilter = monthTitle
+      ? { monthTitle: { $regex: monthTitle, $options: 'i' } }
+      : {};
+
+    const findQuery = {
+      $and: [
+        { messId: user.messId },
+        activeFilter,
+        managerFilter,
+        monthTitleFilter,
+      ],
+    };
     // 1.
     const features = new APIFeatures(
-      Month.find({ messId: user.messId })
+      Month.find(findQuery)
         .populate('manager', 'name avatar')
         .sort({ createdAt: -1 }),
       req.query
     ).paginate();
     const monthList = await features.query;
-
+    const results = await Model.countDocuments(findQuery);
     res.status(200).json({
       status: 'success',
-      results: monthList.length,
+      results: results,
       data: {
         data: monthList,
       },
@@ -244,29 +263,32 @@ exports.changeMonthStatus = async (req, res, next) => {
     const activeMonth = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
     });
-
-    //2. update any one  month status
-    const month = await Month.findOneAndUpdate(
-      { $and: [{ _id: req.params.id }, { messId: user.messId }] },
-      { active: active }
-    );
-    if (active) {
-      if (month.nModified || month.modifiedCount == 1) {
-        activeMonth.active = false;
-      }
-    } else if (!active) {
-      if (month.nModified || month.modifiedCount == 1) {
-        activeMonth.active = true;
-      }
+    if (active == 1 && activeMonth)
+      return next(
+        new AppError(403, 'active', 'All ready active another month')
+      );
+    if (active == 1 && !activeMonth) {
+      await Month.updateOne(
+        { $and: [{ _id: req.params.id }, { messId: user.messId }] },
+        { active: true }
+      );
+      await activeMonth.save();
+      return res.status(200).json({
+        status: 'success',
+        message: 'Activated your month status successfully',
+      });
     }
-    await activeMonth.save();
-    res.status(200).json({
-      status: 'success',
-      message: 'chang month status successfully',
-      data: {
-        data: month,
-      },
-    });
+    if (active == 0) {
+      await Month.updateOne(
+        { $and: [{ _id: req.params.id }, { messId: user.messId }] },
+        { active: false }
+      );
+      await activeMonth.save();
+      return res.status(200).json({
+        status: 'success',
+        message: 'Deactivated your month status successfully',
+      });
+    }
   } catch (error) {
     next(error);
   }
