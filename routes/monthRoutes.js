@@ -18,10 +18,12 @@ router.get('/:id', monthController.getMonth);
 router.get('/', monthController.getActiveMonth);
 router.get('/month-list', monthController.getMonthList);
 
+router.use(authController.restrictTo('manager', 'subManager'));
+router.patch('/', monthController.addFixedMeal);
+
 router.use(authController.restrictTo('manager'));
 
 router.post('/', monthController.createMonth);
-router.patch('/', monthController.addFixedMeal);
 
 router.delete(
   '/:id',
