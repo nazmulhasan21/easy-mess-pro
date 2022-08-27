@@ -13,12 +13,18 @@ const APIFeatures = require('../utils/apiFeatures');
 exports.addSubManager = async (req, res, next) => {
   try {
     const { user } = req;
-    const isValid = mongoose.Types.ObjectId.isValid(req.params.userId);
+    const { userId } = req.params.userId;
+    const isValid = mongoose.Types.ObjectId.isValid(userId);
     if (!isValid)
       return next(new AppError(400, 'userId', 'userId is not valid '));
     //  1 add  your subManager in your active month
+    const { role } = await User.findById(userId);
+    if (role == 'manager')
+      return next(
+        new AppError(403, 'manager', 'This user is all Ready Month Manager')
+      );
     // 2 find user and change this user role
-    await User.findByIdAndUpdate(req.params.userId, { role: 'subManager' });
+    await User.findByIdAndUpdate(userId, { role: 'subManager' });
     // send response
     res.status(201).json({
       status: 'success',
@@ -33,13 +39,14 @@ exports.addSubManager = async (req, res, next) => {
 exports.deleteSubManager = async (req, res, next) => {
   try {
     const { user } = req;
-    const isValid = mongoose.Types.ObjectId.isValid(req.params.userId);
+    const { userId } = req.params.userId;
+    const isValid = mongoose.Types.ObjectId.isValid(userId);
     if (!isValid)
       return next(new AppError(400, 'userId', 'userId is not valid '));
 
     // 1 .check user is active month manager
     const activeMonthManager = await Month.findOne({
-      $and: [{ manager: req.params.userId }, { active: true }],
+      $and: [{ manager: userId }, { active: true }],
     });
 
     // 2. return this
@@ -50,7 +57,7 @@ exports.deleteSubManager = async (req, res, next) => {
 
     // 1. find user and update this user role
 
-    await User.findByIdAndUpdate(req.params.userId, { role: 'border' });
+    await User.findByIdAndUpdate(userId, { role: 'border' });
 
     res.status(200).json({
       status: 'success',

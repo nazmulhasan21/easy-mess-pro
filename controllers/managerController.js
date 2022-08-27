@@ -13,14 +13,15 @@ const Mess = require('../models/messModel');
 exports.changeManager = async (req, res, next) => {
   try {
     const { user } = req;
-    const isValid = mongoose.Types.ObjectId.isValid(req.params.userId);
+    const { userId } = req.params.userId;
+    const isValid = mongoose.Types.ObjectId.isValid(userId);
     if (!isValid)
       return next(new AppError(400, 'userId', 'userId is not valid '));
     //  1 check your mess and already exit this user in mess manager
-    const mess = await Mess.findOne({
-      $and: [{ _id: user.messId }, { manager: req.params.userId }],
+    const { manager } = await Mess.findOne({
+      $and: [{ _id: user.messId }, { manager: userId }],
     }).select('manager');
-    if (mess)
+    if (manager)
       return next(
         new AppError(
           403,
@@ -28,14 +29,15 @@ exports.changeManager = async (req, res, next) => {
           'This user is already this mess manager, select another user'
         )
       );
+    const mess = await Mess.findById(user.messId).select('manager');
     // update before manager role border
     await User.findByIdAndUpdate(mess.manager, { role: 'border' });
 
     // update mess manager
-    await Mess.findByIdAndUpdate(user.messId, { manager: req.params.userId });
+    await Mess.findByIdAndUpdate(user.messId, { manager: userId });
 
     // 2 find user and change this user role manager
-    await User.findByIdAndUpdate(req.params.userId, { role: 'manager' });
+    await User.findByIdAndUpdate(userId, { role: 'manager' });
     // send response
     res.status(201).json({
       status: 'success',
