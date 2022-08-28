@@ -90,7 +90,13 @@ exports.getActiveMonth = async (req, res, next) => {
     const month = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
     }).populate('manager', 'userId name email phone');
-    // .populate('userMonthData');
+    if (!month) {
+      return res.status(200).json({
+        status: 'success',
+        message: 'You have not any active month',
+        data: null,
+      });
+    }
 
     await monthCal(month);
     await month.save();
@@ -236,7 +242,6 @@ exports.changeMonthStatus = async (req, res, next) => {
         { $and: [{ _id: req.params.id }, { messId: user.messId }] },
         { active: false }
       );
-      await activeMonth.save();
       return res.status(200).json({
         status: 'success',
         message: 'Deactivated your month status successfully',
@@ -245,7 +250,6 @@ exports.changeMonthStatus = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-  // console.log(month);
 };
 
 const endOfMonth = moment().clone().endOf('month').format('DD');

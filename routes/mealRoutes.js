@@ -3,22 +3,28 @@ const router = express.Router();
 
 // middleware
 
-const authController = require('../controllers/authController');
+const {
+  protect,
+  restrictToMessId,
+  restrictTo,
+  checkPassword,
+  restrictToAdmin,
+} = require('../controllers/authController');
 const mealController = require('../controllers/mealController');
 
 // Protect all routes after this middleware
-router.use(authController.protect);
-router.use(authController.restrictToMessId);
+router.use(protect);
+router.use(restrictToMessId);
 
 router.get('/', mealController.getMealList);
 router.get('/last-day', mealController.getLastDayMeal);
 router.get('/:id', mealController.getMeal);
 
 // Only manager have permission to access for the below APIs
-router.use(authController.restrictTo('manager', 'subManager'));
+router.use(restrictTo('manager', 'subManager'));
 
 router.post('/', mealController.createMeal);
 router.route('/:id').patch(mealController.updateMeal);
-router.delete('/:id', authController.checkPassword, mealController.deleteMeal);
+router.delete('/:id', checkPassword, mealController.deleteMeal);
 
 module.exports = router;

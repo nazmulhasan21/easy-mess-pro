@@ -2,7 +2,11 @@ const express = require('express');
 const router = express.Router();
 
 const userController = require('../controllers/userController');
-const authController = require('../controllers/authController');
+const {
+  protect,
+  checkPassword,
+  sendEmailVerificationCode,
+} = require('../controllers/authController');
 const { json } = require('body-parser');
 const {
   addMemberEmailValidated,
@@ -29,7 +33,7 @@ router.post(
 router.patch('/reset-password', emailCodeInValid, userController.resatPassword);
 
 // Protect all routes after this middleware
-router.use(authController.protect);
+router.use(protect);
 
 router
   .route('/me')
@@ -41,19 +45,15 @@ router.patch('/me/password', chPassInValid, userController.changePassword);
 router.post(
   '/me/send-email-change-verification-code',
   emailValid,
-  authController.sendEmailVerificationCode
+  sendEmailVerificationCode
 );
 router.patch('/me/email', emailCodeInValid, userController.changeEmail);
 
-// Only admin have permmission to access for the below APIs
+// Only admin have permission to access for the below APIs
 
 // router.route('/').get(userController.getAllUsers);
 router.delete('/log-out', userController.logOut);
-router.delete(
-  '/me/delete',
-  authController.checkPassword,
-  userController.deleteMe
-);
+router.delete('/me/delete', checkPassword, userController.deleteMe);
 router.route('/:id').get(userController.getUser);
 router.post('/email', addMemberEmailValidated, userController.getUserByEmail);
 module.exports = router;
