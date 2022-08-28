@@ -7,6 +7,7 @@ const moment = require('moment');
 
 // const { getLastDayUserMeal } = require('../utils/fun');
 const Mess = require('../models/messModel');
+const User = require('../models/userModel');
 
 exports.getMealList = async (req, res, next) => {
   try {
@@ -123,7 +124,7 @@ exports.createMeal = async (req, res, next) => {
     if (meals.length > 0)
       return next(
         new AppError(
-          401,
+          403,
           'meals',
           'All ready add today meals. Please Try in next day or Update meals'
         )
@@ -134,7 +135,10 @@ exports.createMeal = async (req, res, next) => {
       const total = myMeal.breakfast + myMeal.lunch + myMeal.dinner;
       // 4. post daily meal
       const userMeal = await Meal.create({
-        ...myMeal,
+        userId: myMeal.userId,
+        breakfast: myMeal.breakfast,
+        lunch: myMeal.lunch,
+        dinner: myMeal.dinner,
         total: total,
         messId: user.messId,
         monthId: month._id,
@@ -145,7 +149,7 @@ exports.createMeal = async (req, res, next) => {
     // 5. send res
     res.status(201).json({
       status: 'success',
-      message: `add meal successfully`,
+      message: `Add meal successfully`,
     });
   } catch (error) {
     next(error);
@@ -156,7 +160,7 @@ exports.getLastDayMeal = async (req, res, next) => {
     const { user } = req;
 
     // 1 . find user mess
-    const mess = await Mess.findOne(user.messId).select('allMember');
+    const mess = await Mess.findById(user.messId).select('allMember');
     // 2. find user active month
     const month = await Month.findOne({
       $and: [{ messId: mess._id }, { active: true }],
@@ -164,16 +168,18 @@ exports.getLastDayMeal = async (req, res, next) => {
 
     const meals = await Promise.all(
       mess.allMember.map(async (userId) => {
+        // find user
+        const user = await User.findById(userId).select('name avatar role');
         // find user meal
         const userMeals = await Meal.find({
           $and: [{ userId: userId }, { monthId: month._id }],
-        }).populate('userId', 'name avatar');
+        });
 
         const userMeal = userMeals[userMeals.length - 1];
         // create new
         const meal = {
           userId: userId,
-          user: { name: userId.name, role: userId.role, avatar: userId.avatar },
+          user,
           breakfast: userMeal?.breakfast || 0,
           lunch: userMeal?.lunch || 0,
           dinner: userMeal?.dinner || 0,
