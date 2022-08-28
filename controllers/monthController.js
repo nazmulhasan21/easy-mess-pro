@@ -90,6 +90,7 @@ exports.getActiveMonth = async (req, res, next) => {
     const month = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
     }).populate('manager', 'userId name email phone');
+
     if (!month) {
       return res.status(200).json({
         status: 'success',

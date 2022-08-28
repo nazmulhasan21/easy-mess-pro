@@ -28,10 +28,11 @@ router.patch('/', monthController.addFixedMeal);
 
 router.use(restrictTo('manager'));
 // check password
-router.use(checkPassword);
-router.post('/', monthController.createMonth);
 
-router.delete('/:id', monthController.deleteMonth);
+router.post('/', checkPassword, monthController.createMonth);
+
+router.delete('/:id', checkPassword, monthController.deleteMonth);
+
 router.use(restrictToAdmin);
 router.patch('/:id/status', monthController.changeMonthStatus);
 
