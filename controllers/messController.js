@@ -95,15 +95,18 @@ exports.getMonthList = async (req, res, next) => {
     /// status filter
     const active = req.body.active || '';
     const activeFilter = active ? { active } : {};
+
     // manager filter
     const manager = req.body.manager || '';
     const managerFilter = manager ? { manager } : {};
-    const monthTitle = req.body.monthTitle || '';
 
+    // month title filter
+    const monthTitle = req.body.monthTitle || '';
     const monthTitleFilter = monthTitle
       ? { monthTitle: { $regex: monthTitle, $options: 'i' } }
       : {};
 
+    // find query
     const findQuery = {
       $and: [
         { messId: user.messId },
@@ -285,7 +288,7 @@ exports.deleteMess = async (req, res, next) => {
     const { user } = req;
 
     // 1. delete all month in mess
-    const mond = await Month.deleteMany({ messId: user.messId });
+    const mess = await Month.deleteMany({ messId: user.messId });
 
     // 2. delete all in other data in mess
     await deleteAll(user.messId);
@@ -296,7 +299,6 @@ exports.deleteMess = async (req, res, next) => {
     res.status(201).json({
       status: 'success',
       message: 'Delete your mess successfully',
-      mond,
     });
   } catch (error) {
     next(error);

@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 
 // middleware
-const { addCostInputValidated } = require('../middleware/inputValidation');
 
 const authController = require('../controllers/authController');
 const mealController = require('../controllers/mealController');

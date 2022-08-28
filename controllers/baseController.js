@@ -91,14 +91,31 @@ exports.getOne = (Model, model) => async (req, res, next) => {
 exports.getAll = (Model) => async (req, res, next) => {
   try {
     const messId = req.user.messId;
-    const features = new APIFeatures(Model.find({ messId: messId }), req.query)
+    // name filter
+    const name = req.query.name || '';
+    const nameFilter = name ? { name: { $regex: name, $options: 'i' } } : {};
+    // email filter
+    const email = req.query.email || '';
+    const emailFilter = email
+      ? { email: { $regex: email, $options: 'i' } }
+      : {};
+    // phone filter
+    const phone = req.body.phone || '';
+    const phoneFilter = phone
+      ? { phone: { $regex: phone, $options: 'i' } }
+      : {};
+    // findQuery
+    const findQuery = {
+      $and: [{ messId: messId }, nameFilter, emailFilter, phoneFilter],
+    };
+    const features = new APIFeatures(Model.find(findQuery), req.query)
       .sort()
-      .paginate()
-      .limitFields();
+      .paginate();
     const doc = await features.query;
+    const results = await Model.countDocuments(findQuery);
     res.status(200).json({
       status: 'success',
-      results: doc.length,
+      results,
       data: {
         data: doc,
       },
