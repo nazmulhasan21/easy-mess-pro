@@ -217,22 +217,21 @@ exports.changeMonthStatus = async (req, res, next) => {
     const activeMonth = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
     });
-    if (active == 1 && activeMonth)
+    if ((active == 1 || active == true) && activeMonth)
       return next(
         new AppError(403, 'active', 'All ready active another month')
       );
-    if (active == 1 && !activeMonth) {
+    if ((active == 1 || active == true) && !activeMonth) {
       await Month.updateOne(
         { $and: [{ _id: req.params.id }, { messId: user.messId }] },
         { active: true }
       );
-      await activeMonth.save();
       return res.status(200).json({
         status: 'success',
         message: 'Activated your month status successfully',
       });
     }
-    if (active == 0) {
+    if (active == 0 || active == false) {
       await Month.updateOne(
         { $and: [{ _id: req.params.id }, { messId: user.messId }] },
         { active: false }
