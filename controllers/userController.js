@@ -65,21 +65,24 @@ exports.updateAvatar = async (req, res, next) => {
       return next(
         new AppError(404, 'avatar', 'Please upload your profile image')
       );
-
-    cloudinary.uploader.upload(
-      files.avatar.tempFilePath,
-      async (error, result) => {
-        user.avatar = result.url;
-        await user.save();
-        res.status(200).json({
-          status: 'success',
-          message: 'Your Profile image upload successfully',
-          data: {
-            avatar: result.url,
-          },
-        });
-      }
-    );
+    if (files.avatar) {
+      cloudinary.uploader.upload(
+        files?.avatar?.tempFilePath,
+        async (error, result) => {
+          user.avatar = result.url;
+          await user.save();
+          res.status(200).json({
+            status: 'success',
+            message: 'Your Profile image upload successfully',
+            data: {
+              avatar: result.url,
+            },
+          });
+        }
+      );
+    } else {
+      return next(new AppError(404, 'avatar', 'Please provide any img file'));
+    }
   } catch (error) {
     next(error);
   }
