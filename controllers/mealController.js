@@ -140,6 +140,7 @@ exports.createMeal = async (req, res, next) => {
         lunch: myMeal.lunch,
         dinner: myMeal.dinner,
         total: total,
+        date: myMeal.date,
         messId: user.messId,
         monthId: month._id,
         addBy: user._id,
@@ -183,6 +184,7 @@ exports.getLastDayMeal = async (req, res, next) => {
           breakfast: userMeal?.breakfast || 0,
           lunch: userMeal?.lunch || 0,
           dinner: userMeal?.dinner || 0,
+          date: userMeal?.date || moment(),
         };
         return meal;
       })
