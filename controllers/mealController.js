@@ -17,7 +17,7 @@ exports.getMealList = async (req, res, next) => {
     // 1. filter in date
     let dateFilter = {};
     if (startDate || endDate) {
-      date = {
+      dateFilter = {
         date: {
           $gte: moment(startDate).startOf('day'),
           $lte: moment(endDate).endOf('day'),
@@ -107,14 +107,13 @@ exports.createMeal = async (req, res, next) => {
     if (!month)
       return next(new AppError(404, 'month', 'No found active month'));
     // check add now day meal in active month
-    const today = moment().startOf('day');
     const oldMeals = await Meal.find({
       $and: [
         { monthId: month._id },
         {
           date: {
-            $gte: today.toDate(),
-            $lte: moment(today).endOf('day').toDate(),
+            $gte: moment(date).startOf('day'),
+            $lte: moment(date).endOf('day'),
           },
         },
       ],
@@ -184,7 +183,6 @@ exports.getLastDayMeal = async (req, res, next) => {
           breakfast: userMeal?.breakfast || 0,
           lunch: userMeal?.lunch || 0,
           dinner: userMeal?.dinner || 0,
-          date: userMeal?.date || moment(),
         };
         return meal;
       })
