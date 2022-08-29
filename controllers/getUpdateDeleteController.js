@@ -188,23 +188,25 @@ exports.updateOne = (Model, model) => async (req, res, next) => {
     const { user, body } = req;
     const isValid = mongoose.Types.ObjectId.isValid(req.params.id);
     if (!isValid) return next(new AppError(400, '_id', 'Id is not valid '));
-    // 1. create new cost body in new data
-    let newDoc = {
-      ...body,
-      editBy: user._id,
-    };
+    // 1. find active month
     const activeMonth = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
     });
+    if (!activeMonth)
+      return next(new AppError(404, 'month', `Do not have any active month`));
+    // 2. Not found any cost
+
+    let newDoc = {};
     const doc = await Model.findOne({
       $and: [{ _id: req.params.id }, { monthId: activeMonth._id }],
     });
+    if (!doc) return next(new AppError(404, 'meal', 'Not found with this id'));
 
     // if update any one meal  run this if function
     if (model == 'meal') {
-      const breakfast = body?.breakfast || doc.breakfast;
-      const lunch = body?.lunch || doc.lunch;
-      const dinner = body?.dinner || doc.dinner;
+      const breakfast = body?.breakfast || doc?.breakfast;
+      const lunch = body?.lunch || doc?.lunch;
+      const dinner = body?.dinner || doc?.dinner;
       const total = breakfast + lunch + dinner;
       newDoc = {
         breakfast,
@@ -213,10 +215,12 @@ exports.updateOne = (Model, model) => async (req, res, next) => {
         total,
         editBy: user._id,
       };
+    } else {
+      newDoc = {
+        ...body,
+        editBy: user._id,
+      };
     }
-    // 2. Not found any cost
-    if (!doc || !activeMonth)
-      return next(new AppError(404, model, `Do not update this ${model}`));
 
     const upDoc = await Model.findByIdAndUpdate(req.params.id, newDoc, {
       new: true,
