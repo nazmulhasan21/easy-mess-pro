@@ -98,7 +98,7 @@ exports.getMealList = async (req, res, next) => {
 exports.createMeal = async (req, res, next) => {
   try {
     const { user } = req;
-    const dailyMealArray = req.body;
+    const { date, meals } = req.body;
 
     //1. find active month
     const month = await Month.findOne({
@@ -108,7 +108,7 @@ exports.createMeal = async (req, res, next) => {
       return next(new AppError(404, 'month', 'No found active month'));
     // check add now day meal in active month
     const today = moment().startOf('day');
-    const meals = await Meal.find({
+    const oldMeals = await Meal.find({
       $and: [
         { monthId: month._id },
         {
@@ -121,7 +121,7 @@ exports.createMeal = async (req, res, next) => {
     });
     //c
 
-    if (meals.length > 0)
+    if (oldMeals.length > 0)
       return next(
         new AppError(
           403,
@@ -131,7 +131,7 @@ exports.createMeal = async (req, res, next) => {
       );
 
     //  3. daily Meal array to daily meal object
-    dailyMealArray.forEach(async (myMeal) => {
+    meals.forEach(async (myMeal) => {
       const total = myMeal.breakfast + myMeal.lunch + myMeal.dinner;
       // 4. post daily meal
       const userMeal = await Meal.create({
@@ -140,7 +140,7 @@ exports.createMeal = async (req, res, next) => {
         lunch: myMeal.lunch,
         dinner: myMeal.dinner,
         total: total,
-        date: myMeal.date,
+        date: date,
         messId: user.messId,
         monthId: month._id,
         addBy: user._id,
