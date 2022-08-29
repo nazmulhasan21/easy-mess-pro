@@ -122,7 +122,7 @@ exports.monthCal = async (month) => {
     month.mealRate = (month.totalMealCost / month.totalFixedMeal).toFixed(2);
     await month.save();
   } catch (error) {
-    next(error);
+    return error;
   }
 };
 
@@ -208,6 +208,6 @@ exports.userMonthCal = async (userId, month) => {
     const data = await userMonthData.save();
     return data;
   } catch (error) {
-    next(error);
+    return error;
   }
 };

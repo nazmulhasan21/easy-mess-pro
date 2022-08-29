@@ -40,6 +40,6 @@ module.exports = async (templateName, data) => {
     await browser.close();
     return true;
   } catch (error) {
-    next(error);
+    return error;
   }
 };

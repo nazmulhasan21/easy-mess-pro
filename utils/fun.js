@@ -45,7 +45,7 @@ module.exports.createMonth = async (user, mess) => {
 
     await month.save();
   } catch (error) {
-    next(error);
+    return error;
   }
 };
 
@@ -70,7 +70,7 @@ module.exports.createUserMonthData = async (userId, month, messId) => {
     user.messId = messId;
     await user.save();
   } catch (error) {
-    next(error);
+    return error;
   }
 };
 
@@ -97,7 +97,7 @@ module.exports.deleteUserMonthData = async (userId, month) => {
 
     await user.save();
   } catch (error) {
-    next(error);
+    return error;
   }
 };
 
@@ -126,7 +126,7 @@ module.exports.deleteAll = async (messId) => {
       await user.save();
     });
   } catch (error) {
-    next(error);
+    return error;
   }
 };
 
@@ -156,7 +156,7 @@ exports.deleteAllMonthData = async (monthId, allMember) => {
       await user.save();
     });
   } catch (error) {
-    next(error);
+    return error;
   }
 };
 
@@ -183,7 +183,7 @@ exports.createOtpCode = async (email) => {
     });
     return otpCode;
   } catch (error) {
-    next(error);
+    return error;
   }
 };
 
@@ -216,7 +216,7 @@ exports.checkOtpCode = async (email, htmlTemplates) => {
       );
     }
   } catch (error) {
-    next(error);
+    return error;
   }
 };
 
@@ -249,7 +249,7 @@ exports.sendVerificationCode = async (to, subj, templateName) => {
     // send email
     sendEmail(receiver, subject, html, params);
   } catch (error) {
-    next(error);
+    return error;
   }
 };
 
@@ -317,7 +317,7 @@ exports.getMonthPdf = async (monthId) => {
       return true;
     }
   } catch (error) {
-    next(error);
+    return error;
   }
 };
 
@@ -354,7 +354,7 @@ const tt = async () => {
 
     return finalUserName;
   } catch (error) {
-    next(error);
+    return error;
   }
 };
 
