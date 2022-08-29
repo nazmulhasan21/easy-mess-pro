@@ -23,17 +23,19 @@ router.get('/pdf', monthController.getPDF);
 router.get('/:id', monthController.getMonth);
 router.get('/', monthController.getActiveMonth);
 
-router.use(restrictTo('manager', 'subManager'));
-router.patch('/', monthController.addFixedMeal);
+router.patch('/:id/status', restrictToAdmin, monthController.changeMonthStatus);
+
+router.patch(
+  '/',
+  restrictTo('manager', 'subManager'),
+  monthController.addFixedMeal
+);
 
 router.use(restrictTo('manager'));
 // check password
+router.use(checkPassword);
+router.post('/', monthController.createMonth);
 
-router.post('/', checkPassword, monthController.createMonth);
-
-router.delete('/:id', checkPassword, monthController.deleteMonth);
-
-router.use(restrictToAdmin);
-router.patch('/:id/status', monthController.changeMonthStatus);
+router.delete('/:id', monthController.deleteMonth);
 
 module.exports = router;
