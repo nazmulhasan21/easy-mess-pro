@@ -116,7 +116,7 @@ exports.getActiveMonth = async (req, res, next) => {
     await userMonthData.save();
 
     // 2. Get active Month User Month data
-    const recentAdded = await MonthMemberData.findOne({
+    const recentAdded = await MonthMemberData.find({
       $and: [{ userId: user._id }, { monthId: month._id }],
     });
 
