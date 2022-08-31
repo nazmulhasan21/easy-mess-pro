@@ -140,8 +140,10 @@ module.exports.addCostInputValidated = [
 module.exports.addMonthMemberDataInputValidated = [
   body('type')
     .trim()
-    .isIn(['cash', 'rice', 'extraRice', 'guestMeal'])
-    .withMessage('Please select cash or rice or extraRice or guestMeal')
+    .isIn(['cash', 'rice', 'extraRice', 'guestMeal', 'extraCost'])
+    .withMessage(
+      'Please select cash or rice or extraRice or guestMeal or extraCost'
+    )
     .notEmpty()
     .withMessage('Please select any one data type.'),
   body('amount')

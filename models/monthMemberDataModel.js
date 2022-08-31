@@ -24,7 +24,7 @@ const monthMemberDataSchema = mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ['cash', 'rice', 'extraRice', 'guestMeal'],
+      enum: ['cash', 'rice', 'extraRice', 'guestMeal', 'extraCost'],
       required: true,
     },
     amount: {

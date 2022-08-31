@@ -179,6 +179,7 @@ exports.userMonthCal = async (userId, month) => {
     const rice = userData?.rice || 0;
     const extraRice = userData?.extraRice || 0;
     const guestMeal = userData?.guestMeal || 0;
+    const extraCost = userData?.extraCost || 0;
 
     //5 set value this property
     userMonthData.totalMeal = meal?.total || 1;
@@ -196,13 +197,18 @@ exports.userMonthCal = async (userId, month) => {
       2
     );
     userMonthData.totalGuestMealAmount = guestMeal;
+    userMonthData.totalExtraCost = extraCost;
     userMonthData.otherCost = month.otherCostPerPerson.toFixed(2);
     userMonthData.totalCost = (
       userMonthData.mealCost +
       userMonthData.otherCost +
       userMonthData.totalGuestMealAmount
     ).toFixed(2);
-    userMonthData.balance = (cash - userMonthData.totalCost).toFixed(2);
+    userMonthData.balance = (
+      cash -
+      userMonthData.totalCost -
+      extraCost
+    ).toFixed(2);
 
     // 6. save to database
     const data = await userMonthData.save();
