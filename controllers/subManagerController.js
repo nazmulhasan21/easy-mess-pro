@@ -80,9 +80,7 @@ exports.getSubManagerList = async (req, res, next) => {
         $and: [{ messId: user.messId }, { role: 'subManager' }],
       }).select('name email phone avatar role'),
       req.query
-    )
-      .sort()
-      .paginate();
+    );
     const subManagerList = await features.query;
 
     res.status(200).json({

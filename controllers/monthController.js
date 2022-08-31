@@ -23,6 +23,7 @@ const {
 const UserMonthData = require('../models/userMonthDataModel');
 const { monthCal, userMonthCal } = require('../utils/calculation');
 const Meal = require('../models/mealModel');
+const MonthMemberData = require('../models/monthMemberDataModel');
 
 exports.createMonth = async (req, res, next) => {
   try {
@@ -114,13 +115,18 @@ exports.getActiveMonth = async (req, res, next) => {
     });
     await userMonthData.save();
 
+    // 2. Get active Month User Month data
+    const recentAdded = await MonthMemberData.findOne({
+      $and: [{ userId: user._id }, { monthId: month._id }],
+    });
+
     res.status(200).json({
       status: 'success',
       data: {
         mess,
         month,
         userMonthData,
-        user,
+        recentAdded,
       },
     });
   } catch (error) {

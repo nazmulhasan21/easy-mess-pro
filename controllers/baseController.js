@@ -108,9 +108,7 @@ exports.getAll = (Model) => async (req, res, next) => {
     const findQuery = {
       $and: [{ messId: messId }, nameFilter, emailFilter, phoneFilter],
     };
-    const features = new APIFeatures(Model.find(findQuery), req.query)
-      .sort()
-      .paginate();
+    const features = new APIFeatures(Model.find(findQuery), req.query).sort();
     const doc = await features.query;
     const results = await Model.countDocuments(findQuery);
     res.status(200).json({

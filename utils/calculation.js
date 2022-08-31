@@ -202,13 +202,10 @@ exports.userMonthCal = async (userId, month) => {
     userMonthData.totalCost = (
       userMonthData.mealCost +
       userMonthData.otherCost +
-      userMonthData.totalGuestMealAmount
+      userMonthData.totalGuestMealAmount +
+      userMonthData.totalExtraCost
     ).toFixed(2);
-    userMonthData.balance = (
-      cash -
-      userMonthData.totalCost -
-      extraCost
-    ).toFixed(2);
+    userMonthData.balance = (cash - userMonthData.totalCost).toFixed(2);
 
     // 6. save to database
     const data = await userMonthData.save();

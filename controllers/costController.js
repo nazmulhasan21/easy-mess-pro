@@ -96,7 +96,7 @@ exports.getCostList = async (req, res, next) => {
         .populate('addBy editBy', 'name avatar role')
         .sort({ createdAt: -1 }),
       req.query
-    ).paginate();
+    );
     const doc = await features.query;
     const results = await Cost.countDocuments(findQuery);
     // 3. send res

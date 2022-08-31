@@ -110,7 +110,7 @@ exports.getList = (Model) => async (req, res, next) => {
         .populate('addBy editBy userId', 'name avatar role')
         .sort({ createdAt: -1 }),
       req.query
-    ).paginate();
+    );
     const doc = await features.query;
     const results = await Model.countDocuments(findQuery);
 

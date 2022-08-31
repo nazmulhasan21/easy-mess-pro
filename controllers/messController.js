@@ -121,9 +121,8 @@ exports.getMonthList = async (req, res, next) => {
         .populate('manager', 'name avatar')
         .sort({ active: -1 }),
       req.query
-    )
-      .limitFields()
-      .paginate();
+    ).limitFields();
+
     const monthList = await features.query;
     const results = await Month.countDocuments(findQuery);
     res.status(200).json({
