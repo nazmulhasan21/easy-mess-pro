@@ -45,6 +45,8 @@ exports.deleteSubManager = async (req, res, next) => {
       return next(new AppError(400, 'userId', 'userId is not valid '));
 
     // 1 .check user is active month manager
+    if (!user.role == 'manager')
+      return next(new AppError(403, 'manager', 'This is a not mess manager'));
     const activeMonthManager = await Month.findOne({
       $and: [{ manager: userId }, { active: true }],
     });
