@@ -8,6 +8,7 @@ const moment = require('moment');
 // const { getLastDayUserMeal } = require('../utils/fun');
 const Mess = require('../models/messModel');
 const User = require('../models/userModel');
+const UserMonthData = require('../models/userMonthDataModel');
 
 exports.getMealList = async (req, res, next) => {
   try {
@@ -166,8 +167,19 @@ exports.getLastDayMeal = async (req, res, next) => {
       $and: [{ messId: mess._id }, { active: true }],
     });
 
+    // find allMember in this month
+    const userData = await UserMonthData.find({
+      $and: [{ messId: user.messId }, { monthId: month._id }],
+    }).select('userId');
+
+    const members = await Promise.all(
+      userData.map(async (item) => {
+        return item.userId;
+      })
+    );
+
     const meals = await Promise.all(
-      mess.allMember.map(async (userId) => {
+      members.map(async (userId) => {
         // find user
         const user = await User.findById(userId).select('name avatar role');
         // find user meal

@@ -1,5 +1,6 @@
 // node modules
 const moment = require('moment');
+const _ = require('lodash');
 const { default: mongoose } = require('mongoose');
 const path = require('path');
 const schedule = require('node-schedule');
@@ -86,11 +87,11 @@ exports.getActiveMonth = async (req, res, next) => {
     const { user } = req;
 
     // ** GET mess all member user Id
-    const mess = await Mess.findById(user.messId).select('messName allMember');
+    // const mess = await Mess.findById(user.messId).select('messName allMember');
     // 1. Get active Month
     const month = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
-    }).populate('manager', 'userId name email phone');
+    }).populate('messId manager', 'userId name email phone messName');
 
     if (!month) {
       return res.status(200).json({
@@ -102,10 +103,15 @@ exports.getActiveMonth = async (req, res, next) => {
 
     await monthCal(month);
     await month.save();
-
-    mess.allMember.map(async (userId) => {
-      await userMonthCal(userId, month);
+    const userData = await UserMonthData.find({
+      $and: [{ messId: user.messId }, { monthId: month._id }],
+    }).select('userId');
+    userData.map(async (item) => {
+      await userMonthCal(item.userId, month);
     });
+    // mess.allMember.map(async (userId) => {
+    //   await userMonthCal(userId, month);
+    // });
     // cal this user month data
     await userMonthCal(user._id, month);
 
@@ -123,10 +129,58 @@ exports.getActiveMonth = async (req, res, next) => {
     res.status(200).json({
       status: 'success',
       data: {
-        mess,
+        mess: month.messId,
         month,
         userMonthData,
         recentAdded,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getMonthChart = async (req, res, next) => {
+  try {
+    const { user } = req;
+    // find active month
+    const month = await Month.findOne({
+      $and: [{ messId: user.messId }, { active: true }],
+    });
+    if (!month)
+      return next(
+        new AppError(404, 'month', 'You have not a any active month')
+      );
+    /// find user month data
+    const allUserMonthData = await UserMonthData.find({
+      $and: [{ messId: user.messId }, { monthId: month._id }],
+    }).populate('userId', 'name avatar role');
+
+    const data = await MonthMemberData.find({
+      $and: [{ monthId: month._id }, { userId: user._id }],
+    }).select('monthId userId type amount date');
+    const cash = _.filter(data, ['type', 'cash']);
+    const rice = _.filter(data, ['type', 'rice']);
+    const extraRice = _.filter(data, ['type', 'extraRice']);
+    const guestMeal = _.filter(data, ['type', 'guestMeal']);
+    const extraCost = _.filter(data, ['type', 'extraCost']);
+    // sub
+    const cashSum = _.sumBy(cash, 'amount');
+    const riceSum = _.sumBy(rice, 'amount');
+    const extraRiceSum = _.sumBy(extraRice, 'amount');
+    const guestMealSum = _.sumBy(guestMeal, 'amount');
+    const extraCostSum = _.sumBy(extraCost, 'amount');
+
+    // send res
+    res.status(200).json({
+      status: 'success',
+      data: {
+        allUserMonthData,
+        userCash: { cash, total: cashSum },
+        userRice: { rice, total: riceSum },
+        userExtraRice: { extraRice, total: extraRiceSum },
+        userGuestMeal: { guestMeal, total: guestMealSum },
+        userExtraCost: { extraCost, total: extraCostSum },
       },
     });
   } catch (error) {
@@ -186,9 +240,18 @@ exports.deleteMonth = async (req, res, next) => {
     const mess = await Mess.findById(user.messId).select('allMember month');
     // 3. delete mess months in this month id
     mess.month.pull(month);
+    // find allMember in this month
+    const userData = await UserMonthData.find({
+      $and: [{ messId: user.messId }, { monthId: month._id }],
+    }).select('userId');
 
+    const members = await Promise.all(
+      userData.map(async (item) => {
+        return item.userId;
+      })
+    );
     // 4. delete data in this month related
-    await deleteAllMonthData(month._id, mess.allMember);
+    await deleteAllMonthData(month._id, members);
 
     // 5. delete month
 
@@ -261,11 +324,28 @@ exports.changeMonthStatus = async (req, res, next) => {
 
 const endOfMonth = moment().clone().endOf('month').format('DD');
 
-var j = schedule.scheduleJob(`00 20 21 */${endOfMonth} * * `, function () {
-  deActiveMonth();
-  console.log('Your scheduled job at all month in unActive');
-  const today = moment().format('YYYY-MM-DD hh:mm:ss');
-  console.log(today);
-});
+var j = schedule.scheduleJob(
+  `00 20 21 */${endOfMonth} * * `,
+  async function () {
+    await Month.updateMany({ active: false });
+    console.log('Your scheduled job at all month in unActive');
+    const today = moment().format('YYYY-MM-DD hh:mm:ss');
+    console.log(today);
+  }
+);
 
 exports.getMonth = base.getOne(Month, 'month');
+const ffff = async (req, res, next) => {
+  const userMonth = await MonthMemberData.find();
+  const userId = await Promise.all(
+    userMonth.map(async (item, index) => {
+      console.log(item);
+      // console.log(item.userId);
+      return item.userId;
+    })
+  );
+  console.log(userId);
+  // console.log(userMonth);
+};
+
+// ffff();

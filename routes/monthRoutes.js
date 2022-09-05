@@ -19,7 +19,7 @@ router.use(protect);
 router.use(restrictToMessId);
 
 router.get('/pdf', monthController.getPDF);
-// router.get('/', monthController.getMonthList);
+router.get('/chart', monthController.getMonthChart);
 router.get('/:id', monthController.getMonth);
 router.get('/', monthController.getActiveMonth);
 
