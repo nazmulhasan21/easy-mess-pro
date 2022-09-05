@@ -34,27 +34,14 @@ exports.login = async (req, res, next) => {
       const subject = 'Email verification';
       const templateName = 'sendEmailVerCode';
 
-      const send = await sendVerificationCode(to, subject, templateName);
-      if (send) {
+      const sent = await sendVerificationCode(to, subject, templateName);
+      if (sent) {
         return res.status(200).json({
           status: 'success',
           message: 'Please check your email and verified your email',
           emailVerified: false,
         });
       }
-
-      // const to = { email: email, name: user.name };
-      // const subject = 'Email verification';
-      // const templateName = 'emailSingUp';
-
-      // const send = await sendVerificationCode(to, subject, templateName);
-      // if (send) {
-      //   return res.status(200).json({
-      //     status: 'fail',
-      //     message: 'Please check your email and verified your account',
-      //     emailVerified: false,
-      //   });
-      // }
     }
 
     // -> 3 <- All correct , send jwt to client
