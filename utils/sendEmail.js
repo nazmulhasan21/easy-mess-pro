@@ -8,7 +8,7 @@ const Sib = require('sib-api-v3-sdk');
  * @param {objectParams} params this is email object params
  */
 
-exports.sendEmail = (to, subject, html, params) => {
+exports.sendEmail = async (to, subject, html, params) => {
   const client = Sib.ApiClient.instance;
   // 1. Configure API key authentications : api-key
 
@@ -30,13 +30,8 @@ exports.sendEmail = (to, subject, html, params) => {
     params: params,
   };
 
-  apiInstance.sendTransacEmail(sendSmtpEmail).then(
-    (data) => {
-      console.log(`API called successfully.data is ${data}`);
-    },
-    (error) => {
-      console.log(error);
-    }
-  );
-  return true;
+  const send = await apiInstance.sendTransacEmail(sendSmtpEmail);
+  if (send.messageId) {
+    return true;
+  }
 };

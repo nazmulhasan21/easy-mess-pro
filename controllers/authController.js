@@ -30,26 +30,18 @@ exports.login = async (req, res, next) => {
     }
     // check email verification
     if (!user.emailVerified) {
-      const email = req.body.email.trim();
-
-      const user = await User.findOne({ email });
-      let to = {};
-      if (!user) {
-        to = { email: email };
-      } else {
-        to = { email: email, name: user?.name };
-      }
-
+      const to = { email: email, name: user?.name };
       const subject = 'Email verification';
       const templateName = 'emailSingUp';
 
-      sendVerificationCode(to, subject, templateName);
-
-      return res.status(200).json({
-        status: 'success',
-        message: 'Please check your email and verified your email',
-        emailVerified: false,
-      });
+      const send = await sendVerificationCode(to, subject, templateName);
+      if (send) {
+        return res.status(200).json({
+          status: 'success',
+          message: 'Please check your email and verified your email',
+          emailVerified: false,
+        });
+      }
 
       // const to = { email: email, name: user.name };
       // const subject = 'Email verification';
