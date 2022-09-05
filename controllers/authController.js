@@ -30,7 +30,13 @@ exports.login = async (req, res, next) => {
     }
     // check email verification
     if (!user.emailVerified) {
-      const to = { email: email, name: user.name };
+      let to = {};
+      if (!user) {
+        to = { email: email };
+      } else {
+        to = { email: email, name: user?.name };
+      }
+
       const subject = 'Email verification';
       const templateName = 'emailSingUp';
 
@@ -77,7 +83,12 @@ exports.signup = async (req, res, next) => {
       role,
     });
     if (user) {
-      const to = { email: email, name: user?.name };
+      let to = {};
+      if (!user) {
+        to = { email: email };
+      } else {
+        to = { email: email, name: user?.name };
+      }
       const subject = 'Email verification';
       const templateName = 'emailSingUp';
 
