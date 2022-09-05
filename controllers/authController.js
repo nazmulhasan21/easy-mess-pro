@@ -32,7 +32,7 @@ exports.login = async (req, res, next) => {
     if (!user.emailVerified) {
       const to = { email: email, name: user?.name };
       const subject = 'Email verification';
-      const templateName = 'sendEmailCode';
+      const templateName = 'sendEmailVerCode';
 
       const send = await sendVerificationCode(to, subject, templateName);
       if (send) {
@@ -92,7 +92,7 @@ exports.signup = async (req, res, next) => {
     if (user) {
       const to = { email: email, name: user?.name };
       const subject = 'Email verification';
-      const templateName = 'sendEmailCode';
+      const templateName = 'sendEmailVerCode';
 
       const sent = await sendVerificationCode(to, subject, templateName);
 
