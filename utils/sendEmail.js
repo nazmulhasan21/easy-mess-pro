@@ -22,7 +22,7 @@ exports.sendEmail = (to, subject, html, params) => {
   sendSmtpEmail = {
     sender: {
       email: 'messmanagerapp22@gmail.com',
-      name: 'Mess Manager App',
+      name: 'Easy Mess App',
     },
     to: to,
     subject,
