@@ -34,13 +34,14 @@ exports.login = async (req, res, next) => {
       const subject = 'Email verification';
       const templateName = 'emailSingUp';
 
-      sendVerificationCode(to, subject, templateName);
-
-      return res.status(200).json({
-        status: 'fail',
-        message: 'Please check your email and verified your account',
-        emailVerified: false,
-      });
+      const send = await sendVerificationCode(to, subject, templateName);
+      if (send) {
+        return res.status(200).json({
+          status: 'fail',
+          message: 'Please check your email and verified your account',
+          emailVerified: false,
+        });
+      }
     }
 
     // -> 3 <- All correct , send jwt to client
@@ -80,7 +81,7 @@ exports.signup = async (req, res, next) => {
       const subject = 'Email verification';
       const templateName = 'emailSingUp';
 
-      const sent = sendVerificationCode(to, subject, templateName);
+      const sent = await sendVerificationCode(to, subject, templateName);
 
       if (sent) {
         res.status(201).json({
