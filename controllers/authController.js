@@ -76,9 +76,9 @@ exports.signup = async (req, res, next) => {
       role,
     });
     if (user) {
-      const to = { email: user?.email, name: user?.name };
+      const to = { email: email, name: user?.name };
       const subject = 'Email verification';
-      const templateName = 'emailSingUp';
+      const templateName = 'sendEmailCode';
 
       sendVerificationCode(to, subject, templateName);
       res.status(201).json({
