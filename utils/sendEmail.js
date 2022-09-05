@@ -38,4 +38,5 @@ exports.sendEmail = (to, subject, html, params) => {
       console.log(error);
     }
   );
+  return true;
 };

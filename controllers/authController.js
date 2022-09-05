@@ -80,12 +80,15 @@ exports.signup = async (req, res, next) => {
       const subject = 'Email verification';
       const templateName = 'emailSingUp';
 
-      sendVerificationCode(to, subject, templateName);
-      res.status(201).json({
-        status: 'success',
-        message: 'Please check your email and verified your account',
-        emailVerified: false,
-      });
+      const sent = sendVerificationCode(to, subject, templateName);
+
+      if (sent) {
+        res.status(201).json({
+          status: 'success',
+          message: 'Please check your email and verified your account',
+          emailVerified: false,
+        });
+      }
     }
   } catch (err) {
     err.statusCode = err.statusCode || 400;

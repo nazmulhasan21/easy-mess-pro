@@ -247,7 +247,8 @@ exports.sendVerificationCode = async (to, subj, templateName) => {
       subject: subj,
     };
     // send email
-    sendEmail(receiver, subject, html, params);
+    const sent = sendEmail(receiver, subject, html, params);
+    return sent;
   } catch (error) {
     return error;
   }
