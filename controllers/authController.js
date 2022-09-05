@@ -30,6 +30,9 @@ exports.login = async (req, res, next) => {
     }
     // check email verification
     if (!user.emailVerified) {
+      const email = req.body.email.trim();
+
+      const user = await User.findOne({ email });
       let to = {};
       if (!user) {
         to = { email: email };
@@ -40,14 +43,26 @@ exports.login = async (req, res, next) => {
       const subject = 'Email verification';
       const templateName = 'emailSingUp';
 
-      const send = await sendVerificationCode(to, subject, templateName);
-      if (send) {
-        return res.status(200).json({
-          status: 'fail',
-          message: 'Please check your email and verified your account',
-          emailVerified: false,
-        });
-      }
+      sendVerificationCode(to, subject, templateName);
+
+      return res.status(200).json({
+        status: 'success',
+        message: 'Please check your email and verified your email',
+        emailVerified: false,
+      });
+
+      // const to = { email: email, name: user.name };
+      // const subject = 'Email verification';
+      // const templateName = 'emailSingUp';
+
+      // const send = await sendVerificationCode(to, subject, templateName);
+      // if (send) {
+      //   return res.status(200).json({
+      //     status: 'fail',
+      //     message: 'Please check your email and verified your account',
+      //     emailVerified: false,
+      //   });
+      // }
     }
 
     // -> 3 <- All correct , send jwt to client
@@ -83,12 +98,7 @@ exports.signup = async (req, res, next) => {
       role,
     });
     if (user) {
-      let to = {};
-      if (!user) {
-        to = { email: email };
-      } else {
-        to = { email: email, name: user?.name };
-      }
+      const to = { email: email, name: user?.name };
       const subject = 'Email verification';
       const templateName = 'emailSingUp';
 
