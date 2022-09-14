@@ -25,6 +25,7 @@ const UserMonthData = require('../models/userMonthDataModel');
 const { monthCal, userMonthCal } = require('../utils/calculation');
 const Meal = require('../models/mealModel');
 const MonthMemberData = require('../models/monthMemberDataModel');
+const Cost = require('../models/costModel');
 
 exports.createMonth = async (req, res, next) => {
   try {
@@ -124,7 +125,7 @@ exports.getActiveMonth = async (req, res, next) => {
     // 2. Get active Month User Month data
     const recentAdded = await MonthMemberData.find({
       $and: [{ userId: user._id }, { monthId: month._id }],
-    });
+    }).sort({ date: -1 });
 
     res.status(200).json({
       status: 'success',
@@ -156,14 +157,26 @@ exports.getMonthChart = async (req, res, next) => {
       $and: [{ messId: user.messId }, { monthId: month._id }],
     }).populate('userId', 'name avatar role');
 
+    // month cost
+    const allCost = await Cost.find({
+      $and: [{ messId: user.messId }, { monthId: month._id }],
+    }).sort({ date: -1 });
+
+    // data for cash rice others
     const data = await MonthMemberData.find({
       $and: [{ monthId: month._id }, { userId: user._id }],
-    }).select('monthId userId type amount date');
+    })
+      .select('monthId userId type amount date')
+      .sort({ date: -1 });
     const cash = _.filter(data, ['type', 'cash']);
     const rice = _.filter(data, ['type', 'rice']);
     const extraRice = _.filter(data, ['type', 'extraRice']);
     const guestMeal = _.filter(data, ['type', 'guestMeal']);
     const extraCost = _.filter(data, ['type', 'extraCost']);
+    // cost type
+    const bigCost = _.filter(allCost, ['type', 'bigCost']);
+    const smallCost = _.filter(allCost, ['type', 'smallCost']);
+    const otherCost = _.filter(allCost, ['type', 'otherCost']);
     // sub
     const cashSum = _.sumBy(cash, 'amount');
     const riceSum = _.sumBy(rice, 'amount');
@@ -171,16 +184,24 @@ exports.getMonthChart = async (req, res, next) => {
     const guestMealSum = _.sumBy(guestMeal, 'amount');
     const extraCostSum = _.sumBy(extraCost, 'amount');
 
+    // sub cost
+    const bigCostSum = _.sumBy(bigCost, 'amount');
+    const smallCostSum = _.sumBy(smallCost, 'amount');
+    const otherCostSum = _.sumBy(otherCost, 'amount');
+
     // send res
     res.status(200).json({
       status: 'success',
       data: {
-        allUserMonthData,
+        bigCost: { bigCost, total: bigCostSum },
+        smallCost: { smallCost, total: smallCostSum },
+        otherCost: { otherCost, total: otherCostSum },
         userCash: { cash, total: cashSum },
         userRice: { rice, total: riceSum },
         userExtraRice: { extraRice, total: extraRiceSum },
         userGuestMeal: { guestMeal, total: guestMealSum },
         userExtraCost: { extraCost, total: extraCostSum },
+        allUserMonthData,
       },
     });
   } catch (error) {
