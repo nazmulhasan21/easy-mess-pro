@@ -359,6 +359,142 @@ const tt = async () => {
   }
 };
 
+/**
+ *
+ 
+ * @param {object} month active month object
+ * @param {call back fun} next this is a call back fun
+ * @returns
+ */
+exports.activeMonthAllData = async (month, next) => {
+  try {
+    const allUserMonthData = await UserMonthData.find({
+      monthId: month._id,
+    }).populate('userId', 'name avatar role');
+
+    // month cost
+    const allCost = await Cost.find({
+      monthId: month._id,
+    }).sort({ date: -1 });
+
+    // data for cash rice others
+
+    const getCostTypeItem = (type) => {
+      return _.filter(allCost, ['type', `${type}`]);
+    };
+    // cost type
+    const bigCost = getCostTypeItem('bigCost');
+    const smallCost = getCostTypeItem('smallCost');
+    const otherCost = getCostTypeItem('otherCost');
+    // sub
+
+    const costSum = (type) => {
+      return _.sumBy(type, 'amount');
+    };
+
+    // sub cost
+    const bigCostSum = costSum(bigCost);
+    const smallCostSum = costSum(smallCost);
+    const otherCostSum = costSum(otherCost);
+
+    const memberData = async (type, userId) => {
+      const memberItem = await MonthMemberData.find({
+        $and: [{ monthId: month._id }, { userId: userId }, { type: type }],
+      })
+        .populate('userId', 'name avatar')
+        .sort({ amount: -1 });
+      return memberItem.map((item) => {
+        return {
+          type: item.type,
+          amount: item.amount,
+          date: item.date,
+        };
+      });
+    };
+
+    const getItem = async (type) => {
+      return await Promise.all(
+        allUserMonthData.map(async (item, index) => {
+          const data = await memberData(type, item.userId._id);
+          const total = _.sumBy(data, 'amount');
+
+          return {
+            name: item.userId.name,
+            avatar: item.userId.avatar,
+            item: data,
+            total,
+          };
+        })
+      );
+    };
+    const cash = await getItem('cash');
+    const rice = await getItem('rice');
+    const extraRice = await getItem('extraRice');
+    const guestMeal = await getItem('guestMeal');
+    const extraCost = await getItem('extraCost');
+    // sum
+
+    const sum = (type) => {
+      return _.sumBy(type, 'total');
+    };
+    const cashSum = sum(cash);
+    const riceSum = sum(rice);
+    const extraRiceSum = sum(extraRice);
+    const guestMealSum = sum(guestMeal);
+    const extraCostSum = sum(extraCost);
+
+    // meals chart
+
+    const mealData = async (userId) => {
+      const memberMeal = await Meal.find({
+        $and: [{ monthId: month._id }, { userId: userId }],
+      })
+        .populate('userId', 'name avatar')
+        .sort({});
+      return memberMeal.map((meal) => {
+        return {
+          breakfast: meal.breakfast,
+          lunch: meal.lunch,
+          dinner: meal.dinner,
+          total: meal.total,
+          date: moment(meal.date).format('DD-MM-YY'),
+        };
+      });
+    };
+    month.meals = await Promise.all(
+      allUserMonthData.map(async (item, index) => {
+        const data = await mealData(item.userId._id);
+        const total = _.sumBy(data, 'total');
+        return {
+          name: item.userId.name,
+          avatar: item.userId.avatar,
+          item: data,
+          total,
+        };
+      })
+    );
+
+    month.costs = [
+      { title: 'Big Market', data: bigCost, total: bigCostSum },
+      { title: 'Small Cost', data: smallCost, total: smallCostSum },
+      { title: 'Other Cost', data: otherCost, total: otherCostSum },
+    ];
+    month.monthMemberData = [
+      { title: 'Cash', data: cash, total: cashSum },
+      { title: 'Rich', data: rice, total: riceSum },
+      { title: 'Extra Rich', data: extraRice, total: extraRiceSum },
+      { title: 'Guest Meal Amount', data: guestMeal, total: guestMealSum },
+      { title: 'Extra Cost', data: extraCost, total: extraCostSum },
+    ];
+    const userMonthData = allUserMonthData;
+    month.userMonthData = userMonthData;
+
+    return month;
+  } catch (error) {
+    next(error);
+  }
+};
+
 //tt();
 
 // date format in hbs template
