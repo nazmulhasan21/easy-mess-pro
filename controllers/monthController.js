@@ -173,13 +173,14 @@ exports.getMonthChart = async (req, res, next) => {
 
     // get active month all data
 
-    const data = await activeMonthAllData(user, month, next);
-
-    // // send res
-    res.status(200).json({
-      status: 'success',
-      month: data,
-    });
+    const data = await activeMonthAllData(month, next);
+    if (data) {
+      // // send res
+      res.status(200).json({
+        status: 'success',
+        month: data,
+      });
+    }
   } catch (error) {
     next(error);
   }
