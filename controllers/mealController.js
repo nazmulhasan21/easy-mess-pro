@@ -107,6 +107,12 @@ exports.createMeal = async (req, res, next) => {
     }).select('meals');
     if (!month)
       return next(new AppError(404, 'month', 'No found active month'));
+    // only add this month date
+    const isMonthDate = moment(month.monthName).isSame(date, 'month');
+    if (!isMonthDate)
+      return next(
+        new AppError(402, 'date', 'Please Select your active month date')
+      );
     // check add now day meal in active month
     const oldMeals = await Meal.find({
       $and: [

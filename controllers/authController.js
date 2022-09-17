@@ -232,11 +232,20 @@ exports.protect = async (req, res, next) => {
 };
 exports.restrictToMessId = async (req, res, next) => {
   let messId = req.user.messId || false;
+  if (!messId && req.user.role == 'manager') {
+    return res.status(200).json({
+      status: 'success',
+      message: 'You do not create any mess',
+      mess: false,
+      data: null,
+    });
+  }
   if (!messId) {
     return res.status(200).json({
       status: 'success',
       message: 'You are not join any mess. Please Contact your mess manager',
       data: null,
+      mess: true,
     });
   }
   next();
@@ -263,7 +272,8 @@ exports.restrictToAdmin = async (req, res, next) => {
 exports.checkPassword = async (req, res, next) => {
   const { body } = req;
   const user = await User.findById(req.user._id).select('password');
-
+  if (!body?.password)
+    return next(new AppError(402, 'password', 'Please type your password'));
   if (
     !body?.password ||
     !user ||

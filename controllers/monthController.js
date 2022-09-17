@@ -30,6 +30,14 @@ const Cost = require('../models/costModel');
 exports.createMonth = async (req, res, next) => {
   try {
     const { user } = req;
+    let monthName = req.body.monthName;
+    const date = moment().month(monthName).startOf('month');
+
+    if (!monthName || !date)
+      return next(
+        new AppError(402, 'monthName', `Please Select your month name`)
+      );
+    monthName = date;
 
     // 1. find active Month
     const activeMonth = await Month.findOne({
@@ -45,7 +53,8 @@ exports.createMonth = async (req, res, next) => {
       .select('allMember month');
 
     //  3. create  your active month
-    await createMonth(user, mess);
+    const month = await createMonth(user, mess, monthName);
+    if (month == true) return next(month);
 
     // send response
     res.status(201).json({
@@ -127,6 +136,11 @@ exports.getActiveMonth = async (req, res, next) => {
       $and: [{ userId: user._id }, { monthId: month._id }],
     }).sort({ date: -1 });
 
+    // 4. Get this user meal
+    const meals = await Meal.find({
+      $and: [{ userId: user._id }, { monthId: month._id }],
+    }).sort({ date: -1 });
+
     res.status(200).json({
       status: 'success',
       data: {
@@ -134,6 +148,7 @@ exports.getActiveMonth = async (req, res, next) => {
         month,
         userMonthData,
         recentAdded,
+        meals,
       },
     });
   } catch (error) {
@@ -163,44 +178,121 @@ exports.getMonthChart = async (req, res, next) => {
     }).sort({ date: -1 });
 
     // data for cash rice others
-    const data = await MonthMemberData.find({
-      $and: [{ monthId: month._id }, { userId: user._id }],
-    })
-      .select('monthId userId type amount date')
-      .sort({ date: -1 });
-    const cash = _.filter(data, ['type', 'cash']);
-    const rice = _.filter(data, ['type', 'rice']);
-    const extraRice = _.filter(data, ['type', 'extraRice']);
-    const guestMeal = _.filter(data, ['type', 'guestMeal']);
-    const extraCost = _.filter(data, ['type', 'extraCost']);
+
+    const getCostTypeItem = (type) => {
+      return _.filter(allCost, ['type', `${type}`]);
+    };
     // cost type
-    const bigCost = _.filter(allCost, ['type', 'bigCost']);
-    const smallCost = _.filter(allCost, ['type', 'smallCost']);
-    const otherCost = _.filter(allCost, ['type', 'otherCost']);
+    const bigCost = getCostTypeItem('bigCost');
+    const smallCost = getCostTypeItem('smallCost');
+    const otherCost = getCostTypeItem('otherCost');
     // sub
-    const cashSum = _.sumBy(cash, 'amount');
-    const riceSum = _.sumBy(rice, 'amount');
-    const extraRiceSum = _.sumBy(extraRice, 'amount');
-    const guestMealSum = _.sumBy(guestMeal, 'amount');
-    const extraCostSum = _.sumBy(extraCost, 'amount');
+
+    const costSum = (type) => {
+      return _.sumBy(type, 'amount');
+    };
 
     // sub cost
-    const bigCostSum = _.sumBy(bigCost, 'amount');
-    const smallCostSum = _.sumBy(smallCost, 'amount');
-    const otherCostSum = _.sumBy(otherCost, 'amount');
+    const bigCostSum = costSum(bigCost);
+    const smallCostSum = costSum(smallCost);
+    const otherCostSum = costSum(otherCost);
 
-    // send res
+    const memberData = async (type, userId) => {
+      const memberItem = await MonthMemberData.find({
+        $and: [{ monthId: month._id }, { userId: userId }, { type: type }],
+      })
+        .populate('userId', 'name avatar')
+        .sort({ amount: -1 });
+      return memberItem.map((item) => {
+        return {
+          type: item.type,
+          amount: item.amount,
+          date: item.date,
+        };
+      });
+    };
+
+    const getItem = async (type) => {
+      return await Promise.all(
+        allUserMonthData.map(async (item, index) => {
+          const data = await memberData(type, item.userId._id);
+          const total = _.sumBy(data, 'amount');
+          if (total > 0) {
+            return {
+              name: item.userId.name,
+              avatar: item.userId.avatar,
+              item: data,
+              total,
+            };
+          }
+        })
+      );
+    };
+    const cash = await getItem('cash');
+    const rice = await getItem('rice');
+    const extraRice = await getItem('extraRice');
+    const guestMeal = await getItem('guestMeal');
+    const extraCost = await getItem('extraCost');
+    // sum
+
+    const sum = (type) => {
+      return _.sumBy(type, 'total');
+    };
+    const cashSum = sum(cash);
+    const riceSum = sum(rice);
+    const extraRiceSum = sum(extraRice);
+    const guestMealSum = sum(guestMeal);
+    const extraCostSum = sum(extraCost);
+
+    // meals chart
+
+    const mealData = async (userId) => {
+      const memberMeal = await Meal.find({
+        $and: [{ monthId: month._id }, { userId: userId }],
+      })
+        .populate('userId', 'name avatar')
+        .sort({});
+      return memberMeal.map((meal) => {
+        return {
+          breakfast: meal.breakfast,
+          lunch: meal.lunch,
+          dinner: meal.dinner,
+          total: meal.total,
+          date: moment(meal.date).format('DD-MM-YY'),
+        };
+      });
+    };
+    const userMeals = await Promise.all(
+      allUserMonthData.map(async (item, index) => {
+        const data = await mealData(item.userId._id);
+        const total = _.sumBy(data, 'total');
+        return {
+          name: item.userId.name,
+          avatar: item.userId.avatar,
+          item: data,
+          total,
+        };
+      })
+    );
+
+    // // send res
     res.status(200).json({
       status: 'success',
       data: {
-        bigCost: { bigCost, total: bigCostSum },
-        smallCost: { smallCost, total: smallCostSum },
-        otherCost: { otherCost, total: otherCostSum },
-        userCash: { cash, total: cashSum },
-        userRice: { rice, total: riceSum },
-        userExtraRice: { extraRice, total: extraRiceSum },
-        userGuestMeal: { guestMeal, total: guestMealSum },
-        userExtraCost: { extraCost, total: extraCostSum },
+        userMeals,
+        cost: [
+          { title: 'Big Market', data: bigCost, total: bigCostSum },
+          { title: 'Small Cost', data: smallCost, total: smallCostSum },
+          { title: 'Other Cost', data: otherCost, total: otherCostSum },
+        ],
+        userData: [
+          { title: 'Cash', data: cash, total: cashSum },
+          { title: 'Rich', data: rice, total: riceSum },
+          { title: 'Extra Rich', data: extraRice, total: extraRiceSum },
+          { title: 'Guest Meal Amount', data: guestMeal, total: guestMealSum },
+          { title: 'Extra Cost', data: extraCost, total: extraCostSum },
+        ],
+
         allUserMonthData,
       },
     });
@@ -289,9 +381,16 @@ exports.deleteMonth = async (req, res, next) => {
 
 exports.getPDF = async (req, res, next) => {
   try {
-    const { user } = req;
+    // const { user } = req;
+    const messId = req.params.messId;
+    const isValid = mongoose.Types.ObjectId.isValid(req.params.messId);
+    if (!isValid) return next(new AppError(400, '_id', 'Id is not valid '));
+
+    const mess = await Mess.findById(messId);
+    if (!messId || !mess)
+      return next(new AppError(404, 'mess', 'You have not any mess'));
     const month = await Month.findOne({
-      $and: [{ messId: user.messId }, { active: true }],
+      $and: [{ messId: messId }, { active: true }],
     });
 
     const getPdf = await getMonthPdf(month._id);
@@ -356,17 +455,57 @@ var j = schedule.scheduleJob(
 );
 
 exports.getMonth = base.getOne(Month, 'month');
+
 const ffff = async (req, res, next) => {
-  const userMonth = await MonthMemberData.find();
-  const userId = await Promise.all(
-    userMonth.map(async (item, index) => {
-      console.log(item);
-      // console.log(item.userId);
-      return item.userId;
-    })
-  );
-  console.log(userId);
+  const data = await MonthMemberData.find().populate('userId', 'name avatar');
+  const getType = (type) => {
+    return _.filter(data, ['type', `${type}`]);
+  };
+  const cash = getType('cash');
+  // console.log(cash);
+  let obj = {};
+  const mottt = cash.map((item) => {
+    console.log(item);
+    obj = {
+      name: item.userId.name,
+      amount: item.amount,
+      date: item.date,
+    };
+    return obj;
+  });
+  console.log(mottt);
+  const sum = (type) => {
+    return _.sumBy(type, 'amount');
+  };
+  const cashSum = sum(cash);
+  console.log(cashSum);
+
+  // const userId = await Promise.all(
+  //   userMonth.map(async (item, index) => {
+  //     console.log(item);
+  //     // console.log(item.userId);
+  //     // return item.userId;
+  //   })
+  // );
+  // console.log(userId);
   // console.log(userMonth);
 };
 
 // ffff();
+// const newDate = new Date('10/01/22');
+// console.log(newDate);
+// // const dateFormet = moment('eroi').format('DD/MM/YYYY');
+let monthName = 'ttt';
+const date = moment().month(monthName).startOf('month');
+
+// if (!monthName || !date) {
+//   console.log('not select');
+// } else {
+//   monthName = date;
+//   console.log(monthName);
+//   // moment.isDate(new Date()); // false
+//   console.log(date);
+// }
+
+const isMonth = moment('2022-08-31T18:00:00.000Z').format('DD/MM/YYYY');
+// console.log(isMonth);

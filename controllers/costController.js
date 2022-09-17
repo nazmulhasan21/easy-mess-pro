@@ -128,7 +128,12 @@ exports.createCost = async (req, res, next) => {
     }).select('_id');
     if (!month)
       return next(new AppError(404, 'month', 'Not found your active Month'));
-
+    // only add this month date
+    const isMonthDate = moment(month.monthName).isSame(date, 'month');
+    if (!isMonthDate)
+      return next(
+        new AppError(402, 'date', 'Please Select your active month date')
+      );
     // 2. add Market Cost
     const cost = await Cost.create({
       messId: user.messId,
@@ -174,7 +179,12 @@ exports.updateCost = async (req, res, next) => {
     // 2. Not found any cost
     if (!cost || !activeMonth)
       return next(new AppError(404, 'cost', 'Do not update this Cost'));
-
+    // only add this month date
+    const isMonthDate = moment(activeMonth.monthName).isSame(date, 'month');
+    if (!isMonthDate)
+      return next(
+        new AppError(402, 'date', 'Please Select your active month date')
+      );
     const doc = await Cost.findByIdAndUpdate(req.params.id, newCost, {
       new: true,
       runValidators: true,

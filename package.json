@@ -1,5 +1,5 @@
 {
-  "name": "easy-mess",
+  "name": "easy-mess-pro",
   "version": "1.0.0",
   "description": "This is a mess manager node js api",
   "main": "server.js",
@@ -36,5 +36,14 @@
     "sib-api-v3-sdk": "^8.4.0",
     "validator": "^13.7.0",
     "xss-clean": "^0.1.1"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nazmulhasan21/easy-mess-pro.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nazmulhasan21/easy-mess-pro/issues"
+  },
+  "homepage": "https://github.com/nazmulhasan21/easy-mess-pro#readme"
 }

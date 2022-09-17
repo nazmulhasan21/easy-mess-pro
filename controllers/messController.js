@@ -31,7 +31,14 @@ exports.createMess = async (req, res, next) => {
       return next(
         new AppError(422, 'messName', 'Please inter your valid mess name')
       );
+    let monthName = req.body.monthName;
+    const date = moment().month(monthName).startOf('month');
 
+    if (!monthName || !date)
+      return next(
+        new AppError(402, 'monthName', `Please Select your month name`)
+      );
+    monthName = date;
     // 1. find mess
     const oldMess = await Mess.findById(user.messId);
 
@@ -43,16 +50,21 @@ exports.createMess = async (req, res, next) => {
     const mess = await Mess.create({
       ...body,
       allMember: [user._id],
-      manager: user._id,
+      manager: user.messId,
       admin: user._id,
     });
 
     // 3. create your month
 
-    await createMonth(user, mess);
+    const month = await createMonth(user, mess, monthName);
+    if (!month) {
+      mess.remove();
+      return next(month);
+    }
 
     // 4. set user mess admin
     user.isMessAdmin = true;
+    user.messId = mess._id;
     await user.save();
 
     res.status(201).json({

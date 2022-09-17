@@ -194,13 +194,12 @@ exports.updateOne = (Model, model) => async (req, res, next) => {
     });
     if (!activeMonth)
       return next(new AppError(404, 'month', `Do not have any active month`));
-    // 2. Not found any cost
 
     let newDoc = {};
     const doc = await Model.findOne({
       $and: [{ _id: req.params.id }, { monthId: activeMonth._id }],
     });
-    if (!doc) return next(new AppError(404, 'meal', 'Not found with this id'));
+    if (!doc) return next(new AppError(404, model, 'Not found with this id'));
 
     // if update any one meal  run this if function
     if (model == 'meal') {
@@ -216,6 +215,18 @@ exports.updateOne = (Model, model) => async (req, res, next) => {
         editBy: user._id,
       };
     } else {
+      // only add this month date
+      if (body.date) {
+        const isMonthDate = moment(activeMonth.monthName).isSame(
+          body?.date,
+          'month'
+        );
+        if (!isMonthDate)
+          return next(
+            new AppError(402, 'date', 'Please Select your active month date')
+          );
+      }
+
       newDoc = {
         ...body,
         editBy: user._id,

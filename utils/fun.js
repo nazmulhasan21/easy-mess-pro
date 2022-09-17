@@ -20,18 +20,17 @@ const Mess = require('../models/messModel');
  *
  * @param {object} user req user object
  * @param {object} mess user mess object
- * @param {string} title month title
+ * @param {string} monthName month title
  */
 
 // create month and other data
-module.exports.createMonth = async (user, mess) => {
+module.exports.createMonth = async (user, mess, monthName) => {
   try {
     //  1. create  your active month
 
-    const monthTitle = moment().format('MMMM YYYY');
     const month = await Month.create({
       messId: mess._id,
-      monthTitle,
+      monthName,
       manager: user._id,
     });
 
@@ -44,6 +43,7 @@ module.exports.createMonth = async (user, mess) => {
     });
 
     await month.save();
+    return true;
   } catch (error) {
     return error;
   }

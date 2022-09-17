@@ -22,8 +22,9 @@ const monthSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
     },
-    monthTitle: {
-      type: String,
+    monthName: {
+      type: Date,
+      require: [true, 'Please provide date type'],
     },
 
     // After Array  for pdf

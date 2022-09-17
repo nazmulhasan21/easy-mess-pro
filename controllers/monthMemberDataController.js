@@ -29,9 +29,18 @@ exports.createMonthMemberData = async (req, res, next) => {
     // 1. find active month;
     const month = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
-    }).select('_id');
+    }).select('_id monthName');
     if (!month)
       return next(new AppError(404, 'month', 'Not found your active Month'));
+
+    const isMonthDate = moment(month.monthName).isSame(
+      body?.date || moment(),
+      'month'
+    );
+    if (!isMonthDate)
+      return next(
+        new AppError(402, 'date', 'Please Select your active month date')
+      );
 
     // 2. add Market Cost
     const doc = await MonthMemberData.create({

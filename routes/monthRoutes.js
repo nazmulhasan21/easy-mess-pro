@@ -10,6 +10,7 @@ const {
 } = require('../controllers/authController');
 const monthController = require('../controllers/monthController');
 
+router.get('/:messId/pdf', monthController.getPDF);
 // Protect all routes after this middleware
 
 router.use(protect);
@@ -18,7 +19,6 @@ router.use(protect);
 
 router.use(restrictToMessId);
 
-router.get('/pdf', monthController.getPDF);
 router.get('/chart', monthController.getMonthChart);
 router.get('/:id', monthController.getMonth);
 router.get('/', monthController.getActiveMonth);
