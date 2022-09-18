@@ -426,8 +426,6 @@ exports.activeMonthAllData = async (month, next) => {
               item: data,
               total,
             };
-          } else {
-            return {};
           }
         })
       );
