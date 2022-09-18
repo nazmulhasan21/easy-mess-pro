@@ -39,7 +39,7 @@ exports.createMonth = async (req, res, next) => {
       return next(
         new AppError(402, 'monthName', `Please Select your month name`)
       );
-    monthName = date;
+    monthName = moment(date).format('MMMM YYYY');
 
     // 1. find active Month
     const activeMonth = await Month.findOne({
@@ -55,7 +55,7 @@ exports.createMonth = async (req, res, next) => {
       .select('allMember month');
 
     //  3. create  your active month
-    const month = await createMonth(user, mess, monthName);
+    const month = await createMonth(user, mess, monthName, date);
     if (!month == true) return next(month);
 
     // send response
@@ -134,23 +134,49 @@ exports.getActiveMonth = async (req, res, next) => {
     await userMonthData.save();
 
     // 2. Get active Month User Month data
-    const recentAdded = await MonthMemberData.find({
-      $and: [{ userId: user._id }, { monthId: month._id }],
-    }).sort({ date: -1 });
+    const recentAdded = async () => {
+      const data = await MonthMemberData.find({
+        $and: [{ userId: user._id }, { monthId: month._id }],
+      }).sort({ date: -1 });
+
+      return data.map((item) => {
+        return {
+          type: item.type,
+          date: item.date,
+          amount: item.amount,
+        };
+      });
+    };
 
     // 4. Get this user meal
-    const meals = await Meal.find({
-      $and: [{ userId: user._id }, { monthId: month._id }],
-    }).sort({ date: -1 });
-
+    const userMeals = async () => {
+      const data = await Meal.find({
+        $and: [{ userId: user._id }, { monthId: month._id }],
+      }).sort({ date: -1 });
+      return data.map((item) => {
+        return {
+          breakfast: item.breakfast,
+          lunch: item.lunch,
+          dinner: item.dinner,
+          total: item.total,
+          date: item.date,
+        };
+      });
+    };
+    const meals = await userMeals();
+    const totalMeal = _.sumBy(meals, 'total');
     res.status(200).json({
       status: 'success',
       data: {
         mess: month.messId,
         month,
         userMonthData,
-        recentAdded,
-        meals,
+        recentAdded: await recentAdded(),
+        meals: {
+          title: `Your ${month.monthTitle} Meals`,
+          item: meals,
+          total: totalMeal,
+        },
       },
     });
   } catch (error) {
@@ -394,5 +420,5 @@ const date = moment().month(monthName).startOf('month');
 //   console.log(date);
 // }
 
-const isMonth = moment('2022-08-31T18:00:00.000Z').format('DD/MM/YYYY');
-// console.log(isMonth);
+const isMonth = moment('2022-08-31T18:00:00.000Z').format('MMMM YYYY');
+console.log(isMonth);

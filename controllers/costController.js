@@ -125,11 +125,11 @@ exports.createCost = async (req, res, next) => {
     // 1. find active month;
     const month = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
-    }).select('_id');
+    }).select('_id date');
     if (!month)
       return next(new AppError(404, 'month', 'Not found your active Month'));
     // only add this month date
-    const isMonthDate = moment(month.monthName).isSame(date, 'month');
+    const isMonthDate = moment(month?.date).isSame(date, 'month');
     if (!isMonthDate)
       return next(
         new AppError(402, 'date', 'Please Select your active month date')
@@ -180,7 +180,10 @@ exports.updateCost = async (req, res, next) => {
     if (!cost || !activeMonth)
       return next(new AppError(404, 'cost', 'Do not update this Cost'));
     // only add this month date
-    const isMonthDate = moment(activeMonth.monthName).isSame(date, 'month');
+    const isMonthDate = moment(activeMonth.date).isSame(
+      body?.date || cost.date,
+      'month'
+    );
     if (!isMonthDate)
       return next(
         new AppError(402, 'date', 'Please Select your active month date')

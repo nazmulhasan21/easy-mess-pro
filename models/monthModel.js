@@ -22,7 +22,11 @@ const monthSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
     },
-    monthName: {
+    monthTitle: {
+      type: String,
+      require: [true, 'Please provide your month name'],
+    },
+    date: {
       type: Date,
       require: [true, 'Please provide date type'],
     },

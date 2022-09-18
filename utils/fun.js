@@ -21,16 +21,18 @@ const Mess = require('../models/messModel');
  * @param {object} user req user object
  * @param {object} mess user mess object
  * @param {string} monthName month title
+ * @param {Date} data month date
  */
 
 // create month and other data
-module.exports.createMonth = async (user, mess, monthName) => {
+module.exports.createMonth = async (user, mess, monthName, date) => {
   try {
     //  1. create  your active month
 
     const month = await Month.create({
       messId: mess._id,
-      monthName,
+      monthTitle: monthName,
+      date,
       manager: user._id,
     });
 
@@ -417,13 +419,16 @@ exports.activeMonthAllData = async (month, next) => {
         allUserMonthData.map(async (item, index) => {
           const data = await memberData(type, item.userId._id);
           const total = _.sumBy(data, 'amount');
-
-          return {
-            name: item.userId.name,
-            avatar: item.userId.avatar,
-            item: data,
-            total,
-          };
+          if (total > 0) {
+            return {
+              name: item.userId.name,
+              avatar: item.userId.avatar,
+              item: data,
+              total,
+            };
+          } else {
+            return {};
+          }
         })
       );
     };
