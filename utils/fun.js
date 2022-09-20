@@ -478,16 +478,31 @@ exports.activeMonthAllData = async (month, next) => {
     );
 
     month.costs = [
-      { title: 'Big Market', data: bigCost, total: bigCostSum },
-      { title: 'Small Cost', data: smallCost, total: smallCostSum },
-      { title: 'Other Cost', data: otherCost, total: otherCostSum },
+      { title: 'বড় বাজার খরচ', data: bigCost, total: bigCostSum },
+      { title: 'খুচরা খরচ', data: smallCost, total: smallCostSum },
+      { title: 'অন্যান্য খরচ', data: otherCost, total: otherCostSum },
     ];
     month.monthMemberData = [
-      { title: 'Cash', data: cash, total: cashSum },
-      { title: 'Rich', data: rice, total: riceSum },
-      { title: 'Extra Rich', data: extraRice, total: extraRiceSum },
-      { title: 'Guest Meal Amount', data: guestMeal, total: guestMealSum },
-      { title: 'Extra Cost', data: extraCost, total: extraCostSum },
+      { title: 'টাকা', data: cash, total: cashSum, type: 'cash' },
+      { title: 'চাউল', data: rice, total: riceSum, type: 'rice' },
+      {
+        title: 'অতিরিক্ত চাউল',
+        data: extraRice,
+        total: extraRiceSum,
+        type: 'extraRice',
+      },
+      {
+        title: 'অতিথি খাবার',
+        data: guestMeal,
+        total: guestMealSum,
+        type: 'guestMeal',
+      },
+      {
+        title: 'বডারের অতিরিক্ত খরচ',
+        data: extraCost,
+        total: extraCostSum,
+        type: 'extraCost',
+      },
     ];
     const userMonthData = allUserMonthData;
     month.userMonthData = userMonthData;

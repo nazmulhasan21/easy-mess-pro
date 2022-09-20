@@ -4,6 +4,7 @@ const APIFeatures = require('../utils/apiFeatures');
 const AppError = require('../utils/appError');
 const meal = require('./getUpdateDeleteController');
 const moment = require('moment');
+const _ = require('lodash');
 
 // const { getLastDayUserMeal } = require('../utils/fun');
 const Mess = require('../models/messModel');
@@ -128,6 +129,18 @@ exports.createMeal = async (req, res, next) => {
     //c
 
     if (oldMeals.length > 0)
+      // meals.forEach(async (myMeal) => {
+      //   const total = myMeal.breakfast + myMeal.lunch + myMeal.dinner;
+      //   // 4. post daily meal
+      //   const userMeal = await Meal.create({
+      //     userId: myMeal.userId,
+      //     breakfast: myMeal.breakfast,
+      //     lunch: myMeal.lunch,
+      //     dinner: myMeal.dinner,
+      //     total: total,
+      //     editBy: user._id,
+      //   });
+      // });
       return next(
         new AppError(
           403,
@@ -201,15 +214,26 @@ exports.getLastDayMeal = async (req, res, next) => {
           breakfast: userMeal?.breakfast || 0,
           lunch: userMeal?.lunch || 0,
           dinner: userMeal?.dinner || 0,
+          total: userMeal?.total || 0,
+          date: userMeal?.date || '',
         };
         return meal;
       })
     );
+    // ‍sum by in meals
+    const total = {
+      total: _.sumBy(meals, 'total'),
+      breakfast: _.sumBy(meals, 'breakfast'),
+      lunch: _.sumBy(meals, 'lunch'),
+      dinner: _.sumBy(meals, 'dinner'),
+    };
 
     res.status(200).json({
       status: 'success',
       data: {
         data: meals,
+        total: total,
+        date: meals[0].date,
       },
     });
   } catch (error) {

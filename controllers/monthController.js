@@ -108,7 +108,7 @@ exports.getActiveMonth = async (req, res, next) => {
     if (!month) {
       return res.status(200).json({
         status: 'success',
-        message: 'You have not any active month',
+        message: 'আপনার কোনো সক্রিয় মাস নেই',
         data: null,
       });
     }
@@ -164,7 +164,12 @@ exports.getActiveMonth = async (req, res, next) => {
       });
     };
     const meals = await userMeals();
-    const totalMeal = _.sumBy(meals, 'total');
+    const total = {
+      total: _.sumBy(meals, 'total'),
+      breakfast: _.sumBy(meals, 'breakfast'),
+      lunch: _.sumBy(meals, 'lunch'),
+      dinner: _.sumBy(meals, 'dinner'),
+    };
     res.status(200).json({
       status: 'success',
       data: {
@@ -173,9 +178,9 @@ exports.getActiveMonth = async (req, res, next) => {
         userMonthData,
         recentAdded: await recentAdded(),
         meals: {
-          title: `Your ${month.monthTitle} Meals`,
+          title: `ব্যক্তিগত  ${month.monthTitle} মাসের খাবার তালিকা`,
           item: meals,
-          total: totalMeal,
+          total: total,
         },
       },
     });
@@ -201,6 +206,7 @@ exports.getMonthChart = async (req, res, next) => {
 
     const data = await activeMonthAllData(month, next);
     if (data) {
+      data.meals = [];
       // // send res
       res.status(200).json({
         status: 'success',
@@ -369,39 +375,8 @@ var j = schedule.scheduleJob(
 
 exports.getMonth = base.getOne(Month, 'month');
 
-const ffff = async (req, res, next) => {
+const ffff = async () => {
   const data = await MonthMemberData.find().populate('userId', 'name avatar');
-  const getType = (type) => {
-    return _.filter(data, ['type', `${type}`]);
-  };
-  const cash = getType('cash');
-  // console.log(cash);
-  let obj = {};
-  const mottt = cash.map((item) => {
-    console.log(item);
-    obj = {
-      name: item.userId.name,
-      amount: item.amount,
-      date: item.date,
-    };
-    return obj;
-  });
-  console.log(mottt);
-  const sum = (type) => {
-    return _.sumBy(type, 'amount');
-  };
-  const cashSum = sum(cash);
-  console.log(cashSum);
-
-  // const userId = await Promise.all(
-  //   userMonth.map(async (item, index) => {
-  //     console.log(item);
-  //     // console.log(item.userId);
-  //     // return item.userId;
-  //   })
-  // );
-  // console.log(userId);
-  // console.log(userMonth);
 };
 
 // ffff();
