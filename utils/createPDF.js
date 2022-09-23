@@ -30,7 +30,7 @@ module.exports = async (templateName, data) => {
     const content = await compile(templateName, data);
     await page.setContent(content);
     await page.pdf({
-      path: `app/monthDetails.pdf`,
+      path: `monthDetails.pdf`,
       format: 'A4',
       printBackground: true,
     });
@@ -40,6 +40,6 @@ module.exports = async (templateName, data) => {
     await browser.close();
     return true;
   } catch (error) {
-    return error;
+    return false;
   }
 };

@@ -335,6 +335,11 @@ exports.getPDF = async (req, res, next) => {
     if (getPdf) {
       const filePath = path.join(process.cwd(), `/monthDetails.pdf`);
       res.download(filePath);
+    } else {
+      res.status(200).json({
+        status: 'fail',
+        message: 'can not create file',
+      });
     }
   } catch (error) {
     next(error);
