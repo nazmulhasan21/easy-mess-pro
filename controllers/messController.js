@@ -28,22 +28,21 @@ exports.createMess = async (req, res, next) => {
     const { body, user } = req;
     const isValidMessName = body.messName.match(/^[a-zA-Z0-9. ]+$/);
     if (!isValidMessName)
-      return next(
-        new AppError(422, 'messName', 'Please inter your valid mess name')
-      );
+      return next(new AppError(422, 'messName', 'সুন্দর একটি মেস নাম লিখুন'));
     let monthName = req.body.monthName;
     const date = moment().month(monthName).startOf('month');
+    // const date = moment().month(monthName).startOf('month')
 
     if (!monthName || !date)
       return next(
-        new AppError(402, 'monthName', `Please Select your month name`)
+        new AppError(402, 'monthName', `আপনার মাসের নাম নির্বাচন করুন`)
       );
     monthName = moment(date).format('MMMM YYYY');
     // 1. find mess
     const oldMess = await Mess.findById(user.messId);
 
     if (oldMess) {
-      return next(new AppError(400, 'mess', 'Your mess already exit'));
+      return next(new AppError(400, 'mess', 'আপনার মেস ইতিমধ্যে আছে।'));
     }
 
     //  2. create  your mess
@@ -69,7 +68,7 @@ exports.createMess = async (req, res, next) => {
 
     res.status(201).json({
       status: 'success',
-      message: 'Create Your mess successfully',
+      message: 'সফলভাবে আপনার মেস টি তৈরি হয়েছে।',
       mess,
     });
   } catch (error) {
@@ -190,7 +189,7 @@ exports.addMember = async (req, res, next) => {
 
     res.status(201).json({
       status: 'success',
-      message: 'Add member in your mess successfully',
+      message: 'সফলভাবে আপনার মেসে সদস্য যোগ হয়েছে।',
     });
   } catch (error) {
     next(error);
@@ -208,7 +207,7 @@ exports.deleteMember = async (req, res, next) => {
     // ## del user if mess admin
     const findUser = await User.findById(delUserId);
     if (findUser.isMessAdmin)
-      return next(new AppError(401, 'admin', 'You are admin'));
+      return next(new AppError(401, 'admin', 'আপনি এডমিন'));
 
     // ## find  member is active month manager yes or not
     const month = await Month.findOne({
@@ -216,7 +215,7 @@ exports.deleteMember = async (req, res, next) => {
     });
     if (month)
       return next(
-        new AppError(400, 'manager', 'This is a active month manager')
+        new AppError(400, 'manager', 'ব্যাক্তি টি সক্রিয় মাসের ম্যানেজার')
       );
 
     // 1. find this member in this mess
@@ -225,7 +224,7 @@ exports.deleteMember = async (req, res, next) => {
     }).select('allMember');
     if (!isMessMember)
       return next(
-        new AppError(404, 'member', 'This user not this mess member')
+        new AppError(404, 'member', 'এই ব্যাক্তি টি এই মেসের সদস্য না')
       );
 
     // 2. delete member data all mess in active month
@@ -247,7 +246,7 @@ exports.deleteMember = async (req, res, next) => {
 
     res.status(200).json({
       status: 'success',
-      message: 'Deleted member in your mess successfully',
+      message: 'আপনার মেসের সদস্যকে সফলভাবে মুছে ফেলা হয়েছে',
     });
   } catch (error) {
     next(error);
@@ -272,7 +271,7 @@ exports.changeAdmin = async (req, res, next) => {
       // check is user in mass member
       const equal = JSON.stringify(user._id) === JSON.stringify(userId);
       if (equal)
-        return next(new AppError(401, 'admin', 'You are allReady admin'));
+        return next(new AppError(401, 'admin', 'আপনি ইতিমধ্যে একজন অ্যাডমিন'));
 
       const isMessMember = await Mess.findOne({ allMember: userId });
       if (isMessMember && !equal) {
@@ -286,7 +285,7 @@ exports.changeAdmin = async (req, res, next) => {
     }
     res.status(200).json({
       status: 'success',
-      message: 'Change in your mess Admin successfully',
+      message: 'সফলভাবে আপনার মেস অ্যাডমিন পরিবর্তন করা হয়েছে।',
     });
   } catch (error) {
     next(error);
@@ -309,7 +308,7 @@ exports.deleteMess = async (req, res, next) => {
 
     res.status(201).json({
       status: 'success',
-      message: 'Delete your mess successfully',
+      message: 'সফলভাবে আপনার মেসটি মুছে ফেলা হয়েছে।',
     });
   } catch (error) {
     next(error);

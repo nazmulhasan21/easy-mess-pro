@@ -26,7 +26,7 @@ exports.changeManager = async (req, res, next) => {
         new AppError(
           403,
           'manager',
-          'This user is already this mess manager, select another user'
+          'এই ব্যাক্তি ইতিমধ্যে এই মেস ম্যানেজার, অন্য ব্যাক্তি নির্বাচন করুন'
         )
       );
     const mess = await Mess.findById(user.messId).select('manager');
@@ -43,7 +43,7 @@ exports.changeManager = async (req, res, next) => {
     // send response
     res.status(201).json({
       status: 'success',
-      message: 'Change Your mess Manager successfully',
+      message: 'সফলভাবে আপনার মেস ম্যানেজার পরিবর্তন হয়েছে।',
     });
   } catch (error) {
     next(error);

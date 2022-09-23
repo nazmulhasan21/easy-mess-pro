@@ -45,7 +45,7 @@ exports.updateMe = async (req, res, next) => {
     // send res
     res.status(200).json({
       status: 'success',
-      message: 'Your Profile update successfully',
+      message: 'আপনার প্রোফাইল সফলভাবে আপডেট করা হয়েছে।',
       data: {
         updateMe,
       },
@@ -63,7 +63,7 @@ exports.updateAvatar = async (req, res, next) => {
     const { files } = req;
     if (!files)
       return next(
-        new AppError(404, 'avatar', 'Please upload your profile image')
+        new AppError(404, 'avatar', 'আপনার প্রোফাইল ইমেজ আপলোড করুন')
       );
     if (files.avatar) {
       cloudinary.uploader.upload(
@@ -73,7 +73,7 @@ exports.updateAvatar = async (req, res, next) => {
           await user.save();
           res.status(200).json({
             status: 'success',
-            message: 'Your Profile image upload successfully',
+            message: 'আপনার প্রোফাইল ছবি সফলভাবে আপলোড করা হয়েছে।',
             data: {
               avatar: result.url,
             },
@@ -81,7 +81,7 @@ exports.updateAvatar = async (req, res, next) => {
         }
       );
     } else {
-      return next(new AppError(404, 'avatar', 'Please provide any img file'));
+      return next(new AppError(404, 'avatar', 'img ফাইল প্রদান করুন'));
     }
   } catch (error) {
     next(error);
@@ -101,13 +101,13 @@ exports.changePassword = async (req, res, next) => {
     const user = await User.findById(req.user._id).select('password');
 
     if (!user || !(await user.correctPassword(password, user.password)))
-      return next(new AppError(401, 'password', 'Password is wrong'));
+      return next(new AppError(401, 'password', 'পাসওয়ার্ড ভুল'));
 
     user.password = newPassword;
     await user.save();
     res.status(401).json({
       status: 'success',
-      message: 'Change your password successfully',
+      message: 'আপনার পাসওয়ার্ড সফলভাবে পরিবর্তন করুন করা হয়েছে।',
     });
   } catch (error) {
     next(error);
@@ -128,28 +128,28 @@ exports.changeEmail = async (req, res, next) => {
 
     const otpCode = await OtpCode.findOne({ email, code });
     if (!otpCode) {
-      return next(new AppError(401, 'code', `Code is wrong`));
+      return next(new AppError(401, 'code', `কোড ভুল`));
     }
 
     // expired time
     const expired = otpCode?.expiredAt - new Date().getTime();
     if (expired < 0) {
       const to = { email: email, name: user.name };
-      const subject = 'Change Your Email';
+      const subject = 'আপনার ইমেইল পরিবর্তন করুন';
       const templateName = 'sendEmailCode';
 
       sendVerificationCode(to, subject, templateName);
       return next(
         new AppError(401),
         'code',
-        'Code is expired. please check email sending new code'
+        'কোডের মেয়াদ শেষ । ইমেল চেক করুন, পুনরাই কোড পাঠানো হয়েছে ।'
       );
     }
     user.email = email;
     await user.save();
     res.status(401).json({
       status: 'success',
-      message: 'Change your Email successfully',
+      message: 'সফলভাবে আপনার ইমেল পরিবর্তন করা হয়েছে।',
     });
   } catch (error) {
     next(error);
@@ -167,17 +167,19 @@ exports.sendForgetPasswordVerificationCode = async (req, res, next) => {
     // 1. find user this email
     const user = await User.findOne({ email });
     if (!user)
-      return next(new AppError(404, 'email', 'This email user not found.'));
+      return next(
+        new AppError(404, 'email', 'এই ইমেল ব্যবহারকারী খুঁজে পাওয়া যায়নি.')
+      );
     // 2. send forget password verification code
     const to = { email: user.email, name: user.name };
-    const subject = 'Reset Password Verification Code';
+    const subject = 'পাসওয়ার্ড পরিবর্তন করুন';
     const templateName = 'sendEmailCode';
 
     sendVerificationCode(to, subject, templateName);
 
     res.status(200).json({
       status: 'success',
-      message: 'Please check your email and reset your password',
+      message: 'আপনার ইমেল চেক করুন এবং আপনার পাসওয়ার্ড পুনরায় সেট করুন',
     });
   } catch (error) {
     next(error);
@@ -194,26 +196,26 @@ exports.emailVerification = async (req, res, next) => {
     const user = await User.findOne({ email });
     const otpCode = await OtpCode.findOne({ email, code });
     if (!otpCode || !user) {
-      return next(new AppError(401, 'code', `code is wrong`));
+      return next(new AppError(401, 'code', `কোড ভুল`));
     }
 
     // expired time
     const expired = otpCode?.expiredAt - new Date().getTime();
     if (expired < 0) {
       const to = { email: email, name: user.name };
-      const subject = 'Reset Password Verification Code';
+      const subject = 'পাসওয়ার্ড পরিবর্তন করুন';
       const templateName = 'sendEmailCode';
 
       sendVerificationCode(to, subject, templateName);
       return next(
         new AppError(401),
         'code',
-        'Code is expired. please check email sending new code'
+        'আপনার ইমেল চেক করুন এবং আপনার পাসওয়ার্ড পুনরায় সেট করুন'
       );
     }
     res.status(200).json({
       status: 'success',
-      message: 'Email verification successfully',
+      message: 'ইমেল যাচাইকরণ সফলভাবে করা হয়েছে।',
       data: {
         email: user.email,
       },
@@ -230,26 +232,32 @@ exports.resatPassword = async (req, res, next) => {
     const newPassword = req.body.newPassword.trim();
     const email = req.body.email.trim();
     if (newPassword.length < 8)
-      return next(new AppError(401, 'newPassword', 'Password min length 8.'));
+      return next(
+        new AppError(
+          401,
+          'newPassword',
+          'পাসওয়ার্ড সর্বনিম্ন ৮ সংখ্যার দিতে হবে।.'
+        )
+      );
 
     const user = await User.findOne({ email });
     const otpCode = await OtpCode.findOne({ email, code });
     if (!otpCode || !user) {
-      return next(new AppError(401, 'code', `Code is wrong`));
+      return next(new AppError(401, 'code', `কোড ভুল`));
     }
 
     // expired time
     const expired = otpCode?.expiredAt - new Date().getTime();
     if (expired < 0) {
       const to = { email: email, name: user.name };
-      const subject = 'Reset Password Verification Code';
+      const subject = 'পাসওয়ার্ড পরিবর্তন করুন';
       const templateName = 'sendEmailCode';
 
       sendVerificationCode(to, subject, templateName);
       return next(
         new AppError(401),
         'code',
-        'Code is expired. please check email sending new code'
+        'আপনার ইমেল চেক করুন এবং আপনার পাসওয়ার্ড পুনরায় সেট করুন'
       );
     }
 
@@ -258,7 +266,7 @@ exports.resatPassword = async (req, res, next) => {
     await OtpCode.findByIdAndDelete(otpCode?._id);
     res.status(200).json({
       status: 'success',
-      message: 'Reset your password successfully',
+      message: 'সফলভাবে আপনার পাসওয়ার্ড পুনরায় সেট করা হয়েছে।',
     });
   } catch (error) {
     next(error);
@@ -285,7 +293,11 @@ exports.deleteMe = async (req, res, next) => {
     //1. user join any mess
     if (user.messId)
       return next(
-        new AppError(401, 'user', 'Please leave your mess. Then try again')
+        new AppError(
+          401,
+          'user',
+          'আপনার মেস থেকে লিভ নেন, তারপর আবার চেষ্টা করুন'
+        )
       );
 
     await User.findByIdAndDelete(user._id);

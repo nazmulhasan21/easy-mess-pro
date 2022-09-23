@@ -21,14 +21,14 @@ exports.addSubManager = async (req, res, next) => {
     const { role } = await User.findById(userId);
     if (role == 'manager')
       return next(
-        new AppError(403, 'manager', 'This user is all Ready Month Manager')
+        new AppError(403, 'manager', 'ব্যাক্তি টি এই মাসের ম্যানেজার')
       );
     // 2 find user and change this user role
     await User.findByIdAndUpdate(userId, { role: 'subManager' });
     // send response
     res.status(201).json({
       status: 'success',
-      message: 'Add Your Sub Manager successfully',
+      message: 'সফলভাবে আপনার সাব ম্যানেজার যোগ করা হয়েছে।',
     });
   } catch (error) {
     next(error);
@@ -46,7 +46,9 @@ exports.deleteSubManager = async (req, res, next) => {
 
     // 1 .check user is active month manager
     if (!user.role == 'manager')
-      return next(new AppError(403, 'manager', 'This is a not mess manager'));
+      return next(
+        new AppError(403, 'manager', 'ব্যাক্তি টি এই মাসের ম্যানেজার নন।')
+      );
     const activeMonthManager = await Month.findOne({
       $and: [{ manager: userId }, { active: true }],
     });
@@ -54,7 +56,7 @@ exports.deleteSubManager = async (req, res, next) => {
     // 2. return this
     if (activeMonthManager)
       return next(
-        new AppError(403, 'manager', 'This is a active month manager', 'wrong')
+        new AppError(403, 'manager', 'ব্যাক্তি টি এই মাসের ম্যানেজার', 'wrong')
       );
 
     // 1. find user and update this user role
@@ -63,7 +65,7 @@ exports.deleteSubManager = async (req, res, next) => {
 
     res.status(200).json({
       status: 'success',
-      message: 'Delete Your Sub Manager successfully',
+      message: 'সফলভাবে আপনার সাব ম্যানেজার মুছেফেলা হয়েছে।',
     });
   } catch (error) {
     next(error);

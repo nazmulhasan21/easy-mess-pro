@@ -31,7 +31,9 @@ exports.createMonthMemberData = async (req, res, next) => {
       $and: [{ messId: user.messId }, { active: true }],
     }).select('_id monthName');
     if (!month)
-      return next(new AppError(404, 'month', 'Not found your active Month'));
+      return next(
+        new AppError(404, 'month', 'আপনার সক্রিয় মাস খুঁজে পাওয়া যায়নি')
+      );
 
     const isMonthDate = moment(month.monthName).isSame(
       body?.date || moment(),
@@ -39,7 +41,7 @@ exports.createMonthMemberData = async (req, res, next) => {
     );
     if (!isMonthDate)
       return next(
-        new AppError(402, 'date', 'Please Select your active month date')
+        new AppError(402, 'date', 'আপনার সক্রিয় মাসের তারিখ নির্বাচন করুন')
       );
 
     // 2. add Market Cost
@@ -58,7 +60,7 @@ exports.createMonthMemberData = async (req, res, next) => {
     // 5. send res
     res.status(201).json({
       status: 'success',
-      message: `Add ${doc.type} successfully`,
+      message: `সফলভাবে ${doc.type} যোগকরা হয়েছে।`,
       data: {
         doc,
       },

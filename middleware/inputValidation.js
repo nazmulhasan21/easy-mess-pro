@@ -6,14 +6,14 @@ exports.signupValidate = [
     .trim()
     .isEmail()
     .withMessage((value) => {
-      return `'${value}' not a valid email.`;
+      return `'${value}'একটি বৈধ ইমেল নয়।`;
     })
     .notEmpty()
-    .withMessage('Please enter any valid email.')
+    .withMessage('কোনো বৈধ ইমেল লিখুন দয়া করে.')
     .custom((value, { req }) => {
       return User.findOne({ email: value }).then((userDoc) => {
         if (userDoc) {
-          return Promise.reject('E-Mail address already exists!');
+          return Promise.reject('ই - মেইল ​​টি আগে থেকেই আছে!');
         }
       });
     })
@@ -22,14 +22,14 @@ exports.signupValidate = [
     .trim()
     .isMobilePhone('bn-BD')
     .withMessage((value) => {
-      return `'${value}' not a valid phone Number.`;
+      return `'${value}' একটি বৈধ ফোন নম্বর নয়।`;
     })
     .notEmpty()
-    .withMessage('Please write any valid phone Number.')
+    .withMessage('কোন বৈধ ফোন নম্বর লিখুন.')
     .custom((value, { req }) => {
       return User.findOne({ phone: value }).then((userDoc) => {
         if (userDoc) {
-          return Promise.reject('Phone number already exists!');
+          return Promise.reject('ফোন নম্বর টি আগে থেকেই আছে!');
         }
       });
     }),
@@ -37,7 +37,7 @@ exports.signupValidate = [
   body('password')
     .trim()
     .isLength({ min: 8 })
-    .withMessage('Password  min length 8.'),
+    .withMessage('পাসওয়ার্ড সর্বনিম্ন ৮ সংখ্যার হতে হবে।'),
   ///.isStrongPassword({ returnScore: false })
   // .withMessage(
   //   'Password must be greater than 8 and contain at least one uppercase letter, one lowercase letter, and one number'
@@ -45,36 +45,38 @@ exports.signupValidate = [
   body('name')
     .trim()
     .isLength({ min: 3 })
-    .withMessage('Please name min length 3.')
+    .withMessage('অনুগ্রহ করে নাম  সর্বনিম্ন ৩ অক্ষর হতে হবে।')
     .matches(/^[a-zA-Z. ]+$/)
-    .withMessage('Please enter valid name'),
+    .withMessage('বৈধ নাম লিখুন'),
   body('role')
     .trim()
     .isIn(['border', 'manager', 'admin'])
-    .withMessage("Please select right role In 'border or manager' own.")
+    .withMessage(
+      "অনুগ্রহ করে 'বর্ডার বা ম্যানেজার'-এ সঠিক ভূমিকা নির্বাচন করুন।"
+    )
     .notEmpty()
-    .withMessage('Please select any one is your role.'),
+    .withMessage('যে কোনো একটি নির্বাচন করুন।'),
 ];
 
 exports.updateMeValidate = [
   body('name')
     .trim()
     .isLength({ min: 3, max: 20 })
-    .withMessage('Please name min length 3.')
+    .withMessage('অনুগ্রহ করে নাম  সর্বনিম্ন ৩ অক্ষর হতে হবে।')
     .matches(/^[a-zA-Z. ]+$/)
-    .withMessage('Please enter valid name'),
+    .withMessage('বৈধ নাম লিখুন'),
   body('address')
     .trim()
     .isLength({ min: 3, max: 50 })
-    .withMessage('Type your address properly.'),
+    .withMessage('আপনার ঠিকানা সঠিকভাবে টাইপ করুন.'),
   // .matches(/^[a-zA-Z0-9., ]+$/)
   // .withMessage('Please enter valid address'),
   body('institution')
     .trim()
     .isLength({ min: 3, max: 50 })
-    .withMessage('Type institution properly')
+    .withMessage('প্রতিষ্ঠান নাম সঠিকভাবে টাইপ করুন')
     .matches(/^[a-zA-Z0-9., ]+$/)
-    .withMessage('Please enter valid institution'),
+    .withMessage('বৈধ প্রতিষ্ঠানের নাম লিখুন'),
 ];
 
 module.exports.addMemberEmailValidated = [
@@ -83,7 +85,7 @@ module.exports.addMemberEmailValidated = [
     .custom(async (value, { req }) => {
       const user = await User.findOne({ email: value });
       if (!user) {
-        return Promise.reject('User not found!');
+        return Promise.reject('ব্যবহারকারী খুঁজে পাওয়া যায় নি!');
       }
       // const equal = user.messId.equals(req.user.messId);
       const messId = user.messId || false;
@@ -94,10 +96,10 @@ module.exports.addMemberEmailValidated = [
 
       // console.log(user.messId, req.user.messId);
       if (equal) {
-        return Promise.reject('User all ready exit in your Mess');
+        return Promise.reject('ব্যাক্তিটি আপনার মেসে আগে থেকেই আছে।');
       }
       if (notequal) {
-        return Promise.reject('User all ready exit in other Mess');
+        return Promise.reject('ব্যাক্তিটি অন্য মেসে আগে থেকেই আছে।');
       }
 
       return (req.newUser = user);
@@ -105,10 +107,10 @@ module.exports.addMemberEmailValidated = [
 
     .isEmail()
     .withMessage((value) => {
-      return `'${value}' not a valid email.`;
+      return `'${value}' একটি বৈধ ইমেল নয়।`;
     })
     .notEmpty()
-    .withMessage('Please enter any valid email.')
+    .withMessage('কোনো বৈধ ইমেল লিখুন দয়া করে.')
 
     .normalizeEmail(),
 ];
@@ -118,22 +120,22 @@ module.exports.addCostInputValidated = [
     .trim()
     .isIn(['bigCost', 'smallCost', 'otherCost'])
     .withMessage(
-      "Please select right role In 'bigCost or smallCost or otherCost' own."
+      "অনুগ্রহ করে 'বিগকস্ট বা স্মলকোস্ট বা অন্য কস্ট'-এ সঠিক ভূমিকা নির্বাচন করুন।"
     )
     .notEmpty()
-    .withMessage('Please select any one cost type.'),
+    .withMessage('অনুগ্রহ করে যেকোনো একটি খরচের ধরন নির্বাচন করুন।'),
   body('title')
     .trim()
     .notEmpty()
-    .withMessage('Please write any your cost type title.')
+    .withMessage('অনুগ্রহ করে আপনার খরচের প্রকার শিরোনাম লিখুন।')
     .isLength({ min: 3, max: 50 })
-    .withMessage('Please your  title is max:50'),
+    .withMessage('অনুগ্রহ করে আপনার শিরোনাম ৫০ অক্ষর এর বেশি হতে পারে না।'),
   // .matches(/^[a-zA-Z0-9., ]+$/)
   // .withMessage('Please enter valid Cost title'),
   body('amount')
     .trim()
     .matches(/^[0-9.-]+$/)
-    .withMessage('Please enter valid amount'),
+    .withMessage('বৈধ পরিমাণ লিখুন'),
   // body('date').isISO8601().toDate().withMessage('Please value must be date'),
 ];
 
@@ -142,25 +144,25 @@ module.exports.addMonthMemberDataInputValidated = [
     .trim()
     .isIn(['cash', 'rice', 'extraRice', 'guestMeal', 'extraCost'])
     .withMessage(
-      'Please select cash or rice or extraRice or guestMeal or extraCost'
+      'অনুগ্রহ করে নগদ বা চাল বা অতিরিক্ত চাল বা অতিথি খাবার বা অতিরিক্ত মূল্য নির্বাচন করুন'
     )
     .notEmpty()
-    .withMessage('Please select any one data type.'),
+    .withMessage('অনুগ্রহ করে যেকোনো একটি ডেটা টাইপ নির্বাচন করুন।'),
   body('amount')
     .trim()
     .matches(/^[0-9.-]+$/)
-    .withMessage('Please enter valid amount'),
+    .withMessage('বৈধ পরিমাণ লিখুন'),
   // body('date').isISO8601().toDate().withMessage('Please value must be date'),
 ];
 exports.chPassInValid = [
   body('password')
     .trim()
     .isLength({ min: 8 })
-    .withMessage('password  min length 8.'),
+    .withMessage('পাসওয়ার্ড সর্বনিম্ন ৮ সংখ্যার হতে হবে।'),
   body('newPassword')
     .trim()
     .isLength({ min: 8 })
-    .withMessage('newPassword  min length 8.'),
+    .withMessage('পাসওয়ার্ড সর্বনিম্ন ৮ সংখ্যার হতে হবে।'),
 ];
 
 exports.emailCodeInValid = [
@@ -168,15 +170,15 @@ exports.emailCodeInValid = [
     .trim()
     .isEmail()
     .withMessage((value) => {
-      return `'${value}' not a valid email.`;
+      return `'${value}' একটি বৈধ ইমেল নয়।`;
     })
     .notEmpty()
-    .withMessage('Please enter any valid email.')
+    .withMessage('কোনো বৈধ ইমেল লিখুন দয়া করে.')
     .normalizeEmail(),
   body('code')
     .trim()
     .isLength({ min: 4 })
-    .withMessage('Write your code properly.'),
+    .withMessage('আপনার কোড সঠিকভাবে লিখুন।'),
 ];
 
 exports.emailValid = [
@@ -184,14 +186,14 @@ exports.emailValid = [
     .trim()
     .isEmail()
     .withMessage((value) => {
-      return `'${value}' not a valid email.`;
+      return `'${value}' একটি বৈধ ইমেল নয়।`;
     })
     .notEmpty()
-    .withMessage('Please enter any valid email.')
+    .withMessage('কোনো বৈধ ইমেল লিখুন দয়া করে.')
     .custom((value, { req }) => {
       return User.findOne({ email: value }).then((userDoc) => {
         if (userDoc) {
-          return Promise.reject('E-Mail address already exists!');
+          return Promise.reject('ই - মেইল ​​টি আগে থেকেই আছে!');
         }
       });
     })
@@ -202,9 +204,9 @@ exports.isEmailInput = [
     .trim()
     .isEmail()
     .withMessage((value) => {
-      return `'${value}' not a valid email.`;
+      return `'${value}' একটি বৈধ ইমেল নয়।`;
     })
     .notEmpty()
-    .withMessage('Please enter any valid email.')
+    .withMessage('কোনো বৈধ ইমেল লিখুন দয়া করে.')
     .normalizeEmail(),
 ];

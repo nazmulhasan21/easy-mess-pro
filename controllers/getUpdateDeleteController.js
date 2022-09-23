@@ -27,13 +27,12 @@ exports.getOne = (Model) => async (req, res, next) => {
     const doc = await Model.findOne({
       $and: [{ _id: req.params.id }, { messId: user.messId }],
     }).populate('addBy editBy userId', 'name avatar role');
-    if (!doc)
-      return next(new AppError(404, 'data', `No data found with that id`));
+    if (!doc) return next(new AppError(404, 'data', `কিছু খুজে পাওয়া যায়নি।`));
     doc.userName = undefined;
     // 2. send res
     res.status(200).json({
       status: 'success',
-      message: `Data found successfully`,
+      message: `সফল ভাবে পাওয়া হয়েছে।`,
       data: {
         doc,
       },
@@ -108,10 +107,23 @@ exports.getList = (Model) => async (req, res, next) => {
     const features = new APIFeatures(
       Model.find(findQuery)
         .populate('addBy editBy userId', 'name avatar role')
-        .sort({ createdAt: -1 }),
+        .sort({ date: -1 }),
       req.query
     );
-    const doc = await features.query;
+    const doc = async () => {
+      const data = await features.query;
+      return data.map((item) => {
+        return {
+          _id: item._id,
+          userId: item.userId,
+          type: item.type,
+          amount: item.amount,
+          addBy: item.addBy,
+          editBy: item.editBy,
+          date: item.data,
+        };
+      });
+    };
     const results = await Model.countDocuments(findQuery);
 
     // 3. send res
@@ -119,7 +131,7 @@ exports.getList = (Model) => async (req, res, next) => {
       status: 'success',
       results: results,
       data: {
-        data: doc,
+        data: await doc(),
       },
     });
   } catch (error) {
@@ -193,7 +205,7 @@ exports.updateOne = (Model, model) => async (req, res, next) => {
       $and: [{ messId: user.messId }, { active: true }],
     });
     if (!activeMonth)
-      return next(new AppError(404, 'month', `Do not have any active month`));
+      return next(new AppError(404, 'month', `কোন সক্রিয় মাস নেই`));
 
     let newDoc = {};
     const doc = await Model.findOne({
@@ -207,7 +219,7 @@ exports.updateOne = (Model, model) => async (req, res, next) => {
     );
     if (!isMonthDate)
       return next(
-        new AppError(402, 'date', 'Please Select your active month date')
+        new AppError(402, 'date', 'আপনার সক্রিয় মাসের তারিখ নির্বাচন করুন')
       );
     // if update any one meal  run this if function
     if (model == 'meal') {
@@ -237,7 +249,7 @@ exports.updateOne = (Model, model) => async (req, res, next) => {
     // 3. send res
     return res.status(200).json({
       status: 'success',
-      message: 'Update data successfully',
+      message: 'সফল ভাবে পরিবর্তন করা হয়েছে',
       data: {
         upDoc,
       },
@@ -271,14 +283,14 @@ exports.deleteOne = (Model, model) => async (req, res, next) => {
     // 2. Not found any cost or active Month or add by user
 
     if (!doc || !activeMonth || !addBy)
-      return next(new AppError(404, model, `Do not delete this ${model}`));
+      return next(new AppError(404, model, ` ${model} ডিলেট করতে পারবেন না`));
 
     // 3. delete Cost
     await Model.findByIdAndDelete(req.params.id);
 
     res.status(200).json({
       status: 'success',
-      message: `Delete ${model} successfully`,
+      message: ` ${model} সফল ভাবে ডিলেট হয়েছে।`,
     });
   } catch (error) {
     next(error);

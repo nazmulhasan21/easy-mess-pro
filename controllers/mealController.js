@@ -81,7 +81,23 @@ exports.getMealList = async (req, res, next) => {
         .sort({ createdAt: -1 }),
       req.query
     );
-    const doc = await features.query;
+    const doc = async () => {
+      const data = await features.query;
+      return data.map((item) => {
+        return {
+          _id: item._id,
+          userId: item.userId,
+          breakfast: item.breakfast,
+          lunch: item.lunch,
+          dinner: item.dinner,
+          total: item.total,
+          addBy: item.addBy,
+          editBy: item.editBy,
+          date: item.data,
+        };
+      });
+    };
+
     const results = await Meal.countDocuments(findQuery);
 
     // 3. send res
@@ -89,7 +105,7 @@ exports.getMealList = async (req, res, next) => {
       status: 'success',
       results: results,
       data: {
-        data: doc,
+        data: await doc(),
       },
     });
   } catch (error) {
@@ -107,12 +123,12 @@ exports.createMeal = async (req, res, next) => {
       $and: [{ messId: user.messId }, { active: true }],
     }).select('meals date');
     if (!month)
-      return next(new AppError(404, 'month', 'No found active month'));
+      return next(new AppError(404, 'month', 'সক্রিয় মাস পাওয়া যায়নি'));
     // only add this month date
     const isMonthDate = moment(month.date).isSame(date, 'month');
     if (!isMonthDate)
       return next(
-        new AppError(402, 'date', 'Please Select your active month date')
+        new AppError(402, 'date', 'আপনার সক্রিয় মাসের তারিখ নির্বাচন করুন।')
       );
     // check add now day meal in active month
     const oldMeals = await Meal.find({
@@ -145,7 +161,7 @@ exports.createMeal = async (req, res, next) => {
         new AppError(
           403,
           'meals',
-          'All ready add today meals. Please Try in next day or Update meals'
+          'আগেই এই তারিখের মিল যোগ করা আছে। অন্যদিনের মিল যোগ করতে তারিখ পরিবর্তন করুন।'
         )
       );
 
@@ -169,7 +185,7 @@ exports.createMeal = async (req, res, next) => {
     // 5. send res
     res.status(201).json({
       status: 'success',
-      message: `Add meal successfully`,
+      message: `সফলভাবে মিল যোগ করা হলো।`,
     });
   } catch (error) {
     next(error);
@@ -209,6 +225,7 @@ exports.getLastDayMeal = async (req, res, next) => {
         const userMeal = userMeals[userMeals.length - 1];
         // create new
         const meal = {
+          _id: userMeal._id,
           userId: userId,
           user,
           breakfast: userMeal?.breakfast || 0,

@@ -28,7 +28,7 @@ exports.getCost = async (req, res, next) => {
       $and: [{ _id: req.params.id }, { messId: user.messId }],
     }).populate('addBy editBy monthId', 'name avatar role monthTitle');
     if (!doc)
-      return next(new AppError(404, 'cost', 'No cost found with that id'));
+      return next(new AppError(404, 'cost', 'কোন খরচ খুজে পাওয়া যায়নি'));
 
     // 2. send res
     res.status(200).json({
@@ -94,17 +94,30 @@ exports.getCostList = async (req, res, next) => {
     const features = new APIFeatures(
       Cost.find(findQuery)
         .populate('addBy editBy', 'name avatar role')
-        .sort({ createdAt: -1 }),
+        .sort({ date: -1 }),
       req.query
     );
-    const doc = await features.query;
+    const doc = async () => {
+      const data = await features.query;
+      return data.map((item) => {
+        return {
+          _id: item._id,
+          type: item.type,
+          title: item.title,
+          amount: item.amount,
+          addBy: item.addBy,
+          editBy: item.editBy,
+          date: item.data,
+        };
+      });
+    };
     const results = await Cost.countDocuments(findQuery);
     // 3. send res
     res.status(200).json({
       status: 'success',
       results: results,
       data: {
-        data: doc,
+        data: await doc(),
       },
     });
   } catch (error) {
@@ -178,7 +191,7 @@ exports.updateCost = async (req, res, next) => {
     });
     // 2. Not found any cost
     if (!cost || !activeMonth)
-      return next(new AppError(404, 'cost', 'Do not update this Cost'));
+      return next(new AppError(404, 'cost', 'এই খরচ  আপডেট করা যাবে না'));
     // only add this month date
     const isMonthDate = moment(activeMonth.date).isSame(
       body?.date || cost.date,
@@ -186,7 +199,7 @@ exports.updateCost = async (req, res, next) => {
     );
     if (!isMonthDate)
       return next(
-        new AppError(402, 'date', 'Please Select your active month date')
+        new AppError(402, 'date', 'আপনার সক্রিয় মাসের তারিখ নির্বাচন করুন')
       );
     const doc = await Cost.findByIdAndUpdate(req.params.id, newCost, {
       new: true,
@@ -223,14 +236,14 @@ exports.deleteCost = async (req, res, next) => {
     // 2. Not found any cost or active Month or add by user
 
     if (!cost || !activeMonth || !addBy)
-      return next(new AppError(404, 'cost', 'Do not delete this Cost'));
+      return next(new AppError(404, 'cost', 'এই খরচ ‍ডিলেট করা যাবে না'));
 
     // 3. delete Cost
     await Cost.findByIdAndDelete(req.params.id);
 
     res.status(200).json({
       status: 'success',
-      message: 'Delete Cost successfully',
+      message: 'খরচ টি সভল ভাবে ডিলেট হয়েছে।',
     });
   } catch (error) {
     next(error);

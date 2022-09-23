@@ -8,7 +8,7 @@ exports.deleteOne = (Model, model) => async (req, res, next) => {
     const doc = await Model.findByIdAndDelete(req.params._id);
     if (!doc) {
       return next(
-        new AppError(404, model, `${model} not found with that id`, 'fail')
+        new AppError(404, model, `এই আইডির সাথে পাওয়া যায়নি`, 'fail')
       );
     }
   } catch (error) {
@@ -23,7 +23,7 @@ exports.updateOne = (Model, model) => async (req, res, next) => {
       runValidators: true,
     });
     if (!doc)
-      return next(new AppError(404, model, `${model} not found with that id`));
+      return next(new AppError(404, model, `এই আইডির সাথে পাওয়া যায়নি`));
     res.status(200).json({
       status: 'success',
       data: {
@@ -57,7 +57,7 @@ exports.getOne = (Model, model) => async (req, res, next) => {
     const doc = await Model.findById(req.params.id);
     console.log(doc);
     if (!doc) {
-      return next(new AppError(404, model, `${model} not found`));
+      return next(new AppError(404, model, `খুজে পাওয়া যায়নি`));
     }
     res.status(200).json({
       status: 'success',
@@ -129,7 +129,7 @@ exports.fineOne = (Model, model) => async (req, res, next) => {
     if (!isValid) return next(new AppError(400, '_id', 'Id is not valid '));
     const doc = await Model.findOne();
     if (!doc) {
-      return next(new AppError(404, model, `${model} not found`));
+      return next(new AppError(404, model, `খুজে পাওয়া যায়নি`));
     }
     res.status(200).json({
       status: 'success',

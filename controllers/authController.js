@@ -19,26 +19,31 @@ exports.login = async (req, res, next) => {
     // -> 1 <- check if email and password exist
     if (!email || !password) {
       return next(
-        new AppError(400, 'email', 'Please provide email or password', 'fail')
+        new AppError(
+          400,
+          'email',
+          'একটি ইমেল এবং পাসওয়ার্ড প্রদান করুন',
+          'fail'
+        )
       );
     }
 
     // -> 2 <- check if user exist and password is correct
     const user = await User.findOne({ email }).select('+password');
     if (!user || !(await user.correctPassword(password, user.password))) {
-      return next(new AppError(401, 'password', 'Email or Password is wrong'));
+      return next(new AppError(401, 'password', 'ইমেল বা পাসওয়ার্ড ভুল'));
     }
     // check email verification
     if (!user.emailVerified) {
       const to = { email: email, name: user?.name };
-      const subject = 'Email verification';
+      const subject = 'ইমেইলের সত্যতা যাচাই';
       const templateName = 'sendEmailVerCode';
 
       const sent = await sendVerificationCode(to, subject, templateName);
       if (sent) {
         return res.status(200).json({
           status: 'success',
-          message: 'Please check your email and verified your email',
+          message: 'আপনার ইমেল চেক করুন এবং কোডটি লিখুন',
           emailVerified: false,
         });
       }
@@ -50,7 +55,7 @@ exports.login = async (req, res, next) => {
     user.password = undefined;
     res.status(200).json({
       status: 'success',
-      message: 'Login successfully',
+      message: 'সফলভাবে মেসে প্রবেশ করেছেন',
       token,
       data: {
         user,
@@ -78,7 +83,7 @@ exports.signup = async (req, res, next) => {
     });
     if (user) {
       const to = { email: email, name: user?.name };
-      const subject = 'Email verification';
+      const subject = 'ইমেইলের সত্যতা যাচাই';
       const templateName = 'sendEmailVerCode';
 
       const sent = await sendVerificationCode(to, subject, templateName);
@@ -86,7 +91,7 @@ exports.signup = async (req, res, next) => {
       if (sent) {
         res.status(201).json({
           status: 'success',
-          message: 'Please check your email and verified your account',
+          message: 'আপনার ইমেল চেক করুন এবং কোডটি লিখুন',
           emailVerified: false,
         });
       }
@@ -115,7 +120,7 @@ exports.verification = async (req, res, next) => {
       await user.save();
       return res.status(200).json({
         status: 'success',
-        message: 'Email verification successfully',
+        message: 'ইমেল সফলভাবে যাচাইকরণ হয়েছে।',
         token,
         data: {
           user,
@@ -127,21 +132,21 @@ exports.verification = async (req, res, next) => {
       // find otp code
 
       if (!otpCode) {
-        return next(new AppError(401, 'code', `code is wrong`));
+        return next(new AppError(401, 'code', `কোডটি ভুল দিয়েছেন`));
       }
 
       // expired time
       const expired = otpCode?.expiredAt - new Date().getTime();
       if (expired < 0) {
         const to = { email: email, name: user.name };
-        const subject = 'Email verification';
+        const subject = 'ইমেইলের সত্যতা যাচাই';
         const templateName = 'emailSingUp';
 
         sendVerificationCode(to, subject, templateName);
         return next(
           new AppError(401),
           'code',
-          'Code is expired. please check email sending new code'
+          'কোডের মেয়াদ শেষ । ইমেল চেক করুন, পুনরাই কোড পাঠানো হয়েছে । '
         );
       }
 
@@ -155,7 +160,7 @@ exports.verification = async (req, res, next) => {
 
       res.status(200).json({
         status: 'success',
-        message: 'Email verification successfully',
+        message: 'ইমেল সফলভাবে যাচাইকরণ হয়েছে।',
         token,
         data: {
           user,
@@ -179,14 +184,14 @@ exports.sendEmailVerificationCode = async (req, res, next) => {
       to = { email: email, name: user?.name };
     }
 
-    const subject = 'Email verification';
+    const subject = 'ইমেইলের সত্যতা যাচাই';
     const templateName = 'sendEmailCode';
 
     sendVerificationCode(to, subject, templateName);
 
     res.status(200).json({
       status: 'success',
-      message: 'Please check your email and verified your email',
+      message: 'আপনার ইমেল চেক করুন এবং কোডটি লিখুন',
     });
   } catch (error) {
     next(error);
@@ -208,11 +213,7 @@ exports.protect = async (req, res, next) => {
     }
     if (!token) {
       return next(
-        new AppError(
-          401,
-          'token',
-          'You are not logged in! Please login in to continue'
-        )
+        new AppError(401, 'token', 'আপনি লগইন নেই! পুনরাই লগ ইন করুন')
       );
     }
     // 2. Verify token
@@ -222,7 +223,7 @@ exports.protect = async (req, res, next) => {
     const user = await User.findById(decode.id);
 
     if (!user) {
-      return next(new AppError(401, 'user', 'This user is no longer exist'));
+      return next(new AppError(401, 'user', 'এই ব্যবহারকারী আর বিদ্যমান নেই'));
     }
     req.user = user;
     next();
@@ -235,7 +236,7 @@ exports.restrictToMessId = async (req, res, next) => {
   if (!messId && req.user.role == 'manager') {
     return res.status(200).json({
       status: 'success',
-      message: 'You do not create any mess',
+      message: 'আপনি কোন মেস বানানটি। ',
       mess: false,
       data: null,
     });
@@ -243,7 +244,7 @@ exports.restrictToMessId = async (req, res, next) => {
   if (!messId) {
     return res.status(200).json({
       status: 'success',
-      message: 'You are not join any mess. Please Contact your mess manager',
+      message: 'আপনি কোন মেসে যোগদান করেন নাই।',
       data: null,
       mess: true,
     });
@@ -254,7 +255,7 @@ exports.restrictToMessId = async (req, res, next) => {
 exports.restrictTo = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
-      return next(new AppError(403, roles, `You are not ${roles}`));
+      return next(new AppError(403, roles, `আপনি ${roles} না।`));
     }
     next();
   };
@@ -263,7 +264,7 @@ exports.restrictTo = (...roles) => {
 exports.restrictToAdmin = async (req, res, next) => {
   const mess = await Mess.findOne({ admin: req.user._id });
   if (!mess) {
-    return next(new AppError(403, 'admin', `You are not mess admin.`));
+    return next(new AppError(403, 'admin', `আপনি মেস এডমিন না.`));
   }
   req.mess = mess;
   next();
@@ -273,13 +274,13 @@ exports.checkPassword = async (req, res, next) => {
   const { body } = req;
   const user = await User.findById(req.user._id).select('password');
   if (!body?.password)
-    return next(new AppError(402, 'password', 'Please type your password'));
+    return next(new AppError(402, 'password', 'আপনার পাসওয়ার্ড টাইপ করুন'));
   if (
     !body?.password ||
     !user ||
     !(await user.correctPassword(body?.password, user.password))
   ) {
-    return next(new AppError(401, 'password', 'Password is wrong'));
+    return next(new AppError(401, 'password', 'পাসওয়ার্ড ভুল'));
   }
   next();
 };

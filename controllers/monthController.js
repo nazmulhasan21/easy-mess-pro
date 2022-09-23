@@ -37,7 +37,7 @@ exports.createMonth = async (req, res, next) => {
 
     if (!monthName || !date)
       return next(
-        new AppError(402, 'monthName', `Please Select your month name`)
+        new AppError(402, 'monthName', `আপনার মাসের নাম নির্বাচন করুন`)
       );
     monthName = moment(date).format('MMMM YYYY');
 
@@ -47,7 +47,13 @@ exports.createMonth = async (req, res, next) => {
     });
 
     if (activeMonth) {
-      return next(new AppError(400, 'month', 'Your month already exit'));
+      return next(
+        new AppError(
+          400,
+          'month',
+          'আপনার সক্রিয় মাস আছে। আগে সক্রিয় মাসটি নিষ্ক্রিয় করুন।'
+        )
+      );
     }
     // 2. find mess
     const mess = await Mess.findById(user.messId)
@@ -61,7 +67,7 @@ exports.createMonth = async (req, res, next) => {
     // send response
     res.status(201).json({
       status: 'success',
-      message: 'Create Your Month successfully',
+      message: 'সফলভাবে আপনার মাস তৈরি করা হয়েছে।',
     });
   } catch (error) {
     next(error);
@@ -74,7 +80,7 @@ exports.addFixedMeal = async (req, res, next) => {
     const { user } = req;
     const fixedMeal = req.body?.fixedMeal;
     if (!fixedMeal && fixedMeal === '') {
-      return next(new AppError(401, 'fixedMeal', 'input not valeted'));
+      return next(new AppError(401, 'fixedMeal', 'ইনপুট সঠিক না'));
     }
 
     //1. find active month and update fixed meal
@@ -83,10 +89,12 @@ exports.addFixedMeal = async (req, res, next) => {
       { $set: { fixedMeal: req.body.fixedMeal } }
     );
     if (!month)
-      return next(new AppError(404, 'month', 'Not found your active month'));
+      return next(
+        new AppError(404, 'month', 'আপনার সক্রিয় মাস খুঁজে পাওয়া যায়নি')
+      );
     res.status(200).json({
       status: 'success',
-      message: 'Add Fixed Meal Your month successfully',
+      message: 'আপনার মাসে মিল সফলভাবে যোগ করা হয়েছে।',
     });
   } catch (error) {
     next(error);
@@ -103,7 +111,7 @@ exports.getActiveMonth = async (req, res, next) => {
     // 1. Get active Month
     const month = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
-    }).populate('messId manager', 'userId name email phone messName');
+    }).populate('messId manager', 'userId name email phone avatar messName');
 
     if (!month) {
       return res.status(200).json({
@@ -140,8 +148,21 @@ exports.getActiveMonth = async (req, res, next) => {
       }).sort({ date: -1 });
 
       return data.map((item) => {
+        // let type = '';
+        // if ((item.type = 'cash')) {
+        //   type = 'টাকা';
+        // } else if ((item.type = 'rice')) {
+        //   type = 'চাউল';
+        // } else if ((item.type = 'guestMeal')) {
+        //   type = '';
+        // } else if ((item.type = 'extraRice')) {
+        //   type = 'অতিরিক্ত চাউল';
+        // } else {
+        //   type = 'অতিরিক্ত খরচ';
+        // }
+
         return {
-          type: item.type,
+          type: type,
           date: item.date,
           amount: item.amount,
         };
@@ -178,7 +199,7 @@ exports.getActiveMonth = async (req, res, next) => {
         userMonthData,
         recentAdded: await recentAdded(),
         meals: {
-          title: `ব্যক্তিগত  ${month.monthTitle} মাসের খাবার তালিকা`,
+          title: `ব্যক্তিগত  ${month.monthTitle} মাসের মিলের তালিকা`,
           item: meals,
           total: total,
         },
@@ -197,9 +218,7 @@ exports.getMonthChart = async (req, res, next) => {
       $and: [{ messId: user.messId }, { active: true }],
     });
     if (!month)
-      return next(
-        new AppError(404, 'month', 'You have not a any active month')
-      );
+      return next(new AppError(404, 'month', 'আপনার কোনো সক্রিয় মাস নেই'));
     /// find user month data
 
     // get active month all data
@@ -264,7 +283,7 @@ exports.deleteMonth = async (req, res, next) => {
     });
     if (!month)
       return next(
-        new AppError(403, 'manage', 'You are not this month manager', 'fail')
+        new AppError(403, 'manage', 'আপনি এই মাসের ম্যানেজার নন', 'fail')
       );
     // 2. find all Member and this month in user mess
     const mess = await Mess.findById(user.messId).select('allMember month');
@@ -289,7 +308,7 @@ exports.deleteMonth = async (req, res, next) => {
     await month.remove();
     res.status(200).json({
       status: 'success',
-      message: 'Delete Your month successfully',
+      message: 'সফলভাবে আপনার মাস মুছেফেলা হয়েছে।',
     });
   } catch (error) {
     next(error);
@@ -305,7 +324,7 @@ exports.getPDF = async (req, res, next) => {
 
     const mess = await Mess.findById(messId);
     if (!messId || !mess)
-      return next(new AppError(404, 'mess', 'You have not any mess'));
+      return next(new AppError(404, 'mess', 'আপনার কোন মেস নেই'));
     const month = await Month.findOne({
       $and: [{ messId: messId }, { active: true }],
     });
@@ -334,7 +353,7 @@ exports.changeMonthStatus = async (req, res, next) => {
     });
     if ((active == 1 || active == true) && activeMonth)
       return next(
-        new AppError(403, 'active', 'All ready active another month')
+        new AppError(403, 'active', 'ইতিমধ্যে অন্য একটি মাস সক্রিয় আছে।')
       );
     if ((active == 1 || active == true) && !activeMonth) {
       await Month.updateOne(
@@ -343,7 +362,7 @@ exports.changeMonthStatus = async (req, res, next) => {
       );
       return res.status(200).json({
         status: 'success',
-        message: 'Activated your month status successfully',
+        message: 'আপনার মাসটি সফলভাবে সক্রিয় করা হয়েছে৷',
       });
     }
     if (active == 0 || active == false) {
@@ -353,7 +372,7 @@ exports.changeMonthStatus = async (req, res, next) => {
       );
       return res.status(200).json({
         status: 'success',
-        message: 'Deactivated your month status successfully',
+        message: 'আপনার মাসটি সফলভাবে নিষ্ক্রিয় করা হয়েছে৷',
       });
     }
   } catch (error) {

@@ -407,6 +407,7 @@ exports.activeMonthAllData = async (month, next) => {
         .sort({ amount: -1 });
       return memberItem.map((item) => {
         return {
+          _id: item._id,
           type: item.type,
           amount: item.amount,
           date: item.date,
@@ -419,8 +420,9 @@ exports.activeMonthAllData = async (month, next) => {
         allUserMonthData.map(async (item, index) => {
           const data = await memberData(type, item.userId._id);
           const total = _.sumBy(data, 'amount');
-          if (total > 0) {
+          if (data.length > 0) {
             return {
+              userId: item.userId._id,
               name: item.userId.name,
               avatar: item.userId.avatar,
               item: data,
