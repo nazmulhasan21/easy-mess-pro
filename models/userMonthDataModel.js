@@ -61,7 +61,7 @@ const userMonthDataSchema = mongoose.Schema(
     },
     totalMeal: {
       type: Number,
-      default: 1,
+      default: 0,
     },
     fixedMeal: {
       type: Number,

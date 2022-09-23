@@ -375,9 +375,21 @@ exports.activeMonthAllData = async (month, next) => {
     }).populate('userId', 'name avatar role');
 
     // month cost
-    const allCost = await Cost.find({
-      monthId: month._id,
-    }).sort({ date: -1 });
+    const costs = async () => {
+      const data = await Cost.find({
+        monthId: month._id,
+      }).sort({ date: -1 });
+      return data.map((item) => {
+        return {
+          _id: item._id,
+          type: item.type,
+          title: item.title,
+          amount: item.amount,
+          date: item.date,
+        };
+      });
+    };
+    const allCost = await costs();
 
     // data for cash rice others
 
@@ -403,7 +415,7 @@ exports.activeMonthAllData = async (month, next) => {
       const memberItem = await MonthMemberData.find({
         $and: [{ monthId: month._id }, { userId: userId }, { type: type }],
       })
-        .populate('userId', 'name avatar')
+        .select('userId type amount date')
         .sort({ amount: -1 });
       return memberItem.map((item) => {
         return {

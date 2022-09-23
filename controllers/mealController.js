@@ -10,6 +10,7 @@ const _ = require('lodash');
 const Mess = require('../models/messModel');
 const User = require('../models/userModel');
 const UserMonthData = require('../models/userMonthDataModel');
+const { exists } = require('../models/messModel');
 
 exports.getMealList = async (req, res, next) => {
   try {
@@ -196,6 +197,14 @@ exports.createMeal = async (req, res, next) => {
 exports.getLastDayMeal = async (req, res, next) => {
   try {
     const { user } = req;
+    const { day } = req.query;
+    let dateFilter = {};
+    dateFilter = {
+      date: {
+        $gte: moment(day).startOf('day'),
+        $lte: moment(day).endOf('day'),
+      },
+    };
 
     // 1 . find user mess
     const mess = await Mess.findById(user.messId).select('allMember');
@@ -219,26 +228,53 @@ exports.getLastDayMeal = async (req, res, next) => {
       members.map(async (userId) => {
         // find user
         const user = await User.findById(userId).select('name avatar role');
-        // find user meal
-        const userMeals = await Meal.find({
-          $and: [{ userId: userId }, { monthId: month._id }],
-        });
 
-        const userMeal = userMeals[userMeals.length - 1];
-        // create new
-        const meal = {
-          _id: userMeal._id,
-          userId: userId,
-          user,
-          breakfast: userMeal?.breakfast || 0,
-          lunch: userMeal?.lunch || 0,
-          dinner: userMeal?.dinner || 0,
-          total: userMeal?.total || 0,
-          date: userMeal?.date || '',
-        };
+        let userMeals = [];
+        if (day && dateFilter) {
+          userMeals = await Meal.find({
+            $and: [{ userId: userId }, { monthId: month._id }, dateFilter],
+          });
+        } else {
+          userMeals = await Meal.find({
+            $and: [{ userId: userId }, { monthId: month._id }],
+          });
+        }
+        let meal = '';
+        if (userMeals.length == 0) {
+          meal = false;
+        } else {
+          const userMeal = userMeals[userMeals.length - 1];
+
+          // find user meal
+
+          // create new
+          meal = {
+            _id: userMeal?._id,
+            userId: userId,
+            user,
+            breakfast: userMeal?.breakfast || 0,
+            lunch: userMeal?.lunch || 0,
+            dinner: userMeal?.dinner || 0,
+            total: userMeal?.total || 0,
+            date: userMeal?.date || '',
+          };
+        }
+
         return meal;
       })
     );
+    if (meals[0] == false) {
+      return res.status(200).json({
+        status: 'success',
+        message: 'এই তারিখে কোন মিল যোগ করা হয়নি।',
+        data: {
+          data: [],
+          total: {},
+          date: day,
+        },
+      });
+    }
+
     // ‍sum by in meals
     const total = {
       total: _.sumBy(meals, 'total'),

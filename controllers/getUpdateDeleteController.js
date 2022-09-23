@@ -107,6 +107,7 @@ exports.getList = (Model) => async (req, res, next) => {
     const features = new APIFeatures(
       Model.find(findQuery)
         .populate('addBy editBy userId', 'name avatar role')
+        .select('userId type amount addBy editBy date createdAt updatedAt')
         .sort({ date: -1 }),
       req.query
     );
