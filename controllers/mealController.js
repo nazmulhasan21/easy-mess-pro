@@ -93,7 +93,9 @@ exports.getMealList = async (req, res, next) => {
           total: item.total,
           addBy: item.addBy,
           editBy: item.editBy,
-          date: item.data,
+          date: item.date,
+          createdAt: item.createdAt,
+          updatedAt: item.updatedAt,
         };
       });
     };

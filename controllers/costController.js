@@ -107,7 +107,9 @@ exports.getCostList = async (req, res, next) => {
           amount: item.amount,
           addBy: item.addBy,
           editBy: item.editBy,
-          date: item.data,
+          date: item.date,
+          createdAt: item.createdAt,
+          updatedAt: item.updatedAt,
         };
       });
     };
