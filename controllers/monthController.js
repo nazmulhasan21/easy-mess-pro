@@ -333,7 +333,7 @@ exports.getPDF = async (req, res, next) => {
     const getPdf = await createPDF('index', data);
     // const getPdf = await getMonthPdf(month._id);
     if (getPdf) {
-      const filePath = path.join(process.cwd(), `monthDetails.pdf`);
+      const filePath = path.join(process.cwd(), `app/monthDetails.pdf`);
       res.download(filePath);
     }
   } catch (error) {

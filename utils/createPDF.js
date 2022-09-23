@@ -30,7 +30,7 @@ module.exports = async (templateName, data) => {
     const content = await compile(templateName, data);
     await page.setContent(content);
     await page.pdf({
-      path: `monthDetails.pdf`,
+      path: `app/monthDetails.pdf`,
       format: 'A4',
       printBackground: true,
     });
