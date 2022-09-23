@@ -182,7 +182,7 @@ exports.userMonthCal = async (userId, month) => {
     const extraCost = userData?.extraCost || 0;
 
     //5 set value this property
-    userMonthData.totalMeal = meal?.total || 1;
+    userMonthData.totalMeal = meal?.total || 0;
     userMonthData.fixedMeal =
       userMonthData.totalMeal > month.fixedMeal
         ? userMonthData.totalMeal
