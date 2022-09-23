@@ -494,7 +494,7 @@ exports.activeMonthAllData = async (month, next) => {
         type: 'extraRice',
       },
       {
-        title: 'অতিথি খাবার',
+        title: 'অতিথি মিল',
         data: guestMeal,
         total: guestMealSum,
         type: 'guestMeal',

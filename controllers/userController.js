@@ -303,7 +303,7 @@ exports.deleteMe = async (req, res, next) => {
     await User.findByIdAndDelete(user._id);
     res.status(204).json({
       status: 'success',
-      message: 'Your account delete successfully',
+      message: 'আপনার অ্যাকাউন্ট সফলভাবে মুছে ফেলা হয়েছে',
       data: null,
     });
   } catch (error) {

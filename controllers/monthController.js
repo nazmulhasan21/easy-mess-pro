@@ -162,7 +162,7 @@ exports.getActiveMonth = async (req, res, next) => {
         // }
 
         return {
-          type: type,
+          type: item.type,
           date: item.date,
           amount: item.amount,
         };
