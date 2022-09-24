@@ -339,6 +339,7 @@ exports.getPDF = async (req, res, next) => {
       res.status(200).json({
         status: 'fail',
         message: 'can not create file',
+        getPdf,
       });
     }
   } catch (error) {
