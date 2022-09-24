@@ -24,7 +24,7 @@ module.exports = async (templateName, data) => {
     const browser = await Puppeteer.launch({
       headless: true,
       ignoreDefaultArgs: ['--disable-extensions'],
-      args: ['--disable-setuid-sandbox'],
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
     const page = await browser.newPage();
     const content = await compile(templateName, data);
@@ -42,6 +42,6 @@ module.exports = async (templateName, data) => {
   } catch (error) {
     console.log('Do not create pdf');
     console.log(error);
-    return error;
+    return false;
   }
 };
