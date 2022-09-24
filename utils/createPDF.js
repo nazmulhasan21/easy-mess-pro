@@ -40,6 +40,7 @@ module.exports = async (templateName, data) => {
     await browser.close();
     return true;
   } catch (error) {
+    console.log('Do not create pdf');
     return false;
   }
 };

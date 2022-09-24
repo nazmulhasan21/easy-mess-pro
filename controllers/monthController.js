@@ -330,10 +330,10 @@ exports.getPDF = async (req, res, next) => {
     });
 
     const data = await activeMonthAllData(month, next);
-    const getPdf = await createPDF('index', data);
+    const getPdf = await createPDF('month', data);
     // const getPdf = await getMonthPdf(month._id);
     if (getPdf) {
-      const filePath = path.join(process.cwd(), `/monthDetails.pdf`);
+      const filePath = path.join(process.cwd(), `monthDetails.pdf`);
       res.download(filePath);
     } else {
       res.status(200).json({
