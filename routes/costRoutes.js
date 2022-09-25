@@ -9,7 +9,6 @@ const {
   restrictToMessId,
   restrictTo,
   checkPassword,
-  restrictToAdmin,
 } = require('../controllers/authController');
 const costController = require('../controllers/costController');
 

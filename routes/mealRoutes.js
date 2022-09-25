@@ -8,7 +8,6 @@ const {
   restrictToMessId,
   restrictTo,
   checkPassword,
-  restrictToAdmin,
 } = require('../controllers/authController');
 const mealController = require('../controllers/mealController');
 
@@ -25,6 +24,6 @@ router.use(restrictTo('manager', 'subManager'));
 
 router.post('/', mealController.createMeal);
 router.route('/:id').patch(mealController.updateMeal);
-router.delete('/:id', checkPassword, mealController.deleteMeal);
+// router.delete('/:id', checkPassword, mealController.deleteMeal);
 
 module.exports = router;

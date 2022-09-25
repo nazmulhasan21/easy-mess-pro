@@ -10,7 +10,6 @@ const _ = require('lodash');
 const Mess = require('../models/messModel');
 const User = require('../models/userModel');
 const UserMonthData = require('../models/userMonthDataModel');
-const { exists } = require('../models/messModel');
 
 exports.getMealList = async (req, res, next) => {
   try {
@@ -120,6 +119,9 @@ exports.createMeal = async (req, res, next) => {
   try {
     const { user } = req;
     const { date, meals } = req.body;
+    if (date == '') {
+      return next(new AppError(402, 'date', 'দয়া করে তারিখ নির্বাচন করুন।'));
+    }
 
     //1. find active month
     const month = await Month.findOne({

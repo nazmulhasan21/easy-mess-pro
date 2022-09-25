@@ -4,7 +4,6 @@ const router = express.Router();
 const {
   protect,
   restrictToMessId,
-  restrictTo,
   checkPassword,
   restrictToAdmin,
 } = require('../controllers/authController');

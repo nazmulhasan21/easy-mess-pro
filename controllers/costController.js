@@ -5,7 +5,7 @@ const moment = require('moment');
 const { validationResult } = require('express-validator');
 
 // all Models
-const Mess = require('../models/messModel');
+
 const Month = require('../models/monthModel');
 const Cost = require('../models/costModel');
 
@@ -14,8 +14,6 @@ const Cost = require('../models/costModel');
 // all utils
 const AppError = require('../utils/appError');
 const APIFeatures = require('../utils/apiFeatures');
-const { calculator } = require('../utils/calculation');
-// const { createMonth, deleteAllMonthData } = require('../utils/fun');
 
 // get cost one
 exports.getCost = async (req, res, next) => {
@@ -143,12 +141,14 @@ exports.createCost = async (req, res, next) => {
       $and: [{ messId: user.messId }, { active: true }],
     }).select('_id date');
     if (!month)
-      return next(new AppError(404, 'month', 'Not found your active Month'));
+      return next(
+        new AppError(404, 'month', 'আপনার সক্রিয় মাস খুঁজে পাওয়া যায়নি।')
+      );
     // only add this month date
     const isMonthDate = moment(month?.date).isSame(date, 'month');
     if (!isMonthDate)
       return next(
-        new AppError(402, 'date', 'Please Select your active month date')
+        new AppError(402, 'date', 'আপনার সক্রিয় মাসের তারিখ নির্বাচন করুন')
       );
     // 2. add Market Cost
     const cost = await Cost.create({
@@ -166,7 +166,7 @@ exports.createCost = async (req, res, next) => {
     // 3. send res
     res.status(201).json({
       status: 'success',
-      message: 'add Cost successfully',
+      message: 'সফলভাবে খরচ যোগ করা হয়েছে।',
       data: {
         cost,
       },

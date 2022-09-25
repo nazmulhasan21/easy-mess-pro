@@ -226,9 +226,10 @@ exports.updateOne = (Model, model) => async (req, res, next) => {
       );
     // if update any one meal  run this if function
     if (model == 'meal') {
-      const breakfast = body?.breakfast || doc?.breakfast;
-      const lunch = body?.lunch || doc?.lunch;
-      const dinner = body?.dinner || doc?.dinner;
+      const breakfast =
+        body?.breakfast == 0 ? 0 : body?.breakfast || doc?.breakfast;
+      const lunch = body?.lunch == 0 ? 0 : body?.lunch || doc?.lunch;
+      const dinner = body?.dinner == 0 ? 0 : body?.dinner || doc?.dinner;
       const total = breakfast + lunch + dinner;
       newDoc = {
         breakfast,
