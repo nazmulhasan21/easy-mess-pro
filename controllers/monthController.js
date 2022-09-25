@@ -124,7 +124,9 @@ exports.getActiveMonth = async (req, res, next) => {
     await month.save();
     const userData = await UserMonthData.find({
       $and: [{ messId: user.messId }, { monthId: month._id }],
-    }).select('userId');
+    })
+      .select('userId')
+      .sort({ rollNo: 1 });
     userData.map(async (item) => {
       await userMonthCal(item.userId, month);
     });

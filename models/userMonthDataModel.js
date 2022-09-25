@@ -15,9 +15,6 @@ const userMonthDataSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Mess',
     },
-    userName: {
-      type: String,
-    },
     totalDeposit: {
       type: Number,
       default: 0,
@@ -66,6 +63,11 @@ const userMonthDataSchema = mongoose.Schema(
     fixedMeal: {
       type: Number,
       default: 1,
+    },
+    rollNo: {
+      type: Number,
+      required: [true, 'Please fill border Roll no'],
+      unique: true,
     },
   },
   { timestamps: true }

@@ -218,7 +218,9 @@ exports.getLastDayMeal = async (req, res, next) => {
     // find allMember in this month
     const userData = await UserMonthData.find({
       $and: [{ messId: user.messId }, { monthId: month._id }],
-    }).select('userId');
+    })
+      .select('userId')
+      .sort({ rollNo: 1 });
 
     const members = await Promise.all(
       userData.map(async (item) => {

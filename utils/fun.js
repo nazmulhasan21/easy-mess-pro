@@ -372,7 +372,9 @@ exports.activeMonthAllData = async (month, next) => {
   try {
     const allUserMonthData = await UserMonthData.find({
       monthId: month._id,
-    }).populate('userId', 'name avatar role');
+    })
+      .populate('userId', 'name avatar role')
+      .sort({ rollNo: 1 });
 
     // month cost
     const costs = async () => {
