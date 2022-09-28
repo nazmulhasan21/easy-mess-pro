@@ -118,7 +118,8 @@ exports.getMealList = async (req, res, next) => {
 exports.createMeal = async (req, res, next) => {
   try {
     const { user } = req;
-    const { date, meals } = req.body;
+    const { meals } = req.body;
+    const date = moment(req.body.date);
     if (date == '') {
       return next(new AppError(402, 'date', 'দয়া করে তারিখ নির্বাচন করুন।'));
     }
