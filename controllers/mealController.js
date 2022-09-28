@@ -166,9 +166,9 @@ exports.createMeal = async (req, res, next) => {
         new AppError(
           403,
           'meals',
-          `আগেই ${moment(day).format(
+          `আগেই ${moment(date).format(
             'DD/MM/YY'
-          )}  এই তারিখের মিল যোগ করা আছে। অন্যদিনের মিল যোগ করতে তারিখ পরিবর্তন করুন।`
+          )} এই তারিখের মিল যোগ করা আছে। অন্যদিনের মিল যোগ করতে তারিখ পরিবর্তন করুন।`
         )
       );
 
