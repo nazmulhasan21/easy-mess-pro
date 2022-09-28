@@ -270,11 +270,13 @@ exports.getLastDayMeal = async (req, res, next) => {
     if (meals[0] == false) {
       return res.status(200).json({
         status: 'success',
-        message: 'এই তারিখে কোন মিল যোগ করা হয়নি।',
+        message: `${moment(day).format(
+          'DD/MM/YY'
+        )} এই তারিখে কোন মিল যোগ করা হয়নি।`,
         data: {
           data: [],
           total: {},
-          date: day,
+          date: moment(day),
         },
       });
     }
