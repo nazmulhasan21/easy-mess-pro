@@ -262,65 +262,175 @@ exports.sendVerificationCode = async (to, subj, templateName) => {
  * @param {ObjectId} monthId
  * @returns
  */
-exports.getMonthPdf = async (monthId) => {
+exports.getMonthPdf = async (month, next) => {
   try {
-    const month = await Month.findById(monthId).populate(
-      'manager',
-      'name role avatar'
+    const allUserMonthData = await UserMonthData.find({
+      monthId: month._id,
+    })
+      .populate('userId', 'name avatar')
+      .sort({ rollNo: 1 });
+    // get every user data
+    const memberData = async (userId) => {
+      const memberItem = await MonthMemberData.find({
+        $and: [{ monthId: month._id }, { userId: userId }],
+      }).select('userId name type amount date');
+
+      const item = memberItem.map((item) => {
+        return {
+          type: item.type,
+          amount: item.amount,
+          date: item.date,
+        };
+      });
+
+      const getDataTypeItem = (type) => {
+        return _.filter(item, ['type', `${type}`]);
+      };
+
+      const itemSum = (type) => {
+        return _.sumBy(type, 'amount');
+      };
+
+      const cash = getDataTypeItem('cash');
+      const rice = getDataTypeItem('rice');
+      const extraRice = getDataTypeItem('extraRice');
+      const guestMeal = getDataTypeItem('guestMeal');
+
+      const cashTotal = itemSum(cash);
+      const riceTotal = itemSum(rice);
+      const extraRiceTotal = itemSum(extraRice);
+      const guestMealTotal = itemSum(guestMeal);
+
+      return (userData = {
+        name: userId.name,
+        avatar: userId.avatar,
+        cash,
+        rice,
+        extraRice,
+        guestMeal,
+        cashTotal,
+        riceTotal,
+        extraRiceTotal,
+        guestMealTotal,
+      });
+    };
+
+    const monthMemberData = await Promise.all(
+      allUserMonthData.map(async (item, index) => {
+        return await memberData(item.userId);
+      })
     );
+    // end every user data
 
-    const userMonthData = await UserMonthData.find({
-      monthId: monthId,
-    }).populate('userId', 'name avatar');
-    const costs = await Cost.find({ monthId: monthId });
-    const bigCost = _.filter(costs, ['type', 'bigCost']);
-    const smallCost = _.filter(costs, ['type', 'smallCost']);
-    const otherCost = _.filter(costs, ['type', 'otherCost']);
+    // get all cost
+    const costs = async () => {
+      const data = await Cost.find({
+        monthId: month._id,
+      }).sort({ date: -1 });
+
+      return data.map((item) => {
+        return {
+          type: item.type,
+          title: item.title,
+          amount: item.amount,
+          date: item.date,
+        };
+      });
+    };
+    const allCost = await costs();
+
+    const getCostTypeItem = (type) => {
+      return _.filter(allCost, ['type', `${type}`]);
+    };
+    // cost type
+    const bigCost = getCostTypeItem('bigCost');
+    const smallCost = getCostTypeItem('smallCost');
+    const otherCost = getCostTypeItem('otherCost');
     // sub
-    const bigCostSum = _.sumBy(bigCost, 'amount');
-    const smallCostSum = _.sumBy(smallCost, 'amount');
-    const otherCostSum = _.sumBy(otherCost, 'amount');
 
-    const data = await MonthMemberData.find({ monthId: monthId });
-    const cash = _.filter(data, ['type', 'cash']);
-    const rice = _.filter(data, ['type', 'rice']);
-    const extraRice = _.filter(data, ['type', 'extraRice']);
-    const guestMeal = _.filter(data, ['type', 'guestMeal']);
-    // sub
-    const cashSum = _.sumBy(cash, 'amount');
-    const riceSum = _.sumBy(rice, 'amount');
-    const extraRiceSum = _.sumBy(extraRice, 'amount');
-    const guestMealSum = _.sumBy(guestMeal, 'amount');
+    const costSum = (type) => {
+      return _.sumBy(type, 'amount');
+    };
 
-    const meals = await Meal.find({ monthId: monthId }).populate(
-      'userId',
-      'name avatar'
-    );
+    // sub cost
+    const bigCostSum = costSum(bigCost);
+    const smallCostSum = costSum(smallCost);
+    const otherCostSum = costSum(otherCost);
 
-    month.userMonthData = userMonthData;
-    month.monthMemberData = [
-      { name: 'Rice Table', details: rice, total: riceSum },
-      { name: 'Cash  Table', details: cash, total: cashSum },
-      { name: 'Extra Rich Table', details: extraRice, total: extraRiceSum },
+    // end all cost
+    month.userMonthData = allUserMonthData;
+    month.monthMemberData = monthMemberData;
+
+    // month.meals = meals;
+    month.costs = [
+      { title: 'বড় বাজার খরচ', data: bigCost, total: bigCostSum },
+      { title: 'অন্যান্য খরচ', data: otherCost, total: otherCostSum },
+      { title: 'খুচরা খরচ', data: smallCost, total: smallCostSum },
+    ];
+    month.meals = [
+      { title: 'মোট বড় বাজার', mark: ' ', amount: bigCostSum },
+      { title: 'মোট খুচরা বাজার', mark: '+', amount: smallCostSum },
       {
-        name: 'Guest Meal Table',
-        details: guestMeal,
-        total: guestMealSum,
+        title: `মোট খরচ`,
+        mark: '=',
+        amount: bigCostSum + smallCostSum,
+      },
+      { title: 'মোট ফি: মিল', mark: '=', amount: month.totalFixedMeal },
+      {
+        title: ` মিল রেট   ( ${month.totalMealCost} / ${month.totalFixedMeal} )`,
+        mark: '=',
+        amount: month.mealRate,
+      },
+      {
+        title: `ফি: মিলের খরচ   ( ${month.fixedMeal} * ${month.mealRate} )`,
+        mark: '=',
+        amount: (month.fixedMeal * month.mealRate).toFixed(2),
+      },
+      {
+        title: '       অন্যান্য খরচের হিসাব',
+      },
+      {
+        title: 'আপা,wifi ও অন্যান্য খরচ',
+        mark: '=',
+        amount: month.totalOtherCost,
+      },
+      {
+        title: 'মোট বডার',
+        mark: '=',
+        amount: allUserMonthData.length,
+      },
+      {
+        title: `বডার প্রতি খরচ ( ${month.totalOtherCost} / ${allUserMonthData.length} )`,
+        mark: '=',
+        amount: month.otherCostPerPerson,
+      },
+      {
+        title: '      ফি: মিলের মোট খরচ',
+        mark: '',
+        amount: '',
+      },
+      {
+        title: 'ফি: মিলের খরচ',
+        mark: '=',
+        amount: (month.fixedMeal * month.mealRate).toFixed(2),
+      },
+      {
+        title: 'অন্যান্য খরচ',
+        mark: '=',
+        amount: month.otherCostPerPerson,
+      },
+      {
+        title: 'একজন বডারের ফি: মিলের মোট খরচ',
+        mark: '=',
+        amount: Math.round(
+          month.fixedMeal * month.mealRate + month.otherCostPerPerson
+        ),
       },
     ];
-    month.meals = meals;
-    month.costs = [
-      { name: 'Other cost Table', details: otherCost, total: otherCostSum },
-      { name: 'Bajar cost Table', details: bigCost, total: bigCostSum },
-      { name: 'Small cost Table', details: smallCost, total: smallCostSum },
-    ];
 
-    const pdf = await createPDF('index', month);
-    if (pdf) {
-      return true;
-    }
+    return month;
   } catch (error) {
-    return error;
+    next(error);
   }
 };
 
@@ -495,8 +605,8 @@ exports.activeMonthAllData = async (month, next) => {
 
     month.costs = [
       { title: 'বড় বাজার খরচ', data: bigCost, total: bigCostSum },
-      { title: 'খুচরা খরচ', data: smallCost, total: smallCostSum },
       { title: 'অন্যান্য খরচ', data: otherCost, total: otherCostSum },
+      { title: 'খুচরা খরচ', data: smallCost, total: smallCostSum },
     ];
     month.monthMemberData = [
       { title: 'টাকা', data: cash, total: cashSum, type: 'cash' },
@@ -513,12 +623,12 @@ exports.activeMonthAllData = async (month, next) => {
         total: guestMealSum,
         type: 'guestMeal',
       },
-      {
-        title: 'বডারের অতিরিক্ত খরচ',
-        data: extraCost,
-        total: extraCostSum,
-        type: 'extraCost',
-      },
+      // {
+      //   title: 'বডারের অতিরিক্ত খরচ',
+      //   data: extraCost,
+      //   total: extraCostSum,
+      //   type: 'extraCost',
+      // },
     ];
     const userMonthData = allUserMonthData;
     month.userMonthData = userMonthData;

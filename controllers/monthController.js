@@ -20,6 +20,7 @@ const {
   createMonth,
   deleteAllMonthData,
   activeMonthAllData,
+  getMonthPdf,
 } = require('../utils/fun');
 const UserMonthData = require('../models/userMonthDataModel');
 const { monthCal, userMonthCal } = require('../utils/calculation');
@@ -224,7 +225,8 @@ exports.getMonthChart = async (req, res, next) => {
 
     // get active month all data
 
-    const data = await activeMonthAllData(month, next);
+    // const data = await activeMonthAllData(month, next);
+    const data = await getMonthPdf(month, next);
     if (data) {
       data.meals = [];
       // // send res
@@ -328,9 +330,9 @@ exports.getPDF = async (req, res, next) => {
       return next(new AppError(404, 'mess', 'আপনার কোন মেস নেই'));
     const month = await Month.findOne({
       $and: [{ messId: messId }, { active: true }],
-    });
+    }).populate('manager', 'name avatar');
 
-    const data = await activeMonthAllData(month, next);
+    const data = await getMonthPdf(month, next);
     const getPdf = await createPDF('month', data);
     // const getPdf = await getMonthPdf(month._id);
     if (getPdf) {

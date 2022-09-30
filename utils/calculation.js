@@ -199,12 +199,12 @@ exports.userMonthCal = async (userId, month) => {
     userMonthData.totalGuestMealAmount = guestMeal;
     userMonthData.totalExtraCost = extraCost;
     userMonthData.otherCost = month.otherCostPerPerson.toFixed(2);
-    userMonthData.totalCost = (
+    userMonthData.totalCost = Math.round(
       userMonthData.mealCost +
-      userMonthData.otherCost +
-      userMonthData.totalGuestMealAmount +
-      userMonthData.totalExtraCost
-    ).toFixed(2);
+        userMonthData.otherCost +
+        userMonthData.totalGuestMealAmount +
+        userMonthData.totalExtraCost
+    );
     userMonthData.balance = (cash - userMonthData.totalCost).toFixed(2);
 
     // 6. save to database
