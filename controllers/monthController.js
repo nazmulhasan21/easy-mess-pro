@@ -225,8 +225,8 @@ exports.getMonthChart = async (req, res, next) => {
 
     // get active month all data
 
-    // const data = await activeMonthAllData(month, next);
-    const data = await getMonthPdf(month, next);
+    const data = await activeMonthAllData(month, next);
+    // const data = await getMonthPdf(month, next);
     if (data) {
       data.meals = [];
       // // send res
