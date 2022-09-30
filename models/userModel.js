@@ -44,6 +44,9 @@ const userSchema = new mongoose.Schema(
       enum: ['border', 'manager', 'admin', 'subManager'],
       default: 'border',
     },
+    rollNo: {
+      type: Number,
+    },
     messId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Mess',

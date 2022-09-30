@@ -41,7 +41,7 @@ module.exports.createMonth = async (user, mess, monthName, date) => {
     await mess.save();
     // 3. create user Month data
     mess.allMember.forEach(async (user) => {
-      await this.createUserMonthData(user._id, month, mess._id);
+      await this.createUserMonthData(user, month, mess._id);
     });
 
     await month.save();
@@ -53,18 +53,19 @@ module.exports.createMonth = async (user, mess, monthName, date) => {
 
 /**
  *
- * @param {User._id} userId mess member user id
+ * @param {User} user mess member user
  * @param {object} month active month object
  * @param {Mess._id} messId user mess Id
  */
 
-module.exports.createUserMonthData = async (userId, month, messId) => {
+module.exports.createUserMonthData = async (user, month, messId) => {
   try {
-    const user = await User.findById(userId);
+    // const user = await User.findById(user.d);
     const userMonthData = new UserMonthData({
-      userId,
+      userId: user._id,
       monthId: month._id,
       messId,
+      rollNo: user.rollNO,
     });
     await userMonthData.save();
 
@@ -370,22 +371,35 @@ exports.getMonthPdf = async (month, next) => {
     month.meals = [
       { title: 'মোট বড় বাজার', mark: ' ', amount: bigCostSum },
       { title: 'মোট খুচরা বাজার', mark: '+', amount: smallCostSum },
+      { title: '', mark: '', amount: '_________' },
       {
         title: `মোট খরচ`,
         mark: '=',
         amount: bigCostSum + smallCostSum,
       },
       { title: 'মোট ফি: মিল', mark: '=', amount: month.totalFixedMeal },
+      { title: '', mark: '', amount: '_________' },
       {
         title: ` মিল রেট   ( ${month.totalMealCost} / ${month.totalFixedMeal} )`,
         mark: '=',
         amount: month.mealRate,
       },
       {
+        title: '',
+        mark: '',
+        amount: '',
+      },
+      {
         title: `ফি: মিলের খরচ   ( ${month.fixedMeal} * ${month.mealRate} )`,
         mark: '=',
         amount: (month.fixedMeal * month.mealRate).toFixed(2),
       },
+      {
+        title: '',
+        mark: '',
+        amount: '',
+      },
+
       {
         title: '       অন্যান্য খরচের হিসাব',
       },
@@ -399,6 +413,7 @@ exports.getMonthPdf = async (month, next) => {
         mark: '=',
         amount: allUserMonthData.length,
       },
+      { title: '', mark: '', amount: '_________' },
       {
         title: `বডার প্রতি খরচ ( ${month.totalOtherCost} / ${allUserMonthData.length} )`,
         mark: '=',
@@ -409,6 +424,7 @@ exports.getMonthPdf = async (month, next) => {
         mark: '',
         amount: '',
       },
+
       {
         title: 'ফি: মিলের খরচ',
         mark: '=',
@@ -419,6 +435,7 @@ exports.getMonthPdf = async (month, next) => {
         mark: '=',
         amount: month.otherCostPerPerson,
       },
+      { title: '', mark: '', amount: '_________' },
       {
         title: 'একজন বডারের ফি: মিলের মোট খরচ',
         mark: '=',

@@ -169,6 +169,8 @@ exports.addMember = async (req, res, next) => {
 
     // #### change newUser role
     newUser.role = 'border';
+    newUser.rollNo = req.body.rollNo;
+    await newUser.save();
     // 1. find mess
     const mess = await Mess.findById(user.messId).select('allMember');
 
@@ -182,7 +184,7 @@ exports.addMember = async (req, res, next) => {
     });
 
     // 4. create user Month data
-    await createUserMonthData(newUser._id, month, mess._id);
+    await createUserMonthData(newUser, month, mess._id);
 
     await month.save();
     await newUser.save();

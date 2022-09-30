@@ -57,7 +57,7 @@ exports.createMonth = async (req, res, next) => {
     }
     // 2. find mess
     const mess = await Mess.findById(user.messId)
-      .populate('allMember', '_id')
+      .populate('allMember', '_id rollNo')
       .select('allMember month');
 
     //  3. create  your active month

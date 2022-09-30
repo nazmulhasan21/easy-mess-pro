@@ -33,6 +33,7 @@ module.exports = async (templateName, data) => {
       path: `monthDetails.pdf`,
       format: 'A4',
       printBackground: true,
+      margin: 50,
     });
 
     console.log('Done create pdf');
