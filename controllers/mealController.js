@@ -80,7 +80,7 @@ exports.getMealList = async (req, res, next) => {
         .populate('addBy editBy userId', 'name avatar role')
         .sort({ createdAt: -1 }),
       req.query
-    );
+    ).paginate();
     const doc = async () => {
       const data = await features.query;
       return data.map((item) => {

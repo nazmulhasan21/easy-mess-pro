@@ -95,7 +95,7 @@ exports.getCostList = async (req, res, next) => {
         .select('type title amount addBy editBy date createdAt updatedAt')
         .sort({ date: -1 }),
       req.query
-    );
+    ).paginate();
     const doc = async () => {
       const data = await features.query;
       return data.map((item) => {

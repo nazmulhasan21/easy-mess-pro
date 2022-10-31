@@ -110,7 +110,7 @@ exports.getList = (Model) => async (req, res, next) => {
         .select('userId type amount addBy editBy date createdAt updatedAt')
         .sort({ date: -1 }),
       req.query
-    );
+    ).paginate();
     const doc = async () => {
       const data = await features.query;
       return data.map((item) => {
