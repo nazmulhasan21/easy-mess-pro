@@ -92,8 +92,7 @@ exports.getCostList = async (req, res, next) => {
     const features = new APIFeatures(
       Cost.find(findQuery)
         .populate('addBy editBy', 'name avatar role')
-        .select('type title amount addBy editBy date createdAt updatedAt')
-        .sort({ date: -1 }),
+        .select('type title amount addBy editBy date createdAt updatedAt'),
       req.query
     ).paginate();
     const doc = async () => {
