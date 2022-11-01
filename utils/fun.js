@@ -60,12 +60,13 @@ module.exports.createMonth = async (user, mess, monthName, date) => {
 
 module.exports.createUserMonthData = async (user, month, messId) => {
   try {
+    console.log('createUserMonthdata', user);
     // const user = await User.findById(user.d);
     const userMonthData = new UserMonthData({
       userId: user._id,
       monthId: month._id,
       messId,
-      rollNo: user.rollNO,
+      rollNo: user.rollNo,
     });
     await userMonthData.save();
 

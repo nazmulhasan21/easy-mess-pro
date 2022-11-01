@@ -74,12 +74,14 @@ exports.signup = async (req, res, next) => {
     }
     const { name, email, phone, password, role } = req.body;
 
+    const rollNo = role == 'manager' ? 1 : undefined;
     const user = await User.create({
       name,
       email,
       phone,
       password,
       role,
+      rollNo,
     });
     if (user) {
       const to = { email: email, name: user?.name };

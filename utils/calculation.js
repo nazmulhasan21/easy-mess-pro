@@ -120,6 +120,7 @@ exports.monthCal = async (month) => {
     month.totalFixedMeal = monthFixedMeal?.total;
 
     month.mealRate = (month.totalMealCost / month.totalFixedMeal).toFixed(2);
+
     await month.save();
   } catch (error) {
     return error;

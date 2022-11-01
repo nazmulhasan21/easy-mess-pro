@@ -164,6 +164,13 @@ exports.addMember = async (req, res, next) => {
     }
 
     const { user } = req;
+
+    // 3. find active month
+    const month = await Month.findOne({
+      $and: [{ messId: user.messId }, { active: true }],
+    });
+    if (!month)
+      return next(new AppError(402, 'month', `আপনার কোন সক্রিয় মাস নেই।`));
     // find new User by email;
     const newUser = req.newUser;
 
@@ -171,6 +178,7 @@ exports.addMember = async (req, res, next) => {
     newUser.role = 'border';
     newUser.rollNo = req.body.rollNo;
     await newUser.save();
+
     // 1. find mess
     const mess = await Mess.findById(user.messId).select('allMember');
 
@@ -178,14 +186,9 @@ exports.addMember = async (req, res, next) => {
     mess.allMember.push(newUser);
     await mess.save();
 
-    // 3. find active month
-    const month = await Month.findOne({
-      $and: [{ messId: user.messId }, { active: true }],
-    });
-
     // 4. create user Month data
     await createUserMonthData(newUser, month, mess._id);
-
+    console.log(month);
     await month.save();
     await newUser.save();
 
@@ -230,10 +233,8 @@ exports.deleteMember = async (req, res, next) => {
       );
 
     // 2. delete member data all mess in active month
-    const mess = await Mess.findOne({ allMember: delUserId }).select(
-      'allMember'
-    );
-    mess.allMember.pull(delUserId);
+
+    isMessMember.allMember.pull(delUserId);
 
     // 3. find  active month
     const activeMonth = await Month.findOne({
@@ -244,7 +245,7 @@ exports.deleteMember = async (req, res, next) => {
     await deleteUserMonthData(delUserId, activeMonth);
 
     await activeMonth.save();
-    await mess.save();
+    await isMessMember.save();
 
     res.status(200).json({
       status: 'success',
