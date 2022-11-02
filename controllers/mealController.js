@@ -237,23 +237,32 @@ exports.getLastDayMeal = async (req, res, next) => {
         const user = await User.findById(userId).select('name avatar role');
 
         let userMeals = [];
+        let meal = '';
         if (day && dateFilter) {
           userMeals = await Meal.find({
             $and: [{ userId: userId }, { monthId: month._id }, dateFilter],
           });
+          if (userMeals.length == 0) {
+            meal = false;
+          } else {
+            meal = {
+              _id: userMeals?._id,
+              userId: userId,
+              user,
+              breakfast: userMeals?.breakfast,
+              lunch: userMeals?.lunch,
+              dinner: userMeals?.dinner,
+              total: userMeals?.total,
+              date: userMeals?.date,
+            };
+          }
         } else {
           userMeals = await Meal.find({
             $and: [{ userId: userId }, { monthId: month._id }],
           });
-        }
-        let meal = '';
-        if (userMeals.length == 0) {
-          meal = false;
-        } else {
-          const userMeal = userMeals[userMeals.length - 1];
 
-          // find user meal
-
+          const lastDayMeal = userMeals[userMeals.length - 1];
+          const userMeal = lastDayMeal;
           // create new
           meal = {
             _id: userMeal?._id,
@@ -266,6 +275,10 @@ exports.getLastDayMeal = async (req, res, next) => {
             date: userMeal?.date || '',
           };
         }
+
+        // find user meal
+
+        // create new
 
         return meal;
       })
