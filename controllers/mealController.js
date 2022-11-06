@@ -239,9 +239,10 @@ exports.getLastDayMeal = async (req, res, next) => {
         let userMeals = [];
         let meal = '';
         if (day && dateFilter) {
-          userMeals = await Meal.find({
+          userMeals = await Meal.findOne({
             $and: [{ userId: userId }, { monthId: month._id }, dateFilter],
           });
+          console.log(userMeals);
           if (userMeals.length == 0) {
             meal = false;
           } else {
@@ -275,10 +276,6 @@ exports.getLastDayMeal = async (req, res, next) => {
             date: userMeal?.date || '',
           };
         }
-
-        // find user meal
-
-        // create new
 
         return meal;
       })
