@@ -49,7 +49,7 @@ router.post(
 );
 router.patch('/me/email', emailCodeInValid, userController.changeEmail);
 
-// Only admin have permission to access for the below APIs
+router.patch('/update-fcm-token', userController.userFCMTokenUpdate);
 
 // router.route('/').get(userController.getAllUsers);
 router.delete('/log-out', userController.logOut);

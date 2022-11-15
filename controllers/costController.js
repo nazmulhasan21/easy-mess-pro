@@ -14,6 +14,9 @@ const Cost = require('../models/costModel');
 // all utils
 const AppError = require('../utils/appError');
 const APIFeatures = require('../utils/apiFeatures');
+const User = require('../models/userModel');
+const Notification = require('../models/notificationsModel');
+const { pushNotificationMultiple } = require('../utils/push-notification');
 
 // get cost one
 exports.getCost = async (req, res, next) => {
@@ -161,7 +164,28 @@ exports.createCost = async (req, res, next) => {
     });
 
     await month.save();
-
+    // Start Push Notification
+    const members = await User.find({ messId: user.messId }).select('FCMToken');
+    const membersFCMTokens = [];
+    members.forEach((member) => {
+      if (member) {
+        if (member.FCMToken) {
+          membersFCMTokens.push(member.FCMToken);
+        }
+      }
+    });
+    // Push Notifications with Firebase
+    const pushTitle = 'খরচ যোগ করা হয়েছে';
+    const body = ` ${title}   ${amount}  ${moment(date).format('DD/MM/YY')}`;
+    const FCMTokens = membersFCMTokens;
+    await pushNotificationMultiple(pushTitle, body, FCMTokens);
+    await Notification.create({
+      messId: user.messId,
+      monthId: month._id,
+      title: pushTitle,
+      description: body,
+      date: cost.createdAt,
+    });
     // 3. send res
     res.status(201).json({
       status: 'success',

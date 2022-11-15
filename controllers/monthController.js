@@ -28,6 +28,7 @@ const Meal = require('../models/mealModel');
 const MonthMemberData = require('../models/monthMemberDataModel');
 
 const createPDF = require('../utils/createPDF');
+const User = require('../models/userModel');
 
 exports.createMonth = async (req, res, next) => {
   try {
@@ -58,7 +59,7 @@ exports.createMonth = async (req, res, next) => {
     // 2. find mess
     const mess = await Mess.findById(user.messId)
       .populate('allMember', '_id rollNo')
-      .select('allMember month');
+      .select('allMember month _id rollNo');
 
     //  3. create  your active month
     const month = await createMonth(user, mess, monthName, date);
@@ -424,3 +425,18 @@ const date = moment().month(monthName).startOf('month');
 
 const isMonth = moment('2022-08-31T18:00:00.000Z').format('MMMM YYYY');
 console.log(isMonth);
+
+const test2 = async () => {
+  const members = await User.find().select('FCMToken').sort({ rollNo: -1 });
+  const tokens = [];
+  members.forEach((member) => {
+    if (member) {
+      if (member.FCMToken) {
+        tokens.push(member.FCMToken);
+      }
+    }
+  });
+  console.log(tokens);
+};
+
+// test2();

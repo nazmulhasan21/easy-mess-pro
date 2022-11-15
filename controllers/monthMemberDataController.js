@@ -12,6 +12,8 @@ const AppError = require('../utils/appError');
 const monthMemberData = require('../controllers/getUpdateDeleteController');
 
 const moment = require('moment');
+const { pushNotification } = require('../utils/push-notification');
+const User = require('../models/userModel');
 
 exports.getMonthMemberData = monthMemberData.getOne(MonthMemberData);
 exports.getMonthMemberDataList = monthMemberData.getList(MonthMemberData);
@@ -53,6 +55,24 @@ exports.createMonthMemberData = async (req, res, next) => {
       amount,
       type,
       date: date || moment(),
+    });
+    // Push Notifications with Firebase
+
+    const pushTitle = ' যোগ করা হয়েছে';
+    const pushBody = ` ${total}   ${moment(date).format('DD/MM/YY')}`;
+    const member = await User.findById(userId).select('FCMToken');
+    if (member && member.FCMToken) {
+      const FCMTokens = member.FCMToken;
+      await pushNotification(pushTitle, pushBody, FCMTokens);
+    }
+
+    await Notification.create({
+      messId: user.messId,
+      monthId: month._id,
+      receiver: userId,
+      title: pushTitle,
+      description: pushBody,
+      date: doc.createdAt,
     });
 
     // 4. save month

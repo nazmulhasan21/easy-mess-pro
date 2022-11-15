@@ -156,6 +156,24 @@ exports.changeEmail = async (req, res, next) => {
   }
 };
 
+// user FCM token update
+exports.userFCMTokenUpdate = async (req, res, next) => {
+  try {
+    const { user } = req;
+    const { FCMToken } = req.body;
+    if (!FCMToken) {
+      return next(new AppError(400, 'fcm', 'Please provide FCM token!'));
+    }
+    const userFCMTokenUpdate = await User.updateOne(
+      { _id: user._id },
+      { FCMToken }
+    );
+    return res.json({ message: 'FCM Token update successfully!' });
+  } catch (error) {
+    next(error);
+  }
+};
+
 exports.sendForgetPasswordVerificationCode = async (req, res, next) => {
   try {
     const errors = validationResult(req);

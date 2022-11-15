@@ -10,6 +10,8 @@ const _ = require('lodash');
 const Mess = require('../models/messModel');
 const User = require('../models/userModel');
 const UserMonthData = require('../models/userMonthDataModel');
+const { pushNotification } = require('../utils/push-notification');
+const Notification = require('../models/notificationsModel');
 
 exports.getMealList = async (req, res, next) => {
   try {
@@ -187,6 +189,25 @@ exports.createMeal = async (req, res, next) => {
         messId: user.messId,
         monthId: month._id,
         addBy: user._id,
+      });
+
+      // Push Notifications with Firebase
+
+      const pushTitle = ' যোগ করা হয়েছে';
+      const body = ` ${total}   ${moment(date).format('DD/MM/YY')}`;
+      const member = await User.findById(myMeal.userId).select('FCMToken');
+      if (member && member.FCMToken) {
+        const FCMToken = member.FCMToken;
+        await pushNotification(pushTitle, body, FCMToken);
+      }
+
+      await Notification.create({
+        messId: user.messId,
+        monthId: month._id,
+        receiver: myMeal.userId,
+        title: pushTitle,
+        description: body,
+        date: userMeal.createdAt,
       });
     });
 
