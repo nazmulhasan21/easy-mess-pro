@@ -9,6 +9,10 @@ const AppError = require('../utils/appError');
 const APIFeatures = require('../utils/apiFeatures');
 
 const moment = require('moment');
+const User = require('../models/userModel');
+const { pushNotificationMultiple } = require('../utils/push-notification');
+const { getMessMemberFCMTokens } = require('../utils/fun');
+const Notification = require('../models/notificationsModel');
 
 // get cost one
 
@@ -148,48 +152,6 @@ exports.getList = (Model) => async (req, res, next) => {
  * @param {modelNameString} model
  * @returns {object}
  */
-// exports.createOne = (Model, model) => async (req, res, next) => {
-//   try {
-//     // const errors = validationResult(req);
-//     // if (!errors.isEmpty()) {
-//     //   return next(errors);
-//     // }
-//     const { user, body } = req;
-//     const { userId, amount, date } = body;
-
-//     const isValid = mongoose.Types.ObjectId.isValid(userId);
-//     if (!isValid) return next(new AppError(400, '_id', 'Id is not valid '));
-//     // 1. find active month;
-//     const month = await Month.findOne({
-//       $and: [{ messId: user.messId }, { active: true }],
-//     }).select('_id');
-//     if (!month)
-//       return next(new AppError(404, 'month', 'Not found your active Month'));
-
-//     // 2. add Market Cost
-//     const doc = await Model.create({
-//       messId: user.messId,
-//       monthId: month._id,
-//       userId,
-//       addBy: user._id,
-//       amount,
-//       date: date || moment(),
-//     });
-
-//     // 4. save month
-
-//     // 5. send res
-//     res.status(201).json({
-//       status: 'success',
-//       message: `add ${model} successfully`,
-//       data: {
-//         doc,
-//       },
-//     });
-//   } catch (error) {
-//     next(error);
-//   }
-// };
 
 /**
  *
@@ -224,6 +186,10 @@ exports.updateOne = (Model, model) => async (req, res, next) => {
       return next(
         new AppError(402, 'date', 'আপনার সক্রিয় মাসের তারিখ নির্বাচন করুন')
       );
+
+    const member = await User.findById(doc.userId).select('name FCMToken');
+    let pushTitle;
+    let pushBody;
     // if update any one meal  run this if function
     if (model == 'meal') {
       const breakfast =
@@ -238,16 +204,40 @@ exports.updateOne = (Model, model) => async (req, res, next) => {
         total,
         editBy: user._id,
       };
+
+      pushTitle = `${member.name} এর মিল পরিবর্তন করা হয়েছে`;
+      pushBody = `মোট মিল=${total}/= তারিখ:${moment(doc.date).format(
+        'DD/MM/YY'
+      )}`;
     } else {
       newDoc = {
         ...body,
         editBy: user._id,
       };
+      pushTitle = `${member.name} এর ${doc.type} পরিবর্তন করা হয়েছে`;
+      pushBody = `${doc.type}=${body.amount || doc.amount}/= তারিখ:${moment(
+        body.date || doc.date
+      ).format('DD/MM/YY')}`;
     }
 
     const upDoc = await Model.findByIdAndUpdate(req.params.id, newDoc, {
       new: true,
       runValidators: true,
+    });
+    // Push Notifications with Firebase
+
+    const FCMTokens = getMessMemberFCMTokens(user.messId);
+    if (FCMTokens) {
+      await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
+    }
+
+    await Notification.create({
+      messId: user.messId,
+      monthId: activeMonth._id,
+      receiver: doc.userId,
+      title: pushTitle,
+      description: pushBody,
+      date: doc.updatedAt,
     });
 
     // 3. send res
@@ -291,6 +281,27 @@ exports.deleteOne = (Model, model) => async (req, res, next) => {
 
     // 3. delete Cost
     await Model.findByIdAndDelete(req.params.id);
+
+    // Push Notifications with Firebase
+
+    const member = await User.findById(userId).select('name FCMToken');
+    const pushTitle = `${member.name} এর ${type} ডিলেট করা হয়েছে`;
+    const pushBody = `${type}=${amount}/= তারিখ:${moment(date).format(
+      'DD/MM/YY'
+    )} ডিলেট করা হয়েছে`;
+    const FCMTokens = getMessMemberFCMTokens(user.messId);
+    if (FCMTokens) {
+      await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
+    }
+
+    await Notification.create({
+      messId: user.messId,
+      monthId: activeMonth._id,
+      receiver: doc.userId,
+      title: pushTitle,
+      description: pushBody,
+      date: doc.createdAt,
+    });
 
     res.status(200).json({
       status: 'success',

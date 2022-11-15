@@ -9,6 +9,9 @@ const User = require('../models/userModel');
 const AppError = require('../utils/appError');
 
 const Mess = require('../models/messModel');
+const { getMessMemberFCMTokens } = require('../utils/fun');
+const { pushNotificationMultiple } = require('../utils/push-notification');
+const Notification = require('../models/notificationsModel');
 
 exports.changeManager = async (req, res, next) => {
   try {
@@ -33,12 +36,27 @@ exports.changeManager = async (req, res, next) => {
     // update before manager role border
     await User.findByIdAndUpdate(mess.manager, { role: 'border' });
     // 2 find user and change this user role manager
-    await User.findOneAndUpdate(
+    const newManager = await User.findOneAndUpdate(
       { $and: [{ _id: userId }, { messId: mess._id }] },
       { role: 'manager' }
     );
     // update mess manager
     await Mess.findByIdAndUpdate(user.messId, { manager: userId });
+
+    // Push Notifications with Firebase
+    const pushTitle = 'আপনার মেস ম্যানেজার পরিবর্তন হয়েছে';
+    const pushBody = `${newManager.name} কে আপনার মেস ম্যানেজার করা হলো`;
+    const FCMTokens = getMessMemberFCMTokens(user.messId);
+    if (FCMTokens) {
+      await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
+    }
+
+    await Notification.create({
+      messId: user.messId,
+      title: pushTitle,
+      description: pushBody,
+      date: month.updatedAt,
+    });
 
     // send response
     res.status(201).json({

@@ -10,7 +10,6 @@ const notificationSchema = mongoose.Schema(
     monthId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Month',
-      required: true,
     },
     receiver: {
       type: mongoose.Schema.Types.ObjectId,

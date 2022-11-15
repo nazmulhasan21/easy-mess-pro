@@ -9,6 +9,9 @@ const User = require('../models/userModel');
 // all utils
 const AppError = require('../utils/appError');
 const APIFeatures = require('../utils/apiFeatures');
+const { getMessMemberFCMTokens } = require('../utils/fun');
+const { pushNotificationMultiple } = require('../utils/push-notification');
+const Notification = require('../models/notificationsModel');
 
 exports.addSubManager = async (req, res, next) => {
   try {
@@ -18,13 +21,33 @@ exports.addSubManager = async (req, res, next) => {
     if (!isValid)
       return next(new AppError(400, 'userId', 'userId is not valid '));
     //  1 add  your subManager in your active month
-    const { role } = await User.findById(userId);
-    if (role == 'manager')
+    const subManager = await User.findById(userId);
+    if (subManager.role == 'manager')
       return next(
         new AppError(403, 'manager', 'ব্যাক্তি টি এই মাসের ম্যানেজার')
       );
     // 2 find user and change this user role
     await User.findByIdAndUpdate(userId, { role: 'subManager' });
+    const month = await Month.findOne({
+      $and: [{ messId: user.messId }, { active: true }],
+    }).select('_id monthName');
+    // Push Notifications with Firebase
+    const pushTitle = 'সাব ম্যানেজার যোগ করা হয়েছে';
+    const pushBody = ` ${subManager.name} ${month.monthName} মাসের সাব ম্যানেজার হিসেবে যুক্ত করেছেন।`;
+    const FCMTokens = getMessMemberFCMTokens(user.messId);
+    if (FCMTokens) {
+      await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
+    }
+
+    await Notification.create({
+      messId: user.messId,
+      monthId: month._id,
+      receiver: subManager._id,
+      title: pushTitle,
+      description: pushBody,
+      date: subManager.updatedAt,
+    });
+
     // send response
     res.status(201).json({
       status: 'success',
@@ -60,8 +83,25 @@ exports.deleteSubManager = async (req, res, next) => {
       );
 
     // 1. find user and update this user role
+    const month = activeMonthManager;
+    const subManager = await User.findByIdAndUpdate(userId, { role: 'border' });
 
-    await User.findByIdAndUpdate(userId, { role: 'border' });
+    // Push Notifications with Firebase
+    const pushTitle = 'সাব ম্যানেজার বাদ দেওয়া হয়েছে';
+    const pushBody = ` ${subManager.name} ${month.monthName} মাসের সাব ম্যানেজার হিসেবে  এখন আর নেই।`;
+    const FCMTokens = getMessMemberFCMTokens(user.messId);
+    if (FCMTokens) {
+      await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
+    }
+
+    await Notification.create({
+      messId: user.messId,
+      monthId: month._id,
+      receiver: subManager._id,
+      title: pushTitle,
+      description: pushBody,
+      date: subManager.updatedAt,
+    });
 
     res.status(200).json({
       status: 'success',

@@ -7,6 +7,7 @@ const AppError = require('../utils/appError');
 const base = require('./baseController');
 
 const { sendVerificationCode } = require('../utils/fun');
+const APIFeatures = require('../utils/apiFeatures');
 
 // user/me
 
@@ -156,23 +157,70 @@ exports.changeEmail = async (req, res, next) => {
   }
 };
 
-// // user FCM token update
-// exports.userFCMTokenUpdate = async (req, res, next) => {
-//   try {
-//     const { user } = req;
-//     const { FCMToken } = req.body;
-//     if (!FCMToken) {
-//       return next(new AppError(400, 'fcm', 'Please provide FCM token!'));
-//     }
-//     const userFCMTokenUpdate = await User.updateOne(
-//       { _id: user._id },
-//       { FCMToken }
-//     );
-//     return res.json({ message: 'FCM Token update successfully!' });
-//   } catch (error) {
-//     next(error);
-//   }
-// };
+// user FCM token update
+exports.userFCMTokenUpdate = async (req, res, next) => {
+  try {
+    const { user } = req;
+    const { FCMToken } = req.body;
+    if (!FCMToken) {
+      return next(new AppError(400, 'fcm', 'Please provide FCM token!'));
+    }
+    const userFCMTokenUpdate = await User.updateOne(
+      { _id: user._id },
+      { FCMToken }
+    );
+    return res.json({ message: 'FCM Token update successfully!' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// get mess notification
+exports.getNotifications = async (req, res, next) => {
+  try {
+    const { user, query } = req;
+
+    const { startDate, endDate, day } = query;
+
+    // filter
+    // 1. filter in date
+    let date = {};
+    if (startDate || endDate) {
+      date = {
+        date: {
+          $gte: moment(startDate).startOf('day'),
+          $lte: moment(endDate).endOf('day'),
+        },
+      };
+    } else if (day) {
+      date = {
+        date: {
+          $gte: moment(day).startOf('day'),
+          $lte: moment(day).endOf('day'),
+        },
+      };
+    }
+
+    const findQuery = {
+      $and: [{ messId: user.messId }, date],
+    };
+
+    const features = new APIFeatures(
+      Notification.find(findQuery).populate('receiver', 'name avatar').sort(),
+      req.query
+    ).paginate();
+
+    const data = await features.query;
+    const results = await Notification.find(findQuery);
+    res.status(200).json({
+      status: 'success',
+      results: results,
+      data: data,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 exports.sendForgetPasswordVerificationCode = async (req, res, next) => {
   try {

@@ -14,6 +14,8 @@ const monthMemberData = require('../controllers/getUpdateDeleteController');
 const moment = require('moment');
 const { pushNotification } = require('../utils/push-notification');
 const User = require('../models/userModel');
+const Notification = require('../models/notificationsModel');
+const { getMessMemberFCMTokens } = require('../utils/fun');
 
 exports.getMonthMemberData = monthMemberData.getOne(MonthMemberData);
 exports.getMonthMemberDataList = monthMemberData.getList(MonthMemberData);
@@ -60,12 +62,12 @@ exports.createMonthMemberData = async (req, res, next) => {
 
     const member = await User.findById(userId).select('name FCMToken');
     const pushTitle = `${member.name} এর ${type} যোগ করা হয়েছে`;
-    const pushBody = `${type} = ${amount}/= তারিখ:   ${moment(date).format(
+    const pushBody = `${type}=${amount}/= তারিখ:${moment(date).format(
       'DD/MM/YY'
     )}`;
-    if (member && member.FCMToken) {
-      const FCMTokens = member.FCMToken;
-      await pushNotification(pushTitle, pushBody, FCMTokens);
+    const FCMTokens = getMessMemberFCMTokens(user.messId);
+    if (FCMTokens) {
+      await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
     }
 
     await Notification.create({

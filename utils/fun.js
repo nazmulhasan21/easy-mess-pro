@@ -257,6 +257,19 @@ exports.sendVerificationCode = async (to, subj, templateName) => {
   }
 };
 
+exports.getMessMemberFCMTokens = async (messId) => {
+  const members = await User.find({ messId }).select('FCMToken');
+  const membersFCMTokens = [];
+  members.forEach((member) => {
+    if (member) {
+      if (member.FCMToken) {
+        membersFCMTokens.push(member.FCMToken);
+      }
+    }
+  });
+  return membersFCMTokens;
+};
+
 // get pdf
 /**
  *
@@ -544,8 +557,9 @@ exports.activeMonthAllData = async (month, next) => {
       const memberItem = await MonthMemberData.find({
         $and: [{ monthId: month._id }, { userId: userId }, { type: type }],
       })
-        .select('userId type amount date')
+        .select('monthId userId type amount date')
         .sort({ amount: -1 });
+
       return memberItem.map((item) => {
         return {
           _id: item._id,
@@ -559,16 +573,19 @@ exports.activeMonthAllData = async (month, next) => {
     const getItem = async (type) => {
       return await Promise.all(
         allUserMonthData.map(async (item, index) => {
-          const data = await memberData(type, item.userId._id);
-          const total = _.sumBy(data, 'amount');
-          if (data.length > 0) {
-            return {
-              userId: item.userId._id,
-              name: item.userId.name,
-              avatar: item.userId.avatar,
-              item: data,
-              total,
-            };
+          if (item.userId) {
+            const data = await memberData(type, item.userId._id);
+
+            const total = _.sumBy(data, 'amount');
+            if (data.length > 0) {
+              return {
+                userId: item.userId._id,
+                name: item.userId.name,
+                avatar: item.userId.avatar,
+                item: data,
+                total,
+              };
+            }
           }
         })
       );
@@ -595,7 +612,7 @@ exports.activeMonthAllData = async (month, next) => {
       const memberMeal = await Meal.find({
         $and: [{ monthId: month._id }, { userId: userId }],
       })
-        .populate('userId', 'name avatar')
+        .populate('userId', '_id name avatar')
         .sort({});
       return memberMeal.map((meal) => {
         return {
@@ -609,14 +626,17 @@ exports.activeMonthAllData = async (month, next) => {
     };
     month.meals = await Promise.all(
       allUserMonthData.map(async (item, index) => {
-        const data = await mealData(item.userId._id);
-        const total = _.sumBy(data, 'total');
-        return {
-          name: item.userId.name,
-          avatar: item.userId.avatar,
-          item: data,
-          total,
-        };
+        if (item.userId) {
+          const data = await mealData(item.userId._id);
+
+          const total = _.sumBy(data, 'total');
+          return {
+            name: item.userId.name,
+            avatar: item.userId.avatar,
+            item: data,
+            total,
+          };
+        }
       })
     );
 

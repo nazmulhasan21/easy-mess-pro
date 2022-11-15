@@ -19,7 +19,10 @@ const {
   deleteUserMonthData,
   deleteAll,
   createMonth,
+  getMessMemberFCMTokens,
 } = require('../utils/fun');
+const { pushNotificationMultiple } = require('../utils/push-notification');
+const Notification = require('../models/notificationsModel');
 
 // ********** Start Mess Controller *************** //
 
@@ -188,9 +191,26 @@ exports.addMember = async (req, res, next) => {
 
     // 4. create user Month data
     await createUserMonthData(newUser, month, mess._id);
-    console.log(month);
+
     await month.save();
     await newUser.save();
+
+    // Push Notifications with Firebase
+    const pushTitle = 'আপনার মেসে সদস্য যোগ হয়েছে।';
+    const pushBody = ` ${newUser.name} আপনার মেসের নতুন সদস্য`;
+    const FCMTokens = getMessMemberFCMTokens(user.messId);
+    if (FCMTokens) {
+      await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
+    }
+
+    await Notification.create({
+      messId: user.messId,
+      monthId: month._id,
+      receiver: newUser._id,
+      title: pushTitle,
+      description: pushBody,
+      date: mess.updatedAt,
+    });
 
     res.status(201).json({
       status: 'success',
@@ -247,6 +267,23 @@ exports.deleteMember = async (req, res, next) => {
     await activeMonth.save();
     await isMessMember.save();
 
+    // Push Notifications with Firebase
+    const pushTitle = `${findUser.name} সদস্য মুছে ফেলা হয়েছে ।`;
+    const pushBody = `আপনার মেসের সদস্য ${findUser.name} কে মুছে ফেলা হয়েছে`;
+    const FCMTokens = getMessMemberFCMTokens(user.messId);
+    if (FCMTokens) {
+      await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
+    }
+
+    await Notification.create({
+      messId: user.messId,
+      monthId: month._id,
+      receiver: findUser._id,
+      title: pushTitle,
+      description: pushBody,
+      date: isMessMember.updatedAt,
+    });
+
     res.status(200).json({
       status: 'success',
       message: 'আপনার মেসের সদস্যকে সফলভাবে মুছে ফেলা হয়েছে',
@@ -286,6 +323,22 @@ exports.changeAdmin = async (req, res, next) => {
       findUser.isMessAdmin = true;
       await findUser.save();
     }
+    // Push Notifications with Firebase
+    const pushTitle = 'মেস অ্যাডমিন পরিবর্তন করা হয়েছে।';
+    const pushBody = ` ${findUser.name} আপনার মেসের নতুন মেস অ্যাডমিন`;
+    const FCMTokens = getMessMemberFCMTokens(user.messId);
+    if (FCMTokens) {
+      await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
+    }
+
+    await Notification.create({
+      messId: user.messId,
+      receiver: findUser._id,
+      title: pushTitle,
+      description: pushBody,
+      date: mess.updatedAt,
+    });
+
     res.status(200).json({
       status: 'success',
       message: 'সফলভাবে আপনার মেস অ্যাডমিন পরিবর্তন করা হয়েছে।',

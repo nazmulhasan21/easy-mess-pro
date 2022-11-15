@@ -21,6 +21,7 @@ const {
   deleteAllMonthData,
   activeMonthAllData,
   getMonthPdf,
+  getMessMemberFCMTokens,
 } = require('../utils/fun');
 const UserMonthData = require('../models/userMonthDataModel');
 const { monthCal, userMonthCal } = require('../utils/calculation');
@@ -29,6 +30,8 @@ const MonthMemberData = require('../models/monthMemberDataModel');
 
 const createPDF = require('../utils/createPDF');
 const User = require('../models/userModel');
+const { pushNotificationMultiple } = require('../utils/push-notification');
+const Notification = require('../models/notificationsModel');
 
 exports.createMonth = async (req, res, next) => {
   try {
@@ -64,11 +67,25 @@ exports.createMonth = async (req, res, next) => {
     //  3. create  your active month
     const month = await createMonth(user, mess, monthName, date);
     if (!month == true) return next(month);
+    // Push Notifications with Firebase
+    const pushTitle = 'আপনার নতুন মাস তৈরি করা হয়েছে';
+    const pushBody = `${monthName} হলো আপনার নতুন মাস `;
+    const FCMTokens = getMessMemberFCMTokens(user.messId);
+    if (FCMTokens) {
+      await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
+    }
 
+    await Notification.create({
+      messId: user.messId,
+      monthId: month._id,
+      title: pushTitle,
+      description: pushBody,
+      date: month.updatedAt,
+    });
     // send response
     res.status(201).json({
       status: 'success',
-      message: 'সফলভাবে আপনার মাস তৈরি করা হয়েছে।',
+      message: 'সফলভাবে আপনার নতুন মাস তৈরি করা হয়েছে।',
     });
   } catch (error) {
     next(error);
@@ -93,9 +110,25 @@ exports.addFixedMeal = async (req, res, next) => {
       return next(
         new AppError(404, 'month', 'আপনার সক্রিয় মাস খুঁজে পাওয়া যায়নি')
       );
+    // Push Notifications with Firebase
+    const pushTitle = 'Fixed মিল ধার্য় করা হয়েছে';
+    const pushBody = `Fixed মিল ${req.body.fixedMeal} ধার্য় করা হলো।`;
+    const FCMTokens = getMessMemberFCMTokens(user.messId);
+    if (FCMTokens) {
+      await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
+    }
+
+    await Notification.create({
+      messId: user.messId,
+      monthId: month._id,
+      title: pushTitle,
+      description: pushBody,
+      date: month.updatedAt,
+    });
+
     res.status(200).json({
       status: 'success',
-      message: 'আপনার মাসে মিল সফলভাবে যোগ করা হয়েছে।',
+      message: 'আপনার মাসে  মিল সফলভাবে যোগ করা হয়েছে।',
     });
   } catch (error) {
     next(error);
@@ -240,37 +273,6 @@ exports.getMonthChart = async (req, res, next) => {
     next(error);
   }
 };
-
-// test
-const test = async (month, userId) => {
-  const monthMealSum = await Meal.aggregate([
-    {
-      $match: {
-        $and: [
-          { monthId: new mongoose.Types.ObjectId(month._id) },
-          { messId: new mongoose.Types.ObjectId(month.messId) },
-          { userId: new mongoose.Types.ObjectId(userId) },
-        ],
-      },
-    },
-    {
-      $group: {
-        _id: '$date',
-        breakfast: { $sum: '$breakfast' },
-        lunch: { $sum: '$lunch' },
-        dinner: { $sum: '$dinner' },
-        total: { $sum: '$total' },
-      },
-    },
-  ]);
-  //  const monthMeal = monthMealSum[0];
-  console.log(monthMealSum);
-};
-const month = {
-  _id: '62f896c095de0eabd15aef99',
-  messId: '62f896c095de0eabd15aef97',
-};
-//test(month, '62f8961795de0eabd15aef8c');
 
 // delete month is month manager
 

@@ -17,6 +17,7 @@ const APIFeatures = require('../utils/apiFeatures');
 const User = require('../models/userModel');
 const Notification = require('../models/notificationsModel');
 const { pushNotificationMultiple } = require('../utils/push-notification');
+const { getMessMemberFCMTokens } = require('../utils/fun');
 
 // get cost one
 exports.getCost = async (req, res, next) => {
@@ -165,22 +166,17 @@ exports.createCost = async (req, res, next) => {
 
     await month.save();
     // Start Push Notification
-    const members = await User.find({ messId: user.messId }).select('FCMToken');
-    const membersFCMTokens = [];
-    members.forEach((member) => {
-      if (member) {
-        if (member.FCMToken) {
-          membersFCMTokens.push(member.FCMToken);
-        }
-      }
-    });
+
     // Push Notifications with Firebase
     const pushTitle = 'খরচ যোগ করা হয়েছে';
-    const body = ` ${title} =  ${amount}/= , তারিখ:  ${moment(date).format(
+    const body = `${title}=${amount}/=,তারিখ:${moment(date).format(
       'DD/MM/YY'
     )}`;
-    const FCMTokens = membersFCMTokens;
-    await pushNotificationMultiple(pushTitle, body, FCMTokens);
+    const FCMTokens = getMessMemberFCMTokens(user.messId);
+    if (FCMTokens) {
+      await pushNotificationMultiple(pushTitle, body, FCMTokens);
+    }
+
     await Notification.create({
       messId: user.messId,
       monthId: month._id,
@@ -233,7 +229,27 @@ exports.updateCost = async (req, res, next) => {
       new: true,
       runValidators: true,
     });
+    // Push Notifications with Firebase
+    const pushTitle = 'খরচ পরিবর্তন করা হয়েছে';
+    const pushBody = `${cost.title}=${cost.amount}/=,তারিখ:${moment(
+      cost.date
+    ).format('DD/MM/YY')}  থেকে ${newCost.title || cost.title}=${
+      newCost.amount || cost.amount
+    }/=,তারিখ:${moment(newCost.date || cost.date).format(
+      'DD/MM/YY'
+    )} পরিবর্তন করা হলো।`;
+    const FCMTokens = getMessMemberFCMTokens(user.messId);
+    if (FCMTokens) {
+      await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
+    }
 
+    await Notification.create({
+      messId: user.messId,
+      monthId: cost.messId,
+      title: pushTitle,
+      description: pushBody,
+      date: cost.updatedAt,
+    });
     // 3. send res
     res.status(200).json({
       status: 'success',
@@ -268,7 +284,23 @@ exports.deleteCost = async (req, res, next) => {
 
     // 3. delete Cost
     await Cost.findByIdAndDelete(req.params.id);
+    // Push Notifications with Firebase
+    const pushTitle = 'খরচ ডিলেট করা হয়েছে';
+    const pushBody = `${cost.title}=${cost.amount}/=,তারিখ:${moment(
+      cost.date
+    ).format('DD/MM/YY')}  ডিলেট করা হলো।`;
+    const FCMTokens = getMessMemberFCMTokens(user.messId);
+    if (FCMTokens) {
+      await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
+    }
 
+    await Notification.create({
+      messId: user.messId,
+      monthId: cost.messId,
+      title: pushTitle,
+      description: pushBody,
+      date: cost.updatedAt,
+    });
     res.status(200).json({
       status: 'success',
       message: 'খরচ টি সভল ভাবে ডিলেট হয়েছে।',

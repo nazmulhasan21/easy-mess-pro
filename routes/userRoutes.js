@@ -49,6 +49,8 @@ router.post(
 );
 router.patch('/me/email', emailCodeInValid, userController.changeEmail);
 
+router.patch('/update-fcm-token', userController.userFCMTokenUpdate);
+
 // router.route('/').get(userController.getAllUsers);
 router.delete('/log-out', userController.logOut);
 router.delete('/me/delete', checkPassword, userController.deleteMe);
