@@ -193,8 +193,10 @@ exports.createMeal = async (req, res, next) => {
 
       // Push Notifications with Firebase
 
-      const pushTitle = ' যোগ করা হয়েছে';
-      const body = ` ${total}   ${moment(date).format('DD/MM/YY')}`;
+      const pushTitle = `মিল যোগ করা হয়েছে`;
+      const body = `মোট মিল: ${total}টি , তারিখ: ${moment(date).format(
+        'DD/MM/YY'
+      )}`;
       const member = await User.findById(myMeal.userId).select('FCMToken');
       if (member && member.FCMToken) {
         const FCMToken = member.FCMToken;

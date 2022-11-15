@@ -15,7 +15,7 @@ const createToken = (id) => {
 
 exports.login = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, FCMToken } = req.body;
     // -> 1 <- check if email and password exist
     if (!email || !password) {
       return next(
@@ -48,7 +48,8 @@ exports.login = async (req, res, next) => {
         });
       }
     }
-
+    user.FCMToken = FCMToken;
+    await user.save();
     // -> 3 <- All correct , send jwt to client
     const token = createToken(user.id);
     // Remove the password from the output
@@ -106,7 +107,7 @@ exports.signup = async (req, res, next) => {
 
 exports.verification = async (req, res, next) => {
   try {
-    const { code } = req.body;
+    const { code, FCMToken } = req.body;
     const email = req.body.email.trim();
 
     const errors = validationResult(req);
@@ -119,6 +120,7 @@ exports.verification = async (req, res, next) => {
     if (code == 4444) {
       await OtpCode.findOneAndDelete({ email });
       user.emailVerified = true;
+      user.FCMToken = FCMToken;
       await user.save();
       return res.status(200).json({
         status: 'success',
@@ -154,6 +156,7 @@ exports.verification = async (req, res, next) => {
 
       // -> 3 <- All correct , send jwt to client
       user.emailVerified = true;
+      user.FCMToken = FCMToken;
       await OtpCode.findByIdAndDelete(otpCode?._id);
       await user.save();
       //const token = createToken(user.id);

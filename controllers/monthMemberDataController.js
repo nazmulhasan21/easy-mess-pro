@@ -58,9 +58,11 @@ exports.createMonthMemberData = async (req, res, next) => {
     });
     // Push Notifications with Firebase
 
-    const pushTitle = ' যোগ করা হয়েছে';
-    const pushBody = ` ${total}   ${moment(date).format('DD/MM/YY')}`;
-    const member = await User.findById(userId).select('FCMToken');
+    const member = await User.findById(userId).select('name FCMToken');
+    const pushTitle = `${member.name} এর ${type} যোগ করা হয়েছে`;
+    const pushBody = `${type} = ${amount}/= তারিখ:   ${moment(date).format(
+      'DD/MM/YY'
+    )}`;
     if (member && member.FCMToken) {
       const FCMTokens = member.FCMToken;
       await pushNotification(pushTitle, pushBody, FCMTokens);

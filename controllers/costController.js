@@ -176,7 +176,9 @@ exports.createCost = async (req, res, next) => {
     });
     // Push Notifications with Firebase
     const pushTitle = 'খরচ যোগ করা হয়েছে';
-    const body = ` ${title}   ${amount}  ${moment(date).format('DD/MM/YY')}`;
+    const body = ` ${title} =  ${amount}/= , তারিখ:  ${moment(date).format(
+      'DD/MM/YY'
+    )}`;
     const FCMTokens = membersFCMTokens;
     await pushNotificationMultiple(pushTitle, body, FCMTokens);
     await Notification.create({
