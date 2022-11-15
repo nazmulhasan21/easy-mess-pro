@@ -48,7 +48,10 @@ exports.login = async (req, res, next) => {
         });
       }
     }
-    user.FCMToken = FCMToken;
+    if (FCMToken) {
+      user.FCMToken = FCMToken;
+    }
+
     await user.save();
     // -> 3 <- All correct , send jwt to client
     const token = createToken(user.id);
