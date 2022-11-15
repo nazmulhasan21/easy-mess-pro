@@ -30,7 +30,7 @@ router.post(
   userController.emailVerification
 );
 
-router.patch('/reset-password', emailCodeInValid, userController.resatPassword);
+// router.patch('/reset-password', emailCodeInValid, userController.resatPassword);
 
 // Protect all routes after this middleware
 router.use(protect);
