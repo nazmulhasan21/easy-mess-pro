@@ -12,7 +12,7 @@ const AppError = require('../utils/appError');
 const monthMemberData = require('../controllers/getUpdateDeleteController');
 
 const moment = require('moment');
-const { pushNotification } = require('../utils/push-notification');
+const { pushNotificationMultiple } = require('../utils/push-notification');
 const User = require('../models/userModel');
 const Notification = require('../models/notificationsModel');
 const { getMessMemberFCMTokens } = require('../utils/fun');
