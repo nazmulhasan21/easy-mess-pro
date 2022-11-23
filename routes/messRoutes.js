@@ -23,6 +23,7 @@ router.use(restrictToMessId);
 
 router.get('/', messController.getMess);
 router.get('/member', messController.getAllMember);
+router.get('/member-missing-rollNo', messController.getAllMissingRollNo);
 router.get('/member/:id', messController.getMember);
 router.get('/month', messController.getMonthList);
 

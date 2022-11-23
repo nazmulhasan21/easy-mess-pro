@@ -20,6 +20,7 @@ const {
   deleteAll,
   createMonth,
   getMessMemberFCMTokens,
+  findBorderMissingRollNo,
 } = require('../utils/fun');
 const { pushNotificationMultiple } = require('../utils/push-notification');
 const Notification = require('../models/notificationsModel');
@@ -156,6 +157,24 @@ exports.getMonthList = async (req, res, next) => {
 exports.getAllMember = base.getAll(User);
 exports.getMember = base.getOne(User, 'User');
 
+// get Mess member all missing number
+exports.getAllMissingRollNo = async (req, res, next) => {
+  try {
+    const { user } = req;
+    const mess = await Mess.findById(user.messId)
+      .populate('allMember', 'rollNo')
+      .select('allMember rollNo');
+    const missingRollNo = findBorderMissingRollNo(mess.allMember);
+    res.status(201).json({
+      status: 'success',
+      message: '',
+      data: missingRollNo,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // add member in your mess
 exports.addMember = async (req, res, next) => {
   try {
@@ -174,6 +193,22 @@ exports.addMember = async (req, res, next) => {
     });
     if (!month)
       return next(new AppError(402, 'month', `আপনার কোন সক্রিয় মাস নেই।`));
+    // 1. find mess
+    const mess = await Mess.findById(user.messId)
+      .populate('allMember', 'rollNo')
+      .select('allMember');
+
+    // get missingRollNo
+    const missingRollNo = findBorderMissingRollNo(mess.allMember);
+    if (!missingRollNo.includes(req.body.rollNo)) {
+      return next(
+        new AppError(
+          402,
+          'rollNo',
+          `আপনার মেসের সদস্যের মধ্যে ${req.body.rollNo}রোল নং সদস্যটি বিদ্যমান।  উপরে দেখানো নম্বর থেকে যেকোন একটি  রোল নং দিন।`
+        )
+      );
+    }
     // find new User by email;
     const newUser = req.newUser;
 
@@ -181,9 +216,6 @@ exports.addMember = async (req, res, next) => {
     newUser.role = 'border';
     newUser.rollNo = req.body.rollNo;
     await newUser.save();
-
-    // 1. find mess
-    const mess = await Mess.findById(user.messId).select('allMember');
 
     // 2. add user in your mess
     mess.allMember.push(newUser);

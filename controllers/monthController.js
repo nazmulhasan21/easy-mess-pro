@@ -426,19 +426,34 @@ const date = moment().month(monthName).startOf('month');
 // }
 
 const isMonth = moment('2022-08-31T18:00:00.000Z').format('MMMM YYYY');
-console.log(isMonth);
+// console.log(isMonth);
 
 const test2 = async () => {
-  const members = await User.find().select('FCMToken').sort({ rollNo: -1 });
-  const tokens = [];
-  members.forEach((member) => {
-    if (member) {
-      if (member.FCMToken) {
-        tokens.push(member.FCMToken);
-      }
-    }
-  });
-  console.log(tokens);
+  const arr1 = [1, 5, 8];
 };
 
 // test2();
+
+// function largestElements(numbers) {
+//   var largest = 0;
+//   for (let i = 0; i < numbers.length; i++) {
+//     var elements = numbers[i];
+//     if (elements > largest) {
+//       largest = elements;
+//     }
+//   }
+//   return largest;
+// }
+// const numbers = [2, 3, 4, 15, 5, 2, 4];
+// console.log(largestElements(numbers));
+
+// var a = numbers,
+//   count = largestElements(numbers);
+// var missing = new Array();
+
+// for (var i = 1; i <= count; i++) {
+//   if (a.indexOf(i) == -1) {
+//     missing.push(i);
+//   }
+// }
+// console.log(missing);
