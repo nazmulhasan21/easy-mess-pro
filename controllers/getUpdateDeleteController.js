@@ -232,9 +232,8 @@ exports.updateOne = (Model, model) => async (req, res, next) => {
     }
 
     await Notification.create({
-      messId: user.messId,
       monthId: activeMonth._id,
-      receiver: doc.userId,
+      user: doc.userId,
       title: pushTitle,
       description: pushBody,
       date: doc.updatedAt,
@@ -295,9 +294,8 @@ exports.deleteOne = (Model, model) => async (req, res, next) => {
     }
 
     await Notification.create({
-      messId: user.messId,
       monthId: activeMonth._id,
-      receiver: doc.userId,
+      user: doc.userId,
       title: pushTitle,
       description: pushBody,
       date: doc.createdAt,

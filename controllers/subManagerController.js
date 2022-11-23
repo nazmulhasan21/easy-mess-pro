@@ -33,16 +33,15 @@ exports.addSubManager = async (req, res, next) => {
     }).select('_id monthName');
     // Push Notifications with Firebase
     const pushTitle = 'সাব ম্যানেজার যোগ করা হয়েছে';
-    const pushBody = ` ${subManager.name} ${month.monthName} মাসের সাব ম্যানেজার হিসেবে যুক্ত করেছেন।`;
+    const pushBody = ` ${subManager.name} ${month.monthName} মাসের সাব ম্যানেজার হিসেবে যুক্ত হয়েছেন।`;
     const FCMTokens = getMessMemberFCMTokens(user.messId);
     if (FCMTokens) {
       await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
     }
 
     await Notification.create({
-      messId: user.messId,
       monthId: month._id,
-      receiver: subManager._id,
+      user: subManager._id,
       title: pushTitle,
       description: pushBody,
       date: subManager.updatedAt,
@@ -95,9 +94,8 @@ exports.deleteSubManager = async (req, res, next) => {
     }
 
     await Notification.create({
-      messId: user.messId,
       monthId: month._id,
-      receiver: subManager._id,
+      user: subManager._id,
       title: pushTitle,
       description: pushBody,
       date: subManager.updatedAt,

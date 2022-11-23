@@ -204,9 +204,9 @@ exports.createMeal = async (req, res, next) => {
       }
 
       await Notification.create({
-        messId: user.messId,
         monthId: month._id,
         receiver: myMeal.userId,
+        user: myMeal.userId,
         title: pushTitle,
         description: body,
         date: userMeal.createdAt,

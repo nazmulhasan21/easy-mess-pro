@@ -187,20 +187,18 @@ exports.addMember = async (req, res, next) => {
 
     const { user } = req;
 
-    // 3. find active month
-    const month = await Month.findOne({
-      $and: [{ messId: user.messId }, { active: true }],
-    });
-    if (!month)
-      return next(new AppError(402, 'month', `আপনার কোন সক্রিয় মাস নেই।`));
     // 1. find mess
     const mess = await Mess.findById(user.messId)
       .populate('allMember', 'rollNo')
       .select('allMember');
 
     // get missingRollNo
-    const missingRollNo = findBorderMissingRollNo(mess.allMember);
-    if (!missingRollNo.includes(req.body.rollNo)) {
+    // * get allMember rollNo
+    var rollNos = new Array();
+    for (let i = 0; i < mess.allMember.length; i++) {
+      rollNos.push(allMember[i].rollNo);
+    }
+    if (rollNos.includes(req.body.rollNo)) {
       return next(
         new AppError(
           402,
@@ -221,12 +219,6 @@ exports.addMember = async (req, res, next) => {
     mess.allMember.push(newUser);
     await mess.save();
 
-    // 4. create user Month data
-    await createUserMonthData(newUser, month, mess._id);
-
-    await month.save();
-    await newUser.save();
-
     // Push Notifications with Firebase
     const pushTitle = 'আপনার মেসে সদস্য যোগ হয়েছে।';
     const pushBody = ` ${newUser.name} আপনার মেসের নতুন সদস্য`;
@@ -235,10 +227,29 @@ exports.addMember = async (req, res, next) => {
       await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
     }
 
+    // 3. find active month
+    const month = await Month.findOne({
+      $and: [{ messId: user.messId }, { active: true }],
+    });
+    if (month) {
+      // 4. create user Month data
+      await createUserMonthData(newUser, month, mess._id);
+      await month.save();
+      await newUser.save();
+
+      await Notification.create({
+        messId: user.messId,
+        monthId: month._id,
+        user: newUser._id,
+        title: pushTitle,
+        description: pushBody,
+        date: mess.updatedAt,
+      });
+    }
+
     await Notification.create({
       messId: user.messId,
-      monthId: month._id,
-      receiver: newUser._id,
+      user: newUser._id,
       title: pushTitle,
       description: pushBody,
       date: mess.updatedAt,
@@ -292,11 +303,12 @@ exports.deleteMember = async (req, res, next) => {
     const activeMonth = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
     });
+    if (activeMonth) {
+      // 4. delete delUser active Month data Cash, Meal, Rice in delUser
+      await deleteUserMonthData(delUserId, activeMonth);
+      await activeMonth.save();
+    }
 
-    // 4. delete delUser active Month data Cash, Meal, Rice in delUser
-    await deleteUserMonthData(delUserId, activeMonth);
-
-    await activeMonth.save();
     await isMessMember.save();
 
     // Push Notifications with Firebase
@@ -309,8 +321,7 @@ exports.deleteMember = async (req, res, next) => {
 
     await Notification.create({
       messId: user.messId,
-      monthId: month._id,
-      receiver: findUser._id,
+      user: findUser._id,
       title: pushTitle,
       description: pushBody,
       date: isMessMember.updatedAt,
@@ -365,10 +376,10 @@ exports.changeAdmin = async (req, res, next) => {
 
     await Notification.create({
       messId: user.messId,
-      receiver: findUser._id,
+      user: findUser._id,
       title: pushTitle,
       description: pushBody,
-      date: mess.updatedAt,
+      date: isMessMember.updatedAt,
     });
 
     res.status(200).json({

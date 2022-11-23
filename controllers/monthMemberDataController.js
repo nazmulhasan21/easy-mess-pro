@@ -71,9 +71,8 @@ exports.createMonthMemberData = async (req, res, next) => {
     }
 
     await Notification.create({
-      messId: user.messId,
       monthId: month._id,
-      receiver: userId,
+      user: userId,
       title: pushTitle,
       description: pushBody,
       date: doc.createdAt,

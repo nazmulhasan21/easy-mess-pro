@@ -178,7 +178,6 @@ exports.createCost = async (req, res, next) => {
     }
 
     await Notification.create({
-      messId: user.messId,
       monthId: month._id,
       title: pushTitle,
       description: body,
@@ -244,7 +243,6 @@ exports.updateCost = async (req, res, next) => {
     }
 
     await Notification.create({
-      messId: user.messId,
       monthId: cost.messId,
       title: pushTitle,
       description: pushBody,
@@ -295,7 +293,6 @@ exports.deleteCost = async (req, res, next) => {
     }
 
     await Notification.create({
-      messId: user.messId,
       monthId: cost.messId,
       title: pushTitle,
       description: pushBody,

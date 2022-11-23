@@ -2,11 +2,6 @@ const mongoose = require('mongoose');
 
 const notificationSchema = mongoose.Schema(
   {
-    messId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Mess',
-      required: true,
-    },
     monthId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Month',
@@ -15,7 +10,10 @@ const notificationSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
     },
-
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
     title: {
       type: String,
     },

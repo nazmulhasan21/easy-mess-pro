@@ -76,7 +76,6 @@ exports.createMonth = async (req, res, next) => {
     }
 
     await Notification.create({
-      messId: user.messId,
       monthId: month._id,
       title: pushTitle,
       description: pushBody,
@@ -112,14 +111,13 @@ exports.addFixedMeal = async (req, res, next) => {
       );
     // Push Notifications with Firebase
     const pushTitle = 'Fixed মিল ধার্য় করা হয়েছে';
-    const pushBody = `Fixed মিল ${req.body.fixedMeal} ধার্য় করা হলো।`;
+    const pushBody = `${month.monthTitle} এই মাসের Fixed মিল ${req.body.fixedMeal} ধার্য় করা হলো।`;
     const FCMTokens = getMessMemberFCMTokens(user.messId);
     if (FCMTokens) {
       await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
     }
 
     await Notification.create({
-      messId: user.messId,
       monthId: month._id,
       title: pushTitle,
       description: pushBody,

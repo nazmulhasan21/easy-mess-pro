@@ -53,6 +53,7 @@ exports.changeManager = async (req, res, next) => {
 
     await Notification.create({
       messId: user.messId,
+      user: userId,
       title: pushTitle,
       description: pushBody,
       date: month.updatedAt,
