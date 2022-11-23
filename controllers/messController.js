@@ -196,14 +196,14 @@ exports.addMember = async (req, res, next) => {
     // * get allMember rollNo
     var rollNos = new Array();
     for (let i = 0; i < mess.allMember.length; i++) {
-      rollNos.push(allMember[i].rollNo);
+      rollNos.push(mess.allMember[i].rollNo);
     }
     if (rollNos.includes(req.body.rollNo)) {
       return next(
         new AppError(
           402,
           'rollNo',
-          `আপনার মেসের সদস্যের মধ্যে ${req.body.rollNo}রোল নং সদস্যটি বিদ্যমান।  উপরে দেখানো নম্বর থেকে যেকোন একটি  রোল নং দিন।`
+          `আপনার মেসের সদস্যের মধ্যে ${req.body.rollNo} রোল নং সদস্যটি বিদ্যমান।  উপরে দেখানো নম্বর থেকে যেকোন একটি  রোল নং দিন।`
         )
       );
     }
@@ -224,7 +224,12 @@ exports.addMember = async (req, res, next) => {
     const pushBody = ` ${newUser.name} আপনার মেসের নতুন সদস্য`;
     const FCMTokens = getMessMemberFCMTokens(user.messId);
     if (FCMTokens) {
-      await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
+      const send = await pushNotificationMultiple(
+        pushTitle,
+        pushBody,
+        FCMTokens
+      );
+      console.log(send);
     }
 
     // 3. find active month
