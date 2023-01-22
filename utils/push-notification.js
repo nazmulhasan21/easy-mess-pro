@@ -1,5 +1,5 @@
 const admin = require('firebase-admin');
-var serviceAccount = require('./easy-mess-1de2a-firebase-adminsdk-9jr1e-7d93e1749e.json');
+var serviceAccount = require('./easy-mess-1de2a-firebase-adminsdk-9jr1e-56b251d8b2.json');
 const { result } = require('lodash');
 
 admin.initializeApp({
