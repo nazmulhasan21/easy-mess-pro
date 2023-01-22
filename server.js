@@ -21,13 +21,13 @@ const database = 'mongodb://0.0.0.0:27017/easy-mess';
 mongoose
   .connect(
     //  database,
-    process.env.DB_URL,
+    process.env.DB_URL
 
-    {
-      // useNewUrlParser: true,
-      // useCreateIndex: true,
-      // useFindAndModify: false,
-    }
+    // {
+    //   useNewUrlParser: true,
+    //   useCreateIndex: true,
+    //   useFindAndModify: false,
+    // }
   )
   .then((con) => {
     console.log('DB connection Successfully!');

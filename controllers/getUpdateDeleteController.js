@@ -283,7 +283,7 @@ exports.deleteOne = (Model, model) => async (req, res, next) => {
 
     // Push Notifications with Firebase
 
-    const member = await User.findById(userId).select('name FCMToken');
+    const member = await User.findById(doc?.userId).select('name FCMToken');
     const pushTitle = `${member.name} এর ${type} ডিলেট করা হয়েছে`;
     const pushBody = `${type}=${amount}/= তারিখ:${moment(date).format(
       'DD/MM/YY'

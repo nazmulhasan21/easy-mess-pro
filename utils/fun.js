@@ -554,6 +554,7 @@ exports.activeMonthAllData = async (month, next) => {
     const otherCostSum = costSum(otherCost);
 
     const memberData = async (type, userId) => {
+      //
       const memberItem = await MonthMemberData.find({
         $and: [{ monthId: month._id }, { userId: userId }, { type: type }],
       })
