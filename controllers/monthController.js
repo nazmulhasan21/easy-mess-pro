@@ -66,7 +66,7 @@ exports.createMonth = async (req, res, next) => {
 
     //  3. create  your active month
     const month = await createMonth(user, mess, monthName, date);
-    if (!month == true) return next(month);
+    if (!month) return next(month);
     // Push Notifications with Firebase
     const pushTitle = 'আপনার নতুন মাস তৈরি করা হয়েছে';
     const pushBody = `${monthName} হলো আপনার নতুন মাস `;
@@ -167,8 +167,8 @@ exports.getActiveMonth = async (req, res, next) => {
     //   await userMonthCal(userId, month);
     // });
     // cal this user month data
-    await userMonthCal(user._id, month);
-
+    const thisss = await userMonthCal(user._id, month);
+    console.log(thisss);
     // 2. Get active Month User Month data
     const userMonthData = await UserMonthData.findOne({
       $and: [{ userId: user._id }, { monthId: month._id }],

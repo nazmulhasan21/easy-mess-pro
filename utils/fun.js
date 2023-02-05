@@ -38,14 +38,15 @@ module.exports.createMonth = async (user, mess, monthName, date) => {
 
     // 2. add monthId in mess
     mess.month.push(month);
-    await mess.save();
+
     // 3. create user Month data
     mess.allMember.forEach(async (user) => {
       await this.createUserMonthData(user, month, mess._id);
     });
 
     await month.save();
-    return true;
+    await mess.save();
+    return month;
   } catch (error) {
     return error;
   }
@@ -65,7 +66,7 @@ module.exports.createUserMonthData = async (user, month, messId) => {
       userId: user._id,
       monthId: month._id,
       messId,
-      rollNo: user.rollNo,
+      rollNo: user.rollNo || 1,
     });
     await userMonthData.save();
 

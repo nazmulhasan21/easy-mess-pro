@@ -30,7 +30,6 @@ exports.monthCal = async (month) => {
     costSum.forEach((costItem) => {
       cost[costItem._id] = costItem.total;
     });
-
     // 2. calculate active month member data cost
     const monthMemberDataSum = await MonthMemberData.aggregate([
       {
@@ -109,9 +108,9 @@ exports.monthCal = async (month) => {
     month.totalSmallCost = smallCost;
     month.totalMealCost = bigCost + smallCost;
     month.totalOtherCost = otherCost;
-    month.otherCostPerPerson = (
-      month.totalOtherCost / totalMember?.total
-    ).toFixed(2);
+    // month.otherCostPerPerson = (
+    //   month?.totalOtherCost / totalMember?.total
+    // ).toFixed(2);
     month.totalCost = bigCost + smallCost + otherCost;
     month.balance = cash - (bigCost + smallCost + otherCost);
     month.totalMeal = monthMeal?.total || 1;
@@ -119,7 +118,7 @@ exports.monthCal = async (month) => {
 
     month.totalFixedMeal = monthFixedMeal?.total;
 
-    month.mealRate = (month.totalMealCost / month.totalFixedMeal).toFixed(2);
+    // month.mealRate = (month?.totalMealCost / month?.totalFixedMeal).toFixed(2);
 
     await month.save();
   } catch (error) {
@@ -173,7 +172,7 @@ exports.userMonthCal = async (userId, month) => {
     const userMonthData = await UserMonthData.findOne({
       $and: [{ userId: userId }, { monthId: month._id }],
     });
-
+    console.log(userMonthData);
     // 4. update userMonthData Model
 
     const cash = userData?.cash || 0;

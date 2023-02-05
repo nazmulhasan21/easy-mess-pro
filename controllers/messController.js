@@ -60,10 +60,7 @@ exports.createMess = async (req, res, next) => {
     // 3. create your month
 
     const month = await createMonth(user, mess, monthName, date);
-    if (!month) {
-      mess.remove();
-      return next(month);
-    }
+    if (!month) return next(month);
 
     // 4. set user mess admin
     user.isMessAdmin = true;
