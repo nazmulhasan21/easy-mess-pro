@@ -30,7 +30,7 @@ const Notification = require('../models/notificationsModel');
 exports.createMess = async (req, res, next) => {
   try {
     const { body, user } = req;
-    const isValidMessName = body.messName.match(/^[a-zA-Z0-9. ]+$/);
+    const isValidMessName = body.messNam;
     if (!isValidMessName)
       return next(new AppError(422, 'messName', 'সুন্দর একটি মেস নাম লিখুন'));
     let monthName = req.body.monthName;
