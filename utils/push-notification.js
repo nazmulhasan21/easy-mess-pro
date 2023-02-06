@@ -12,12 +12,11 @@ exports.pushNotification = async (title, body, token) => {
     body = body || 'No body';
     const result = await admin.messaging().send({
       data: { title, body },
-      notification: { title, body, sound: 'default' },
+      notification: { title, body },
       android: {
         notification: {
           //  imageUrl: image,
           clickAction: '',
-          defaultSound: true,
           sound: 'default',
         },
 
@@ -39,12 +38,14 @@ exports.pushNotificationMultiple = async (title, body, tokens) => {
     body = body || 'No body';
     const result = await admin.messaging().sendMulticast({
       data: { title, body },
-      notification: { title, body, sound: 'default' },
+      notification: {
+        title,
+        body,
+      },
       android: {
         notification: {
           //  imageUrl: image,
           clickAction: '',
-          defaultSound: true,
           sound: 'default',
         },
         priority: 'high',
