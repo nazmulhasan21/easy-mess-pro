@@ -143,7 +143,9 @@ exports.getActiveMonth = async (req, res, next) => {
     // 1. Get active Month
     const month = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
-    }).populate('messId manager', 'userId name email phone avatar messName');
+    })
+      .populate('messId manager', 'userId name email phone avatar messName')
+      .select('-createdAt -active -updatedAt');
 
     if (!month) {
       return res.status(200).json({
@@ -152,27 +154,29 @@ exports.getActiveMonth = async (req, res, next) => {
         data: null,
       });
     }
+    if (['manager', 'subManager'].includes(user.role)) {
+      await monthCal(month);
+      await month.save();
+      const userData = await UserMonthData.find({
+        $and: [{ messId: user.messId }, { monthId: month._id }],
+      })
+        .select('userId')
+        .sort({ rollNo: 1 });
+      userData.map(async (item) => {
+        await userMonthCal(item.userId, month);
+      });
+      // mess.allMember.map(async (userId) => {
+      //   await userMonthCal(userId, month);
+      // });
+      // cal this user month data
+    } else {
+      await userMonthCal(user._id, month);
+    }
 
-    await monthCal(month);
-    await month.save();
-    const userData = await UserMonthData.find({
-      $and: [{ messId: user.messId }, { monthId: month._id }],
-    })
-      .select('userId')
-      .sort({ rollNo: 1 });
-    userData.map(async (item) => {
-      await userMonthCal(item.userId, month);
-    });
-    // mess.allMember.map(async (userId) => {
-    //   await userMonthCal(userId, month);
-    // });
-    // cal this user month data
-    const thisss = await userMonthCal(user._id, month);
-    console.log(thisss);
     // 2. Get active Month User Month data
     const userMonthData = await UserMonthData.findOne({
       $and: [{ userId: user._id }, { monthId: month._id }],
-    });
+    }).select('-createdAt -rollNo -updatedAt');
     await userMonthData.save();
 
     // 2. Get active Month User Month data
@@ -182,19 +186,6 @@ exports.getActiveMonth = async (req, res, next) => {
       }).sort({ date: -1 });
 
       return data.map((item) => {
-        // let type = '';
-        // if ((item.type = 'cash')) {
-        //   type = 'টাকা';
-        // } else if ((item.type = 'rice')) {
-        //   type = 'চাউল';
-        // } else if ((item.type = 'guestMeal')) {
-        //   type = '';
-        // } else if ((item.type = 'extraRice')) {
-        //   type = 'অতিরিক্ত চাউল';
-        // } else {
-        //   type = 'অতিরিক্ত খরচ';
-        // }
-
         return {
           type: item.type,
           date: item.date,
@@ -202,7 +193,7 @@ exports.getActiveMonth = async (req, res, next) => {
         };
       });
     };
-
+    const recentData = await recentAdded();
     // 4. Get this user meal
     const userMeals = async () => {
       const data = await Meal.find({
@@ -225,13 +216,15 @@ exports.getActiveMonth = async (req, res, next) => {
       lunch: _.sumBy(meals, 'lunch'),
       dinner: _.sumBy(meals, 'dinner'),
     };
+
+    // res ....
     res.status(200).json({
       status: 'success',
       data: {
         mess: month.messId,
         month,
         userMonthData,
-        recentAdded: await recentAdded(),
+        recentAdded: recentData,
         meals: {
           title: `ব্যক্তিগত  ${month.monthTitle} মাসের মিলের তালিকা`,
           item: meals,

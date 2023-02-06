@@ -172,7 +172,7 @@ exports.userMonthCal = async (userId, month) => {
     const userMonthData = await UserMonthData.findOne({
       $and: [{ userId: userId }, { monthId: month._id }],
     });
-    console.log(userMonthData);
+
     // 4. update userMonthData Model
 
     const cash = userData?.cash || 0;
