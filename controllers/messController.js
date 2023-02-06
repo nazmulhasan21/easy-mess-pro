@@ -220,14 +220,13 @@ exports.addMember = async (req, res, next) => {
     // Push Notifications with Firebase
     const pushTitle = 'আপনার মেসে সদস্য যোগ হয়েছে।';
     const pushBody = ` ${newUser.name} আপনার মেসের নতুন সদস্য`;
-    const FCMTokens = getMessMemberFCMTokens(user.messId);
+    const FCMTokens = await getMessMemberFCMTokens(user.messId);
     if (FCMTokens) {
       const send = await pushNotificationMultiple(
         pushTitle,
         pushBody,
         FCMTokens
       );
-      console.log(send);
     }
 
     // 3. find active month
@@ -240,23 +239,23 @@ exports.addMember = async (req, res, next) => {
       await month.save();
       await newUser.save();
 
-      await Notification.create({
-        messId: user.messId,
-        monthId: month._id,
-        user: newUser._id,
-        title: pushTitle,
-        description: pushBody,
-        date: mess.updatedAt,
-      });
+      // await Notification.create({
+      //   messId: user.messId,
+      //   monthId: month._id,
+      //   user: newUser._id,
+      //   title: pushTitle,
+      //   description: pushBody,
+      //   date: mess.updatedAt,
+      // });
     }
 
-    await Notification.create({
-      messId: user.messId,
-      user: newUser._id,
-      title: pushTitle,
-      description: pushBody,
-      date: mess.updatedAt,
-    });
+    // await Notification.create({
+    //   messId: user.messId,
+    //   user: newUser._id,
+    //   title: pushTitle,
+    //   description: pushBody,
+    //   date: mess.updatedAt,
+    // });
 
     res.status(201).json({
       status: 'success',
@@ -317,18 +316,22 @@ exports.deleteMember = async (req, res, next) => {
     // Push Notifications with Firebase
     const pushTitle = `${findUser.name} সদস্য মুছে ফেলা হয়েছে ।`;
     const pushBody = `আপনার মেসের সদস্য ${findUser.name} কে মুছে ফেলা হয়েছে`;
-    const FCMTokens = getMessMemberFCMTokens(user.messId);
+    const FCMTokens = await getMessMemberFCMTokens(user.messId);
     if (FCMTokens) {
-      await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
+      const send = await pushNotificationMultiple(
+        pushTitle,
+        pushBody,
+        FCMTokens
+      );
     }
 
-    await Notification.create({
-      messId: user.messId,
-      user: findUser._id,
-      title: pushTitle,
-      description: pushBody,
-      date: isMessMember.updatedAt,
-    });
+    // await Notification.create({
+    //   messId: user.messId,
+    //   user: findUser._id,
+    //   title: pushTitle,
+    //   description: pushBody,
+    //   date: isMessMember.updatedAt,
+    // });
 
     res.status(200).json({
       status: 'success',
