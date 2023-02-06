@@ -65,18 +65,18 @@ exports.createMonthMemberData = async (req, res, next) => {
     const pushBody = `${type}=${amount}/= তারিখ:${moment(date).format(
       'DD/MM/YY'
     )}`;
-    const FCMTokens = getMessMemberFCMTokens(user.messId);
+    const FCMTokens = await getMessMemberFCMTokens(user.messId);
     if (FCMTokens) {
       await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
     }
 
-    await Notification.create({
-      monthId: month._id,
-      user: userId,
-      title: pushTitle,
-      description: pushBody,
-      date: doc.createdAt,
-    });
+    // await Notification.create({
+    //   monthId: month._id,
+    //   user: userId,
+    //   title: pushTitle,
+    //   description: pushBody,
+    //   date: doc.createdAt,
+    // });
 
     // 4. save month
 

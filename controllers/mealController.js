@@ -204,14 +204,14 @@ exports.createMeal = async (req, res, next) => {
         await pushNotification(pushTitle, body, FCMToken);
       }
 
-      await Notification.create({
-        monthId: month._id,
-        receiver: myMeal.userId,
-        user: myMeal.userId,
-        title: pushTitle,
-        description: body,
-        date: userMeal.createdAt,
-      });
+      // await Notification.create({
+      //   monthId: month._id,
+      //   receiver: myMeal.userId,
+      //   user: myMeal.userId,
+      //   title: pushTitle,
+      //   description: body,
+      //   date: userMeal.createdAt,
+      // });
     });
 
     // 5. send res

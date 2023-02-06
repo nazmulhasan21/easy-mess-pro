@@ -375,18 +375,18 @@ exports.changeAdmin = async (req, res, next) => {
     // Push Notifications with Firebase
     const pushTitle = 'মেস অ্যাডমিন পরিবর্তন করা হয়েছে।';
     const pushBody = ` ${findUser.name} আপনার মেসের নতুন মেস অ্যাডমিন`;
-    const FCMTokens = getMessMemberFCMTokens(user.messId);
+    const FCMTokens = await getMessMemberFCMTokens(user.messId);
     if (FCMTokens) {
       await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
     }
 
-    await Notification.create({
-      messId: user.messId,
-      user: findUser._id,
-      title: pushTitle,
-      description: pushBody,
-      date: isMessMember.updatedAt,
-    });
+    // await Notification.create({
+    //   messId: user.messId,
+    //   user: findUser._id,
+    //   title: pushTitle,
+    //   description: pushBody,
+    //   date: isMessMember.updatedAt,
+    // });
 
     res.status(200).json({
       status: 'success',
@@ -410,6 +410,14 @@ exports.deleteMess = async (req, res, next) => {
 
     // 3. finally delete your mess
     await Mess.findByIdAndDelete(user.messId);
+
+    // Push Notifications with Firebase
+    const pushTitle = 'আপনার মেস ডিলেট করা হয়েছে।';
+    const pushBody = ` ${user.name} আপনার মেস নতুন মেস ডিলেট করেছে।`;
+    const FCMTokens = await getMessMemberFCMTokens(user.messId);
+    if (FCMTokens) {
+      await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
+    }
 
     res.status(201).json({
       status: 'success',

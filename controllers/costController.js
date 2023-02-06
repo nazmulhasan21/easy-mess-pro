@@ -172,17 +172,17 @@ exports.createCost = async (req, res, next) => {
     const body = `${title}=${amount}/=,তারিখ:${moment(date).format(
       'DD/MM/YY'
     )}`;
-    const FCMTokens = getMessMemberFCMTokens(user.messId);
+    const FCMTokens = await getMessMemberFCMTokens(user.messId);
     if (FCMTokens) {
       await pushNotificationMultiple(pushTitle, body, FCMTokens);
     }
 
-    await Notification.create({
-      monthId: month._id,
-      title: pushTitle,
-      description: body,
-      date: cost.createdAt,
-    });
+    // await Notification.create({
+    //   monthId: month._id,
+    //   title: pushTitle,
+    //   description: body,
+    //   date: cost.createdAt,
+    // });
     // 3. send res
     res.status(201).json({
       status: 'success',
@@ -237,17 +237,17 @@ exports.updateCost = async (req, res, next) => {
     }/=,তারিখ:${moment(newCost.date || cost.date).format(
       'DD/MM/YY'
     )} পরিবর্তন করা হলো।`;
-    const FCMTokens = getMessMemberFCMTokens(user.messId);
+    const FCMTokens = await getMessMemberFCMTokens(user.messId);
     if (FCMTokens) {
       await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
     }
 
-    await Notification.create({
-      monthId: cost.messId,
-      title: pushTitle,
-      description: pushBody,
-      date: cost.updatedAt,
-    });
+    // await Notification.create({
+    //   monthId: cost.messId,
+    //   title: pushTitle,
+    //   description: pushBody,
+    //   date: cost.updatedAt,
+    // });
     // 3. send res
     res.status(200).json({
       status: 'success',
@@ -287,17 +287,17 @@ exports.deleteCost = async (req, res, next) => {
     const pushBody = `${cost.title}=${cost.amount}/=,তারিখ:${moment(
       cost.date
     ).format('DD/MM/YY')}  ডিলেট করা হলো।`;
-    const FCMTokens = getMessMemberFCMTokens(user.messId);
+    const FCMTokens = await getMessMemberFCMTokens(user.messId);
     if (FCMTokens) {
       await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
     }
 
-    await Notification.create({
-      monthId: cost.messId,
-      title: pushTitle,
-      description: pushBody,
-      date: cost.updatedAt,
-    });
+    // await Notification.create({
+    //   monthId: cost.messId,
+    //   title: pushTitle,
+    //   description: pushBody,
+    //   date: cost.updatedAt,
+    // });
     res.status(200).json({
       status: 'success',
       message: 'খরচ টি সভল ভাবে ডিলেট হয়েছে।',

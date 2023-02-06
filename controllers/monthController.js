@@ -70,17 +70,17 @@ exports.createMonth = async (req, res, next) => {
     // Push Notifications with Firebase
     const pushTitle = 'আপনার নতুন মাস তৈরি করা হয়েছে';
     const pushBody = `${monthName} হলো আপনার নতুন মাস `;
-    const FCMTokens = getMessMemberFCMTokens(user.messId);
+    const FCMTokens = await getMessMemberFCMTokens(user.messId);
     if (FCMTokens) {
       await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
     }
 
-    await Notification.create({
-      monthId: month._id,
-      title: pushTitle,
-      description: pushBody,
-      date: month.updatedAt,
-    });
+    // await Notification.create({
+    //   monthId: month._id,
+    //   title: pushTitle,
+    //   description: pushBody,
+    //   date: month.updatedAt,
+    // });
     // send response
     res.status(201).json({
       status: 'success',
@@ -112,17 +112,17 @@ exports.addFixedMeal = async (req, res, next) => {
     // Push Notifications with Firebase
     const pushTitle = 'Fixed মিল ধার্য় করা হয়েছে';
     const pushBody = `${month.monthTitle} এই মাসের Fixed মিল ${req.body.fixedMeal} ধার্য় করা হলো।`;
-    const FCMTokens = getMessMemberFCMTokens(user.messId);
+    const FCMTokens = await getMessMemberFCMTokens(user.messId);
     if (FCMTokens) {
       await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
     }
 
-    await Notification.create({
-      monthId: month._id,
-      title: pushTitle,
-      description: pushBody,
-      date: month.updatedAt,
-    });
+    // await Notification.create({
+    //   monthId: month._id,
+    //   title: pushTitle,
+    //   description: pushBody,
+    //   date: month.updatedAt,
+    // });
 
     res.status(200).json({
       status: 'success',
@@ -303,6 +303,15 @@ exports.deleteMonth = async (req, res, next) => {
 
     await mess.save();
     await month.remove();
+
+    // Push Notifications with Firebase
+    const pushTitle = `আপনার ${month.monthName} মাসটি মুছেফেলা হয়েছে।`;
+    const pushBody = ` ${user.name} আপনার মেসের ${month.monthName} মাসটি মুছেফেলেছে।`;
+    const FCMTokens = await getMessMemberFCMTokens(user.messId);
+    if (FCMTokens) {
+      await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
+    }
+
     res.status(200).json({
       status: 'success',
       message: 'সফলভাবে আপনার মাস মুছেফেলা হয়েছে।',
@@ -372,6 +381,7 @@ exports.changeMonthStatus = async (req, res, next) => {
         { $and: [{ _id: req.params.id }, { messId: user.messId }] },
         { active: false }
       );
+
       return res.status(200).json({
         status: 'success',
         message: 'আপনার মাসটি সফলভাবে নিষ্ক্রিয় করা হয়েছে৷',

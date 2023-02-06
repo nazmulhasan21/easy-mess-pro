@@ -226,18 +226,18 @@ exports.updateOne = (Model, model) => async (req, res, next) => {
     });
     // Push Notifications with Firebase
 
-    const FCMTokens = getMessMemberFCMTokens(user.messId);
+    const FCMTokens = await getMessMemberFCMTokens(user.messId);
     if (FCMTokens) {
       await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
     }
 
-    await Notification.create({
-      monthId: activeMonth._id,
-      user: doc.userId,
-      title: pushTitle,
-      description: pushBody,
-      date: doc.updatedAt,
-    });
+    // await Notification.create({
+    //   monthId: activeMonth._id,
+    //   user: doc.userId,
+    //   title: pushTitle,
+    //   description: pushBody,
+    //   date: doc.updatedAt,
+    // });
 
     // 3. send res
     return res.status(200).json({
@@ -288,18 +288,18 @@ exports.deleteOne = (Model, model) => async (req, res, next) => {
     const pushBody = `${type}=${amount}/= তারিখ:${moment(date).format(
       'DD/MM/YY'
     )} ডিলেট করা হয়েছে`;
-    const FCMTokens = getMessMemberFCMTokens(user.messId);
+    const FCMTokens = await getMessMemberFCMTokens(user.messId);
     if (FCMTokens) {
       await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
     }
 
-    await Notification.create({
-      monthId: activeMonth._id,
-      user: doc.userId,
-      title: pushTitle,
-      description: pushBody,
-      date: doc.createdAt,
-    });
+    // await Notification.create({
+    //   monthId: activeMonth._id,
+    //   user: doc.userId,
+    //   title: pushTitle,
+    //   description: pushBody,
+    //   date: doc.createdAt,
+    // });
 
     res.status(200).json({
       status: 'success',

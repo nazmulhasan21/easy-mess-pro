@@ -46,18 +46,18 @@ exports.changeManager = async (req, res, next) => {
     // Push Notifications with Firebase
     const pushTitle = 'আপনার মেস ম্যানেজার পরিবর্তন হয়েছে';
     const pushBody = `${newManager.name} কে আপনার মেস ম্যানেজার করা হলো`;
-    const FCMTokens = getMessMemberFCMTokens(user.messId);
+    const FCMTokens = await getMessMemberFCMTokens(user.messId);
     if (FCMTokens) {
       await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
     }
 
-    await Notification.create({
-      messId: user.messId,
-      user: userId,
-      title: pushTitle,
-      description: pushBody,
-      date: month.updatedAt,
-    });
+    // await Notification.create({
+    //   messId: user.messId,
+    //   user: userId,
+    //   title: pushTitle,
+    //   description: pushBody,
+    //   date: month.updatedAt,
+    // });
 
     // send response
     res.status(201).json({

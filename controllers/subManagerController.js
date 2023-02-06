@@ -34,18 +34,18 @@ exports.addSubManager = async (req, res, next) => {
     // Push Notifications with Firebase
     const pushTitle = 'সাব ম্যানেজার যোগ করা হয়েছে';
     const pushBody = ` ${subManager.name} ${month.monthName} মাসের সাব ম্যানেজার হিসেবে যুক্ত হয়েছেন।`;
-    const FCMTokens = getMessMemberFCMTokens(user.messId);
+    const FCMTokens = await getMessMemberFCMTokens(user.messId);
     if (FCMTokens) {
       await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
     }
 
-    await Notification.create({
-      monthId: month._id,
-      user: subManager._id,
-      title: pushTitle,
-      description: pushBody,
-      date: subManager.updatedAt,
-    });
+    // await Notification.create({
+    //   monthId: month._id,
+    //   user: subManager._id,
+    //   title: pushTitle,
+    //   description: pushBody,
+    //   date: subManager.updatedAt,
+    // });
 
     // send response
     res.status(201).json({
@@ -88,18 +88,18 @@ exports.deleteSubManager = async (req, res, next) => {
     // Push Notifications with Firebase
     const pushTitle = 'সাব ম্যানেজার বাদ দেওয়া হয়েছে';
     const pushBody = ` ${subManager.name} ${month.monthName} মাসের সাব ম্যানেজার হিসেবে  এখন আর নেই।`;
-    const FCMTokens = getMessMemberFCMTokens(user.messId);
+    const FCMTokens = await getMessMemberFCMTokens(user.messId);
     if (FCMTokens) {
       await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
     }
 
-    await Notification.create({
-      monthId: month._id,
-      user: subManager._id,
-      title: pushTitle,
-      description: pushBody,
-      date: subManager.updatedAt,
-    });
+    // await Notification.create({
+    //   monthId: month._id,
+    //   user: subManager._id,
+    //   title: pushTitle,
+    //   description: pushBody,
+    //   date: subManager.updatedAt,
+    // });
 
     res.status(200).json({
       status: 'success',
