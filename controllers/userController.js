@@ -70,13 +70,13 @@ exports.updateAvatar = async (req, res, next) => {
       cloudinary.uploader.upload(
         files?.avatar?.tempFilePath,
         async (error, result) => {
-          user.avatar = result.url;
+          user.avatar = result.secure_url;
           await user.save();
           res.status(200).json({
             status: 'success',
             message: 'আপনার প্রোফাইল ছবি সফলভাবে আপলোড করা হয়েছে।',
             data: {
-              avatar: result.url,
+              avatar: user.avatar,
             },
           });
         }
