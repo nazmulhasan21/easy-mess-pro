@@ -8,6 +8,25 @@ const base = require('./baseController');
 
 const { sendVerificationCode } = require('../utils/fun');
 const APIFeatures = require('../utils/apiFeatures');
+const Mess = require('../models/messModel');
+
+exports.getAllUser = async (req, res, next) => {
+  const users = await User.find()
+    .select('name email phone role avatar emailVerified createdAt')
+    .sort({ createdAt: -1 });
+  const totalUser = users.length;
+  const mess = await Mess.find().select().populate('admin', 'name email');
+  const totalMess = mess.length;
+  res.status(200).json({
+    status: 'success',
+    data: {
+      totalMess,
+      totalUser,
+      mess,
+      users,
+    },
+  });
+};
 
 // user/me
 

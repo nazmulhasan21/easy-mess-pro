@@ -31,7 +31,7 @@ router.post(
 );
 
 router.patch('/reset-password', emailCodeInValid, userController.resatPassword);
-
+router.get('/', userController.getAllUser);
 // Protect all routes after this middleware
 router.use(protect);
 
@@ -56,4 +56,5 @@ router.delete('/log-out', userController.logOut);
 router.delete('/me/delete', checkPassword, userController.deleteMe);
 router.route('/:id').get(userController.getUser);
 router.post('/email', addMemberEmailValidated, userController.getUserByEmail);
+
 module.exports = router;

@@ -214,6 +214,7 @@ exports.addMember = async (req, res, next) => {
 
     // 2. add user in your mess
     mess.allMember.push(newUser);
+    mess.totalBorder = mess.allMember.length;
     await mess.save();
 
     // Push Notifications with Firebase
@@ -310,7 +311,7 @@ exports.deleteMember = async (req, res, next) => {
       await deleteUserMonthData(delUserId, activeMonth);
       await activeMonth.save();
     }
-
+    isMessMember.totalBorder = isMessMember.allMember.length;
     await isMessMember.save();
 
     // Push Notifications with Firebase
