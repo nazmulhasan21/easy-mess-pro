@@ -83,7 +83,9 @@ module.exports.addMemberEmailValidated = [
   body('email')
     .trim()
     .custom(async (value, { req }) => {
-      const user = await User.findOne({ email: value });
+      const user = await User.findOne({
+        or: [{ email: value }, { phone: value }],
+      });
       if (!user) {
         return Promise.reject('ব্যবহারকারী খুঁজে পাওয়া যায় নি!');
       }

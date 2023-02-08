@@ -30,6 +30,14 @@ exports.login = async (req, res, next) => {
 
     // -> 2 <- check if user exist and password is correct
     const user = await User.findOne({ email }).select('+password');
+    if (!user)
+      return next(
+        new AppError(
+          401,
+          'password',
+          'আপনার এই ইমেল এ কোন একাউন্ট করা নেই। নতুন একাউন্ট তৈরি করুন।'
+        )
+      );
     if (!user || !(await user.correctPassword(password, user.password))) {
       return next(new AppError(401, 'password', 'ইমেল বা পাসওয়ার্ড ভুল'));
     }

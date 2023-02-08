@@ -276,7 +276,13 @@ exports.deleteOne = (Model, model) => async (req, res, next) => {
     // 2. Not found any cost or active Month or add by user
 
     if (!doc || !activeMonth || !addBy)
-      return next(new AppError(404, model, ` ${model} ডিলেট করতে পারবেন না`));
+      return next(
+        new AppError(
+          404,
+          model,
+          `আপনি যে ${model} এড করেছেন শুধু মাত্র সেই ${model} ‍ডিলেট করতে পারবেন`
+        )
+      );
 
     // 3. delete Cost
     await Model.findByIdAndDelete(req.params.id);

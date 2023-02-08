@@ -278,7 +278,13 @@ exports.deleteCost = async (req, res, next) => {
     // 2. Not found any cost or active Month or add by user
 
     if (!cost || !activeMonth || !addBy)
-      return next(new AppError(404, 'cost', 'এই খরচ ‍ডিলেট করা যাবে না'));
+      return next(
+        new AppError(
+          404,
+          'cost',
+          'আপনি যে খরচ এড করেছেন শুধু মাত্র সেই খরচ ‍ডিলেট করতে পারবেন'
+        )
+      );
 
     // 3. delete Cost
     await Cost.findByIdAndDelete(req.params.id);
