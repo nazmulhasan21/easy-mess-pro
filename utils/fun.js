@@ -680,31 +680,19 @@ exports.activeMonthAllData = async (month, next) => {
 
 exports.findBorderMissingRollNo = (allMember) => {
   // * get allMember rollNo
-  var rollNos = new Array();
+  var rollNos = [];
   for (let i = 0; i < allMember.length; i++) {
-    rollNos.push(allMember[i].rollNo);
+    rollNos.push(allMember[i]);
   }
-  // 1. find largest rollNo
-  var largest = 0;
-  for (let i = 0; i < rollNos.length; i++) {
-    var elements = rollNos[i];
-    if (elements > largest) {
-      largest = elements;
-    }
-  }
-
   //2. find missing rollNo
-  var count = largest + 1;
-  var missing = new Array();
-  for (var i = 1; i <= count; i++) {
-    if (rollNos.indexOf(i) == -1) {
-      missing.push(i);
-    }
+
+  var missing = [];
+  for (var i = 1; i <= Math.max(...rollNos) + 1; i++) {
+    rollNos.indexOf(i) == -1 && missing.push(i);
   }
   // 3. return missing rollNo array []
   return missing;
 };
-
 //tt();
 
 // date format in hbs template

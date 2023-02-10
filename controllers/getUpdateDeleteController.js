@@ -271,16 +271,46 @@ exports.deleteOne = (Model, model) => async (req, res, next) => {
     const doc = await Model.findOne({
       $and: [{ _id: req.params.id }, { monthId: activeMonth._id }],
     });
-
+    if (!doc)
+      return next(new AppError(404, model, `এটি আগে থেকে ডিলেট হয়ে গিয়েছে।`));
     const addBy = JSON.stringify(doc?.addBy) === JSON.stringify(user._id);
     // 2. Not found any cost or active Month or add by user
+    // let type = '';
+    // switch (doc?.type) {
+    //   case 'cash':
+    //     type = 'টাকা';
+    //     break;
+    //   case 'rice':
+    //     type = 'চাউল';
+    //     break;
+    //   case 'extraRice':
+    //     type = 'অতিরিক্ত চাউল';
+    //     break;
+    //   case 'guestMeal':
+    //     type = 'গেষ্ট মিলের টাকা';
+    // }
 
-    if (!doc || !activeMonth || !addBy)
+    const typeMessage = () => {
+      switch (doc?.type) {
+        case 'cash':
+          return 'টাকা';
+        case 'rice':
+          return 'চাউল';
+        case 'extraRice':
+          return 'অতিরিক্ত চাউল';
+        case 'guestMeal':
+          return 'গেষ্ট মিলের টাকা';
+      }
+    };
+
+    const type = typeMessage();
+
+    if (!activeMonth || !addBy)
       return next(
         new AppError(
           404,
-          model,
-          `আপনি যে ${model} এড করেছেন শুধু মাত্র সেই ${model} ‍ডিলেট করতে পারবেন`
+          type,
+          `আপনি যে ${type} এড করেছেন শুধু মাত্র সেই ${type} ‍ডিলেট করতে পারবেন`
         )
       );
 
@@ -290,13 +320,18 @@ exports.deleteOne = (Model, model) => async (req, res, next) => {
     // Push Notifications with Firebase
 
     const member = await User.findById(doc?.userId).select('name FCMToken');
-    const pushTitle = `${member.name} এর ${type} ডিলেট করা হয়েছে`;
-    const pushBody = `${type}=${amount}/= তারিখ:${moment(date).format(
-      'DD/MM/YY'
-    )} ডিলেট করা হয়েছে`;
+    const pushTitle = `${member.name} এর ${typeMessage()} ডিলেট করা হয়েছে`;
+    const pushBody = `${type} = ${doc?.amount}/= তারিখ:${moment(
+      doc?.date
+    ).format('DD/MM/YY')} ডিলেট করা হয়েছে`;
     const FCMTokens = await getMessMemberFCMTokens(user.messId);
     if (FCMTokens) {
-      await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
+      const send = await pushNotificationMultiple(
+        pushTitle,
+        pushBody,
+        FCMTokens
+      );
+      console.log(send);
     }
 
     // await Notification.create({
@@ -309,7 +344,7 @@ exports.deleteOne = (Model, model) => async (req, res, next) => {
 
     res.status(200).json({
       status: 'success',
-      message: ` ${model} সফল ভাবে ডিলেট হয়েছে।`,
+      message: ` ${type} সফল ভাবে ডিলেট হয়েছে।`,
     });
   } catch (error) {
     next(error);
