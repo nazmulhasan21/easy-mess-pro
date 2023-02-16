@@ -30,7 +30,10 @@ const MonthMemberData = require('../models/monthMemberDataModel');
 
 const createPDF = require('../utils/createPDF');
 const User = require('../models/userModel');
-const { pushNotificationMultiple } = require('../utils/push-notification');
+const {
+  pushNotificationMultiple,
+  pushNotification,
+} = require('../utils/push-notification');
 const Notification = require('../models/notificationsModel');
 
 exports.createMonth = async (req, res, next) => {
@@ -404,6 +407,140 @@ var j = schedule.scheduleJob(
   }
 );
 
+var j2 = schedule.scheduleJob(
+  `00    43    17    14    *    *`,
+  async function () {
+    const month = await Month.findById('63e771ae4bd932ba3cd793b9').select(
+      'monthTitle'
+    );
+    const mess = await Mess.findById('63e771ae4bd932ba3cd793b7').select(
+      'allMember'
+    );
+    const meals = await Meal.find({
+      $and: [{ messId: '63e771ae4bd932ba3cd793b7' }, { monthId: month._id }],
+    }).select('userId breakfast lunch dinner total date addBy');
+
+    // meals.forEach(async (myMeal) => {
+    //   const total = myMeal.breakfast + myMeal.lunch + myMeal.dinner;
+    //   // 4. post daily meal
+    //   const userMeal = await Meal.create({
+    //     userId: myMeal.userId,
+    //     breakfast: myMeal.breakfast,
+    //     lunch: myMeal.lunch,
+    //     dinner: myMeal.dinner,
+    //     total: total,
+    //     date: date,
+    //     messId: mess._id,
+    //     monthId: month._id,
+    //     addBy: myMeal.addBy._id,
+    //   });
+
+    //   // Push Notifications with Firebase
+
+    //   const pushTitle = `মিল যোগ করা হয়েছে`;
+    //   const body = `মোট মিল: ${total}টি , তারিখ: ${moment(date).format(
+    //     'DD/MM/YY'
+    //   )}`;
+    //   const member = await User.findById(myMeal.userId).select('FCMToken');
+    //   if (member && member.FCMToken) {
+    //     const FCMToken = member.FCMToken;
+    //     await pushNotification(pushTitle, body, FCMToken);
+    //   }
+    // });
+    console.log('this is schedule ', meals);
+  }
+);
+////////
+
+var dailyMealUpdate = schedule.scheduleJob(
+  `00     44   16    *    *    *`,
+  async function () {
+    // all mess
+    const allMess = await Mess.find({ _id: '63e771ae4bd932ba3cd793b7' }).select(
+      'allMember'
+    );
+
+    // forEach work
+
+    allMess.forEach(async (mess) => {
+      // find active month
+      const month = await Month.findOne({
+        $and: [{ messId: mess._id }, { active: true }],
+      });
+      if (month) {
+        const members = mess.allMember;
+        // all Member meals add in next day
+        members.map(async (userId) => {
+          const date = moment().add(1, 'days');
+          const isMonthDate = moment(month.date).isSame(date, 'month');
+          // find oldMeals
+          const oldMeals = await Meal.find({
+            $and: [
+              { userId: userId },
+              { monthId: month._id },
+              {
+                date: {
+                  $gte: moment(date).startOf('day'),
+                  $lte: moment(date).endOf('day'),
+                },
+              },
+            ],
+          });
+          // if no add next day meal
+          if (oldMeals.length > 0 || !isMonthDate) {
+            console.log({ isSame: isMonthDate });
+          } else {
+            // users Meals
+            const userMeals = await Meal.find({
+              $and: [{ userId: userId }, { monthId: month._id }],
+            });
+            const lastDayMeal = userMeals[userMeals.length - 1];
+            const userMeal = lastDayMeal;
+            // create new
+            const meal = await Meal.create({
+              userId: userId,
+              breakfast: userMeal?.breakfast || 0,
+              lunch: userMeal?.lunch || 0,
+              dinner: userMeal?.dinner || 0,
+              total: userMeal?.total || 0,
+              date: date,
+              messId: userMeal?.messId,
+              monthId: month?._id,
+              addBy: month?.manager,
+            });
+
+            // test push notification
+            const pushTitle = `মিল যোগ করা হয়েছে`;
+            const body = `মোট মিল: ${meal?.total}টি , তারিখ: ${moment(
+              meal?.date
+            ).format('DD/MM/YY')}`;
+            const member = await User.findById(userId).select('FCMToken');
+            if (member && member.FCMToken) {
+              const FCMToken = member.FCMToken;
+              await pushNotification(pushTitle, body, FCMToken);
+            }
+          }
+        });
+      }
+    });
+
+    //   const users = await User.find().select('FCMToken');
+
+    // Push Notifications with Firebase
+
+    // users.forEach(async (user) => {
+    //   const pushBody = ` ${user.name} আপনাকে Easy Mess App এর পক্ষথেকে Valentines Day 2023 এর শুভেচ্ছা জানাই। ভালো বাসা ছড়িয়ে পরুক সবখানে।`;
+    //   const pushTitle = `Happy Valentines Day 2023`;
+
+    //   if (user.FCMToken) {
+    //     const send = await pushNotification(pushTitle, pushBody, user.FCMToken);
+    //     console.log(send);
+    //   }
+    // });
+  }
+);
+
+////
 exports.getMonth = base.getOne(Month, 'month');
 
 const ffff = async () => {
@@ -433,28 +570,26 @@ const test2 = async () => {
   const arr1 = [1, 5, 8];
 };
 
-// test2();
+// const nazmul = {
+//   name: 'Nazmul Hasan',
+//   age: null,
+//   address: 'Jessore',
+//   des: 'dfhgdfh',
+// };
 
-// function largestElements(numbers) {
-//   var largest = 0;
-//   for (let i = 0; i < numbers.length; i++) {
-//     var elements = numbers[i];
-//     if (elements > largest) {
-//       largest = elements;
+// const getTrueKey = (obj) => {
+//   for (const key in obj) {
+//     if (obj[key]) return key;
+//   }
+//   return undefined;
+// };
+// const newArray = [];
+// const array = (obj) => {
+//   for (const key in obj) {
+//     if (obj[key]) {
+//       console.log(key);
 //     }
 //   }
-//   return largest;
-// }
-// const numbers = [2, 3, 4, 15, 5, 2, 4];
-// console.log(largestElements(numbers));
+// };
 
-// var a = numbers,
-//   count = largestElements(numbers);
-// var missing = new Array();
-
-// for (var i = 1; i <= count; i++) {
-//   if (a.indexOf(i) == -1) {
-//     missing.push(i);
-//   }
-// }
-// console.log(missing);
+// console.log(array(nazmul));

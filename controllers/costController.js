@@ -307,7 +307,7 @@ exports.deleteCost = async (req, res, next) => {
     // });
     res.status(200).json({
       status: 'success',
-      message: 'খরচ টি সভল ভাবে ডিলেট হয়েছে।',
+      message: 'খরচ টি সফল ভাবে ডিলেট হয়েছে।',
     });
   } catch (error) {
     next(error);

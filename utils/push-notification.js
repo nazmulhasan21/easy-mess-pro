@@ -25,6 +25,7 @@ exports.pushNotification = async (title, body, token) => {
 
       token,
     });
+    console.log(result);
     return result;
   } catch (error) {
     console.log(error);
@@ -52,6 +53,7 @@ exports.pushNotificationMultiple = async (title, body, tokens) => {
       },
       tokens,
     });
+    console.log(result);
     return result;
   } catch (error) {
     console.log(error);

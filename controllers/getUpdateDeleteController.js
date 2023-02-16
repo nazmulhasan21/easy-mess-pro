@@ -112,7 +112,7 @@ exports.getList = (Model) => async (req, res, next) => {
       Model.find(findQuery)
         .populate('addBy editBy userId', 'name avatar role')
         .select('userId type amount addBy editBy date createdAt updatedAt')
-        .sort({ date: -1 }),
+        .sort({ createdAt: -1 }),
       req.query
     ).paginate();
     const doc = async () => {

@@ -682,7 +682,7 @@ exports.findBorderMissingRollNo = (allMember) => {
   // * get allMember rollNo
   var rollNos = [];
   for (let i = 0; i < allMember.length; i++) {
-    rollNos.push(allMember[i]);
+    rollNos.push(allMember[i].rollNo);
   }
   //2. find missing rollNo
 
