@@ -8,6 +8,7 @@ const { validationResult } = require('express-validator');
 
 const Month = require('../models/monthModel');
 const Marketer = require('../models/marketersModel');
+const MarketerExchange = require('../models/marketersExchangeModel');
 
 // all Controllers
 
@@ -16,73 +17,46 @@ const AppError = require('../utils/appError');
 const APIFeatures = require('../utils/apiFeatures');
 const User = require('../models/userModel');
 const Notification = require('../models/notificationsModel');
-const { pushNotificationMultiple } = require('../utils/push-notification');
+const {
+  pushNotificationMultiple,
+  pushNotification,
+} = require('../utils/push-notification');
 const { getMessMemberFCMTokens } = require('../utils/fun');
 
 // get cost one
-exports.getCost = async (req, res, next) => {
+exports.getMarketers = async (req, res, next) => {
   try {
     const { user } = req;
     const isValid = mongoose.Types.ObjectId.isValid(req.params.id);
     if (!isValid) return next(new AppError(400, '_id', 'Id is not valid '));
     // 1. find cost
-    const doc = await Cost.findOne({
+    const doc = await Marketer.findOne({
       $and: [{ _id: req.params.id }, { messId: user.messId }],
-    }).populate('addBy editBy monthId', 'name avatar role monthTitle');
+    })
+      .populate('marketer', 'name avatar role')
+      .select('marketer name avatar role date');
     if (!doc)
-      return next(new AppError(404, 'cost', 'কোন খরচ খুজে পাওয়া যায়নি'));
+      return next(
+        new AppError(404, 'marketers', 'কোন বাজারকারী  খুজে পাওয়া যায়নি')
+      );
 
     // 2. send res
     res.status(200).json({
       status: 'success',
-      message: 'Cost found',
-      data: {
-        doc,
-      },
+      message: 'বাজারকারী খুজে পাওয়া গিয়েছে।',
+      doc,
     });
   } catch (error) {
     next(error);
   }
 };
 
-// get All Cost active month
-exports.getCostList = async (req, res, next) => {
+// get All Marketers list active month
+exports.getMarketersList = async (req, res, next) => {
   try {
     const { user, query } = req;
 
-    const { startDate, endDate, day, amount } = query;
-
-    // filter
-    // 1. filter in date
-    let date = {};
-    if (startDate || endDate) {
-      date = {
-        date: {
-          $gte: moment(startDate).startOf('day'),
-          $lte: moment(endDate).endOf('day'),
-        },
-      };
-    } else if (day) {
-      date = {
-        date: {
-          $gte: moment(day).startOf('day'),
-          $lte: moment(day).endOf('day'),
-        },
-      };
-    }
-
-    // 1 filter in amount
-
-    const filterAmount = amount
-      ? {
-          amount: {
-            $gte: amount.split('-')[0],
-            $lte: amount.split('-')[1],
-          },
-        }
-      : {};
-    const type = req.query.type || '';
-    const typeFilter = type ? { type } : {};
+    // const { startDate, endDate, day, amount } = query;
 
     // 1. find active month
     const activeMonth = await Month.findOne({
@@ -90,14 +64,14 @@ exports.getCostList = async (req, res, next) => {
     });
     // find query
     const findQuery = {
-      $and: [{ monthId: activeMonth._id }, date, filterAmount, typeFilter],
+      $and: [{ monthId: activeMonth._id }],
     };
     // 2. get all cost in active month
     const features = new APIFeatures(
-      Cost.find(findQuery)
-        .populate('addBy editBy', 'name avatar role')
-        .select('type title amount addBy editBy date createdAt updatedAt')
-        .sort({ createdAt: -1 }),
+      Marketer.find(findQuery)
+        .populate('marketer', 'name avatar role')
+        .select('monthId date marketers name avatar role')
+        .sort({ date: 1 }),
       req.query
     ).paginate();
     const doc = async () => {
@@ -105,25 +79,18 @@ exports.getCostList = async (req, res, next) => {
       return data.map((item) => {
         return {
           _id: item._id,
-          type: item.type,
-          title: item.title,
-          amount: item.amount,
-          addBy: item.addBy,
-          editBy: item.editBy,
           date: item.date,
-          createdAt: item.createdAt,
-          updatedAt: item.updatedAt,
+          marketers: item.marketers,
         };
       });
     };
-    const results = await Cost.countDocuments(findQuery);
+
+    const results = await Marketer.countDocuments(findQuery);
     // 3. send res
     res.status(200).json({
       status: 'success',
       results: results,
-      data: {
-        data: await doc(),
-      },
+      marketers: await doc(),
     });
   } catch (error) {
     next(error);
@@ -287,6 +254,124 @@ exports.marketerJoin = async (req, res, next) => {
     res.status(200).json({
       status: 'success',
       message: 'সফল ভাবে আপনি বাজারে যোগদান করেছে।',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.marketerLeave = async (req, res, next) => {
+  try {
+    const { user } = req;
+    const isValid = mongoose.Types.ObjectId.isValid(req.params.id);
+    if (!isValid) return next(new AppError(400, '_id', 'Id is not valid '));
+    const activeMonth = await Month.findOne({
+      $and: [{ messId: user.messId }, { active: true }],
+    });
+    const marketers = await Marketer.findOne({
+      $and: [
+        { _id: req.params.id },
+        { monthId: activeMonth._id },
+        { marketers: user._id },
+      ],
+    });
+    // 2. Not found any cost
+    if (!marketers || !activeMonth)
+      return next(
+        new AppError(404, 'marketers', 'এই বাজারকারিদের আপডেট করা যাবে না')
+      );
+    if (marketers.marketers.find(user._id)) {
+      marketers.marketers.pull(user._id);
+      await marketers.save();
+    }
+
+    const pushTitle = 'বাজার কারী লীভ নিয়েছেন।';
+    const pushBody = `${user.name} তারিখ:${moment(marketers.date).format(
+      'DD/MM/YY'
+    )}  বাজারে যুক্ত হয়েছেন।`;
+
+    // Push Notifications with Firebase
+
+    const FCMTokens = await getMessMemberFCMTokens(user.messId);
+    if (FCMTokens) {
+      await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
+    }
+
+    // await Notification.create({
+    //   monthId: cost.messId,
+    //   title: pushTitle,
+    //   description: pushBody,
+    //   date: cost.updatedAt,
+    // });
+    // 3. send res
+    res.status(200).json({
+      status: 'success',
+      message: 'সফল ভাবে আপনি বাজারে যোগদান করেছে।',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.marketerExchange = async (req, res, next) => {
+  try {
+    const { user } = req;
+    const { exchangeReceiver } = req.body;
+    const isValid = mongoose.Types.ObjectId.isValid(req.params.id);
+    if (!isValid) return next(new AppError(400, '_id', 'Id is not valid '));
+    if (!mongoose.Types.ObjectId.isValid(exchangeReceiver))
+      return next(
+        new AppError(
+          400,
+          'exchangeReceiver',
+          'আপনার পরিবর্তে যে বাজার করবে তা নির্বাচন করুন।'
+        )
+      );
+    const activeMonth = await Month.findOne({
+      $and: [{ messId: user.messId }, { active: true }],
+    });
+    const marketers = await Marketer.findOne({
+      $and: [
+        { _id: req.params.id },
+        { monthId: activeMonth._id },
+        { marketers: user._id },
+      ],
+    });
+    // 2. Not found any cost
+    if (!marketers || !activeMonth)
+      return next(
+        new AppError(404, 'marketers', 'এই বাজারকারিদের  পরিবর্তন করা যাবে না')
+      );
+    const exchangeRequest = await MarketerExchange.create({
+      monthId: activeMonth._id,
+      marketersExchangeSender: user._id,
+      marketersExchangeReceiver: exchangeReceiver,
+      date: marketers.date,
+    });
+    const member = await User.findById(exchangeReceiver).select(
+      'FCMToken name'
+    );
+    const pushTitle = 'বাজার এর অনুরোধ পেয়েছেন।';
+    const pushBody = `${user.name} এর তারিখ:${moment(marketers.date).format(
+      'DD/MM/YY'
+    )} এর  বাজার করে দেওয়ার জন্য অনুরোধ পাঠিয়েছেন ।`;
+
+    // Push Notifications with Firebase
+
+    if (member && member.FCMToken) {
+      const FCMToken = member.FCMToken;
+      await pushNotification(pushTitle, pushBody, FCMToken);
+    }
+    // await Notification.create({
+    //   monthId: cost.messId,
+    //   title: pushTitle,
+    //   description: pushBody,
+    //   date: cost.updatedAt,
+    // });
+    // 3. send res
+    res.status(200).json({
+      status: 'success',
+      message: 'সফল ভাবে আপনার বাজারে অনুরোধ পাঠানো হয়েছে',
     });
   } catch (error) {
     next(error);

@@ -408,7 +408,7 @@ var j = schedule.scheduleJob(
 );
 
 var j2 = schedule.scheduleJob(
-  `00    43    17    14    *    *`,
+  `00    43        14    *    *`,
   async function () {
     const month = await Month.findById('63e771ae4bd932ba3cd793b9').select(
       'monthTitle'
@@ -453,7 +453,7 @@ var j2 = schedule.scheduleJob(
 ////////
 
 var dailyMealUpdate = schedule.scheduleJob(
-  `00     44   16    *    *    *`,
+  `00     00   10    *    *    *`,
   async function () {
     // all mess
     const allMess = await Mess.find({ _id: '63e771ae4bd932ba3cd793b7' }).select(

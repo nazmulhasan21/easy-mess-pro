@@ -17,8 +17,11 @@ const marketersController = require('../controllers/marketersController');
 router.use(protect);
 
 router.use(restrictToMessId);
-router.get('/', marketersController.getCostList);
-router.get('/:id', marketersController.getCost);
+router.get('/', marketersController.getMarketersList);
+router.get('/:id', marketersController.getMarketers);
+router.patch('/:id', marketersController.marketerJoin);
+router.patch('/:id', marketersController.marketerLeave);
+router.post('/:id/exchange', marketersController.marketerExchange);
 
 // Only manager have permission to access for the below APIs
 router.use(restrictTo('manager', 'subManager'));
