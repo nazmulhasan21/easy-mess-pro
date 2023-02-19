@@ -140,45 +140,45 @@ exports.createMeal = async (req, res, next) => {
         new AppError(402, 'date', 'আপনার সক্রিয় মাসের তারিখ নির্বাচন করুন।')
       );
 
+    // check add now day meal in active month
+    const oldMeals = await Meal.find({
+      $and: [
+        { monthId: month._id },
+        {
+          date: {
+            $gte: moment(date).startOf('day'),
+            $lte: moment(date).endOf('day'),
+          },
+        },
+      ],
+    });
+    //c
+
+    if (oldMeals.length > 0)
+      return next(
+        new AppError(
+          403,
+          'meals',
+          `আগেই ${moment(date).format(
+            'DD/MM/YY'
+          )} এই তারিখের মিল যোগ করা আছে। অন্যদিনের মিল যোগ করতে তারিখ পরিবর্তন করুন।`
+        )
+      );
     //  3. daily Meal array to daily meal object
     meals.forEach(async (myMeal) => {
-      // check add now day meal in active month
-      const oldMeals = await Meal.findOne({
-        $and: [
-          { monthId: month._id },
-          { userId: myMeal.userId },
-          {
-            date: {
-              $gte: moment(date).startOf('day'),
-              $lte: moment(date).endOf('day'),
-            },
-          },
-        ],
-      });
-      //c
       const total = myMeal.breakfast + myMeal.lunch + myMeal.dinner;
-      //if find user old meal then update her meal
-      if (oldMeals) {
-        (oldMeals.breakfast = myMeal.breakfast),
-          (oldMeals.lunch = myMeal.lunch),
-          (oldMeals.dinner = myMeal.dinner),
-          (oldMeals.total = total),
-          (oldMeals.editBy = user._id),
-          await oldMeals.save();
-      } else {
-        // 4. post daily meal
-        const userMeal = await Meal.create({
-          userId: myMeal.userId,
-          breakfast: myMeal.breakfast,
-          lunch: myMeal.lunch,
-          dinner: myMeal.dinner,
-          total: total,
-          date: date,
-          messId: user.messId,
-          monthId: month._id,
-          addBy: user._id,
-        });
-      }
+      // 4. post daily meal
+      const userMeal = await Meal.create({
+        userId: myMeal.userId,
+        breakfast: myMeal.breakfast,
+        lunch: myMeal.lunch,
+        dinner: myMeal.dinner,
+        total: total,
+        date: date,
+        messId: user.messId,
+        monthId: month._id,
+        addBy: user._id,
+      });
 
       // Push Notifications with Firebase
 
