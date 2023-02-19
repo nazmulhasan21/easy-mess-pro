@@ -453,7 +453,7 @@ var j2 = schedule.scheduleJob(
 ////////
 
 var dailyMealUpdate = schedule.scheduleJob(
-  `00     00   10    *    *    *`,
+  `00     10   10    *    *    *`,
   async function () {
     // all mess
     const allMess = await Mess.find({ _id: '63e771ae4bd932ba3cd793b7' }).select(

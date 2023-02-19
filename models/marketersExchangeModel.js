@@ -7,6 +7,10 @@ const marketerExchangeSchema = mongoose.Schema(
       ref: 'Month',
       required: true,
     },
+    marketerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Marketer',
+    },
     marketersExchangeSender: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

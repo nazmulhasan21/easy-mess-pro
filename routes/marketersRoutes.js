@@ -22,6 +22,10 @@ router.get('/:id', marketersController.getMarketers);
 router.patch('/:id', marketersController.marketerJoin);
 router.patch('/:id', marketersController.marketerLeave);
 router.post('/:id/exchange', marketersController.marketerExchange);
+router.patch(
+  '/:id/exchange/:exchangeId',
+  marketersController.marketerExchangeAccept
+);
 
 // Only manager have permission to access for the below APIs
 router.use(restrictTo('manager', 'subManager'));
