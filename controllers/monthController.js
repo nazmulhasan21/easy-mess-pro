@@ -407,49 +407,49 @@ var j = schedule.scheduleJob(
   }
 );
 
-var j2 = schedule.scheduleJob(
-  `00    43        14    *    *`,
-  async function () {
-    const month = await Month.findById('63e771ae4bd932ba3cd793b9').select(
-      'monthTitle'
-    );
-    const mess = await Mess.findById('63e771ae4bd932ba3cd793b7').select(
-      'allMember'
-    );
-    const meals = await Meal.find({
-      $and: [{ messId: '63e771ae4bd932ba3cd793b7' }, { monthId: month._id }],
-    }).select('userId breakfast lunch dinner total date addBy');
+// var j2 = schedule.scheduleJob(
+//   `00    43        14    *    *`,
+//   async function () {
+//     const month = await Month.findById('63e771ae4bd932ba3cd793b9').select(
+//       'monthTitle'
+//     );
+//     const mess = await Mess.findById('63e771ae4bd932ba3cd793b7').select(
+//       'allMember'
+//     );
+//     const meals = await Meal.find({
+//       $and: [{ messId: '63e771ae4bd932ba3cd793b7' }, { monthId: month._id }],
+//     }).select('userId breakfast lunch dinner total date addBy');
 
-    // meals.forEach(async (myMeal) => {
-    //   const total = myMeal.breakfast + myMeal.lunch + myMeal.dinner;
-    //   // 4. post daily meal
-    //   const userMeal = await Meal.create({
-    //     userId: myMeal.userId,
-    //     breakfast: myMeal.breakfast,
-    //     lunch: myMeal.lunch,
-    //     dinner: myMeal.dinner,
-    //     total: total,
-    //     date: date,
-    //     messId: mess._id,
-    //     monthId: month._id,
-    //     addBy: myMeal.addBy._id,
-    //   });
+//     // meals.forEach(async (myMeal) => {
+//     //   const total = myMeal.breakfast + myMeal.lunch + myMeal.dinner;
+//     //   // 4. post daily meal
+//     //   const userMeal = await Meal.create({
+//     //     userId: myMeal.userId,
+//     //     breakfast: myMeal.breakfast,
+//     //     lunch: myMeal.lunch,
+//     //     dinner: myMeal.dinner,
+//     //     total: total,
+//     //     date: date,
+//     //     messId: mess._id,
+//     //     monthId: month._id,
+//     //     addBy: myMeal.addBy._id,
+//     //   });
 
-    //   // Push Notifications with Firebase
+//     //   // Push Notifications with Firebase
 
-    //   const pushTitle = `মিল যোগ করা হয়েছে`;
-    //   const body = `মোট মিল: ${total}টি , তারিখ: ${moment(date).format(
-    //     'DD/MM/YY'
-    //   )}`;
-    //   const member = await User.findById(myMeal.userId).select('FCMToken');
-    //   if (member && member.FCMToken) {
-    //     const FCMToken = member.FCMToken;
-    //     await pushNotification(pushTitle, body, FCMToken);
-    //   }
-    // });
-    console.log('this is schedule ', meals);
-  }
-);
+//     //   const pushTitle = `মিল যোগ করা হয়েছে`;
+//     //   const body = `মোট মিল: ${total}টি , তারিখ: ${moment(date).format(
+//     //     'DD/MM/YY'
+//     //   )}`;
+//     //   const member = await User.findById(myMeal.userId).select('FCMToken');
+//     //   if (member && member.FCMToken) {
+//     //     const FCMToken = member.FCMToken;
+//     //     await pushNotification(pushTitle, body, FCMToken);
+//     //   }
+//     // });
+//     console.log('this is schedule ', meals);
+//   }
+// );
 ////////
 
 var dailyMealUpdate = schedule.scheduleJob(
@@ -474,51 +474,56 @@ var dailyMealUpdate = schedule.scheduleJob(
           const date = moment().add(1, 'days');
           const isMonthDate = moment(month.date).isSame(date, 'month');
           // find oldMeals
-          const oldMeals = await Meal.find({
-            $and: [
-              { userId: userId },
-              { monthId: month._id },
-              {
-                date: {
-                  $gte: moment(date).startOf('day'),
-                  $lte: moment(date).endOf('day'),
+          if (isMonthDate) {
+            const oldMeals = await Meal.findOne({
+              $and: [
+                { userId: userId },
+                { monthId: month._id },
+                {
+                  date: {
+                    $gte: moment(date).startOf('day'),
+                    $lte: moment(date).endOf('day'),
+                  },
                 },
-              },
-            ],
-          });
-          // if no add next day meal
-          if (oldMeals.length > 0 || !isMonthDate) {
-            console.log({ isSame: isMonthDate });
-          } else {
-            // users Meals
-            const userMeals = await Meal.find({
-              $and: [{ userId: userId }, { monthId: month._id }],
-            });
-            const lastDayMeal = userMeals[userMeals.length - 1];
-            const userMeal = lastDayMeal;
-            // create new
-            const meal = await Meal.create({
-              userId: userId,
-              breakfast: userMeal?.breakfast || 0,
-              lunch: userMeal?.lunch || 0,
-              dinner: userMeal?.dinner || 0,
-              total: userMeal?.total || 0,
-              date: date,
-              messId: userMeal?.messId,
-              monthId: month?._id,
-              addBy: month?.manager,
+              ],
             });
 
-            // test push notification
-            const pushTitle = `মিল যোগ করা হয়েছে`;
-            const body = `মোট মিল: ${meal?.total}টি , তারিখ: ${moment(
-              meal?.date
-            ).format('DD/MM/YY')}`;
-            const member = await User.findById(userId).select('FCMToken');
-            if (member && member.FCMToken) {
-              const FCMToken = member.FCMToken;
-              await pushNotification(pushTitle, body, FCMToken);
+            // if no add next day meal
+            if (oldMeals) {
+              console.log({ oldMeals });
+            } else {
+              // users Meals
+              const userMeals = await Meal.find({
+                $and: [{ userId: userId }, { monthId: month._id }],
+              });
+              const lastDayMeal = userMeals[userMeals.length - 1];
+              const userMeal = lastDayMeal;
+              // create new
+              const meal = await Meal.create({
+                userId: userId,
+                breakfast: userMeal?.breakfast || 0,
+                lunch: userMeal?.lunch || 0,
+                dinner: userMeal?.dinner || 0,
+                total: userMeal?.total || 0,
+                date: date,
+                messId: userMeal?.messId,
+                monthId: month?._id,
+                addBy: month?.manager,
+              });
+
+              // test push notification
+              const pushTitle = `মিল যোগ করা হয়েছে`;
+              const body = `মোট মিল: ${meal?.total}টি , তারিখ: ${moment(
+                meal?.date
+              ).format('DD/MM/YY')}`;
+              const member = await User.findById(userId).select('FCMToken');
+              if (member && member.FCMToken) {
+                const FCMToken = member.FCMToken;
+                await pushNotification(pushTitle, body, FCMToken);
+              }
             }
+          } else {
+            console.log({ isMonthDate });
           }
         });
       }

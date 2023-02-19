@@ -18,9 +18,19 @@ router.use(protect);
 
 router.use(restrictToMessId);
 router.get('/', marketersController.getMarketersList);
+// get marketer exchange offer
+router.get(
+  '/marketer-exchange-offer',
+  marketersController.getMarketerExchangeOffer
+);
+router.get(
+  '/marketer-exchange-send-offer',
+  marketersController.getMarketerExchangeSendOffer
+);
 router.get('/:id', marketersController.getMarketers);
 router.patch('/:id', marketersController.marketerJoin);
 router.patch('/:id', marketersController.marketerLeave);
+
 router.post('/:id/exchange', marketersController.marketerExchange);
 router.patch(
   '/:id/exchange/:exchangeId',

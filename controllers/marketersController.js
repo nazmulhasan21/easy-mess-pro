@@ -375,7 +375,7 @@ exports.marketerExchange = async (req, res, next) => {
     next(error);
   }
 };
-exports.getMarketerExchange = async (req, res, next) => {
+exports.getMarketerExchangeOffer = async (req, res, next) => {
   try {
     const { user, query } = req;
 
@@ -419,6 +419,7 @@ exports.getMarketerExchange = async (req, res, next) => {
           _id: item._id,
           date: item.date,
           marketersExchangeSender: item.marketersExchangeSender,
+          status: item.status,
         };
       });
     };
@@ -434,7 +435,7 @@ exports.getMarketerExchange = async (req, res, next) => {
     next(error);
   }
 };
-exports.getMarketerExchangeSend = async (req, res, next) => {
+exports.getMarketerExchangeSendOffer = async (req, res, next) => {
   try {
     const { user, query } = req;
 
@@ -682,9 +683,9 @@ exports.deleteMarketers = async (req, res, next) => {
   }
 };
 
-// const { createAuto, marketDays } = [];
-const monthName = moment().format('MMM');
+// // const { createAuto, marketDays } = [];
 
+const monthName = moment().format('MMM');
 const startDate = moment().clone().startOf('month');
 const endOfMonth = moment().month(monthName).endOf('month').format('DD');
 // console.log(endOfMonth);
