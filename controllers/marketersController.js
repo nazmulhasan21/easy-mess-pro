@@ -33,7 +33,7 @@ exports.getMarketers = async (req, res, next) => {
     const doc = await Marketer.findOne({
       $and: [{ _id: req.params.id }, { messId: user.messId }],
     })
-      .populate('marketer', 'name avatar role')
+      .populate('marketers', 'name avatar role')
       .select('marketer name avatar role date');
     if (!doc)
       return next(
@@ -82,7 +82,7 @@ exports.getMarketersList = async (req, res, next) => {
     // 2. get all cost in active month
     const features = new APIFeatures(
       Marketer.find(findQuery)
-        .populate('marketer', 'name avatar role')
+        .populate('marketers', 'name avatar role')
         .select('monthId date marketers name avatar role')
         .sort({ date: 1 }),
       req.query
@@ -114,8 +114,11 @@ exports.createMarketers = async (req, res, next) => {
   try {
     const { user } = req;
     const { date } = req.body;
+
     const marketersId = req.body.marketers || [];
-    const { createAuto, marketDays } = req.query;
+    const { createAuto } = req.query;
+    const marketDays = Number(req.query.marketDays) || '';
+
     // 1. find active month
     const month = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
@@ -127,18 +130,22 @@ exports.createMarketers = async (req, res, next) => {
     // if crate marketers list auto
     if (createAuto && marketDays) {
       const monthName = moment(month?.date).format('MMM');
-      const startDate = moment().month(monthName).startOf('month').format('DD');
+      const startDate = moment().month(monthName).startOf('month');
       const endOfMonth = moment().month(monthName).endOf('month').format('DD');
-      let date = -marketDays;
-      for (let i = 1; date < endOfMonth; i++) {
-        // create auto marketDate;
-        const marketDate = moment(startDate).add((date += marketDays), 'days');
 
-        const isMonthDate = moment(month?.date).isSame(marketDate, 'month');
-        if (isMonthDate) {
-          //
+      for (let i = 0; i < endOfMonth; i += marketDays) {
+        const marketDate = moment(startDate).add(i, 'days').format();
+        const findOldMarketers = await Marketer.findOne({
+          date: {
+            $gte: moment(marketDate).startOf('day'),
+            $lte: moment(marketDate).endOf('day'),
+          },
+        });
+        if (findOldMarketers) {
+          console.log(findOldMarketers);
+        } else {
           // 3. create Marketers list
-          const marketers = await Marketer.create({
+          var marketers = await Marketer.create({
             messId: user.messId,
             monthId: month._id,
             marketers: [],
@@ -146,12 +153,13 @@ exports.createMarketers = async (req, res, next) => {
           });
         }
       }
-
       res.status(201).json({
         status: 'success',
         message: 'সফলভাবে বাজারের তালিকা তৈরি করা হয়েছে।',
+        marketers,
       });
     } else {
+      // create marketers for one by one..
       if (!date) return next(new AppError(402, 'date', 'তারিখ নির্বাচন করুন।'));
       // create marketer list by one
 
@@ -161,14 +169,31 @@ exports.createMarketers = async (req, res, next) => {
         return next(
           new AppError(402, 'date', 'আপনার সক্রিয় মাসের তারিখ নির্বাচন করুন')
         );
-
-      // 3. create Marketers list
-      const marketers = await Marketer.create({
-        messId: user.messId,
-        monthId: month._id,
-        marketers: marketersId,
-        date: date,
+      const findOldMarketers = await Marketer.findOne({
+        date: {
+          $gte: moment(date).startOf('day'),
+          $lte: moment(date).endOf('day'),
+        },
       });
+      if (findOldMarketers) {
+        return next(
+          new AppError(
+            402,
+            'date',
+            `আপনার ${moment(date).format(
+              'DD/MM/YY'
+            )} তারিখে একটি বাজার আছে, অনুগ্রহ  করে নতুন তারিখ নির্বাচন করুন।`
+          )
+        );
+      } else {
+        // 3. create Marketers list
+        var marketers = await Marketer.create({
+          messId: user.messId,
+          monthId: month._id,
+          marketers: marketersId,
+          date: date,
+        });
+      }
 
       res.status(201).json({
         status: 'success',
@@ -204,6 +229,7 @@ exports.createMarketers = async (req, res, next) => {
 exports.marketerJoin = async (req, res, next) => {
   try {
     const { user } = req;
+
     const isValid = mongoose.Types.ObjectId.isValid(req.params.id);
     if (!isValid) return next(new AppError(400, '_id', 'Id is not valid '));
     const activeMonth = await Month.findOne({
@@ -222,17 +248,19 @@ exports.marketerJoin = async (req, res, next) => {
       return next(
         new AppError(403, 'join', `আগে থেকেই দুইজন বাজারকারী বিদ্যমান আছে।`)
       );
-    if (marketers.marketers.find(user._id))
+
+    if (marketers.marketers.find((user) => user == user._id))
       return next(
         new AppError(402, 'marketers', `আপনি আগে থেকেই এই তালিকায় আছেন।`)
       );
+
     marketers.marketers.push(user._id);
     await marketers.save();
 
     const pushTitle = 'বাজার কারী যুক্ত হয়েছেন';
-    const pushBody = `${user.name} তারিখ:${moment(marketers.date).format(
-      'DD/MM/YY'
-    )}  বাজারে যুক্ত হয়েছেন।`;
+    const pushBody = `তারিখ:${moment(marketers.date).format('DD/MM/YY')},নাম:${
+      user.name
+    }  বাজারে যুক্ত হয়েছেন।`;
 
     // Push Notifications with Firebase
 
@@ -275,17 +303,17 @@ exports.marketerLeave = async (req, res, next) => {
     // 2. Not found any cost
     if (!marketers || !activeMonth)
       return next(
-        new AppError(404, 'marketers', 'এই বাজারকারিদের আপডেট করা যাবে না')
+        new AppError(404, 'marketers', 'এই বাজারকারি আগে থেকেই লীভ নিয়েছেন।')
       );
-    if (marketers.marketers.find(user._id)) {
+    if (marketers.marketers.find((user) => user == user._id)) {
       marketers.marketers.pull(user._id);
       await marketers.save();
     }
 
     const pushTitle = 'বাজার কারী লীভ নিয়েছেন।';
-    const pushBody = `${user.name} তারিখ:${moment(marketers.date).format(
-      'DD/MM/YY'
-    )}  বাজারে যুক্ত হয়েছেন।`;
+    const pushBody = ` তারিখ:${moment(marketers.date).format('DD/MM/YY')}নাম: ${
+      user.name
+    }  বাজার থেকে লীভ গ্রহন করেছেন।`;
 
     // Push Notifications with Firebase
 
@@ -303,7 +331,7 @@ exports.marketerLeave = async (req, res, next) => {
     // 3. send res
     res.status(200).json({
       status: 'success',
-      message: 'সফল ভাবে আপনি বাজারে যোগদান করেছে।',
+      message: 'সফল ভাবে আপনি বাজার থেকে লীভ গ্রহন করেছেন।',
     });
   } catch (error) {
     next(error);
@@ -313,7 +341,8 @@ exports.marketerLeave = async (req, res, next) => {
 exports.marketerExchange = async (req, res, next) => {
   try {
     const { user } = req;
-    const { exchangeReceiver } = req.body;
+    const { exchangeReceiver, date } = req.body;
+
     const isValid = mongoose.Types.ObjectId.isValid(req.params.id);
     if (!isValid) return next(new AppError(400, '_id', 'Id is not valid '));
     if (!mongoose.Types.ObjectId.isValid(exchangeReceiver))
@@ -337,7 +366,23 @@ exports.marketerExchange = async (req, res, next) => {
     // 2. Not found any cost
     if (!marketers || !activeMonth)
       return next(
-        new AppError(404, 'marketers', 'এই বাজারকারিদের  পরিবর্তন করা যাবে না')
+        new AppError(404, 'marketers', 'এই বাজারকারী আগে থেকেই লীভ নিয়েছেন')
+      );
+
+    const oldExchangeRequest = await MarketerExchange.findOne({
+      $and: [
+        { marketersExchangeSender: user._id },
+        { marketersExchangeReceiver: exchangeReceiver },
+        { date: marketers.date },
+      ],
+    });
+    if (oldExchangeRequest)
+      return next(
+        new AppError(
+          402,
+          'marketerExchange',
+          `আপনি ইতি মধ্যে অনুরোধ পাঠিয়েছেন।`
+        )
       );
     const exchangeRequest = await MarketerExchange.create({
       monthId: activeMonth._id,
@@ -424,7 +469,7 @@ exports.getMarketerExchangeOffer = async (req, res, next) => {
       });
     };
 
-    const results = await Marketer.countDocuments(findQuery);
+    const results = await MarketerExchange.countDocuments(findQuery);
     // 3. send res
     res.status(200).json({
       status: 'success',
@@ -484,7 +529,7 @@ exports.getMarketerExchangeSendOffer = async (req, res, next) => {
       });
     };
 
-    const results = await Marketer.countDocuments(findQuery);
+    const results = await MarketerExchange.countDocuments(findQuery);
     // 3. send res
     res.status(200).json({
       status: 'success',
@@ -577,6 +622,7 @@ exports.marketerExchangeAccept = async (req, res, next) => {
 exports.updateMarketers = async (req, res, next) => {
   try {
     const { user, body } = req;
+
     const isValid = mongoose.Types.ObjectId.isValid(req.params.id);
     if (!isValid) return next(new AppError(400, '_id', 'Id is not valid '));
     // 1. create new cost body in new data
@@ -610,7 +656,7 @@ exports.updateMarketers = async (req, res, next) => {
       runValidators: true,
     });
     // Push Notifications with Firebase
-    const pushTitle = 'বাজারকারী পরিবর্তন করা হয়েছে';
+    const pushTitle = 'বাজার পরিবর্তন করা হয়েছে';
     const pushBody = `তারিখ:${moment(marketers.date).format(
       'DD/MM/YY'
     )}  থেকে তারিখ:${moment(newMarketers.date || marketers.date).format(
@@ -649,7 +695,7 @@ exports.deleteMarketers = async (req, res, next) => {
     });
     const marketers = await Marketer.findOne({
       $and: [{ _id: req.params.id }, { monthId: activeMonth._id }],
-    });
+    }).populate('marketers', 'name');
 
     // 2. Not found any cost or active Month or add by user
 
@@ -658,11 +704,12 @@ exports.deleteMarketers = async (req, res, next) => {
 
     // 3. delete Cost
     await Marketer.findByIdAndDelete(req.params.id);
+    console.log({ marketers });
     // Push Notifications with Firebase
     const pushTitle = 'বাজারকারীদের ডিলেট করা হয়েছে';
-    const pushBody = `,তারিখ:${moment(marketers.date).format(
+    const pushBody = `তারিখ:${moment(marketers.date).format(
       'DD/MM/YY'
-    )}  ডিলেট করা হলো।`;
+    )} বাজারকারীদের  ডিলেট করা হলো।`;
     const FCMTokens = await getMessMemberFCMTokens(user.messId);
     if (FCMTokens) {
       await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
@@ -685,17 +732,17 @@ exports.deleteMarketers = async (req, res, next) => {
 
 // // const { createAuto, marketDays } = [];
 
-const monthName = moment().format('MMM');
-const startDate = moment().clone().startOf('month');
-const endOfMonth = moment().month(monthName).endOf('month').format('DD');
-// console.log(endOfMonth);
-let marketDays = 3;
-let date = -marketDays;
-for (let i = 0; date < endOfMonth; i++) {
-  console.log(
-    moment(startDate)
-      .add((date += marketDays), 'days')
-      .format('DD')
-  );
-  // console.log((date += marketDays));
-}
+// const monthName = moment().format('MMM');
+// const startDate = moment().clone().startOf('month');
+// const endOfMonth = moment().month(monthName).endOf('month').format('DD');
+// // console.log(endOfMonth);
+// console.log({ monthName, startDate, endOfMonth });
+
+// for (let i = 0; i < endOfMonth; i += 3) {
+//   console.log(moment(startDate).add(i, 'days').format());
+//   // console.log((date += marketDays));
+// }
+
+// for (let i = 1; i < 28; i += 3) {
+//   console.log(i);
+// }

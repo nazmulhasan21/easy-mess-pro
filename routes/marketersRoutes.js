@@ -28,8 +28,8 @@ router.get(
   marketersController.getMarketerExchangeSendOffer
 );
 router.get('/:id', marketersController.getMarketers);
-router.patch('/:id', marketersController.marketerJoin);
-router.patch('/:id', marketersController.marketerLeave);
+router.patch('/:id/join', marketersController.marketerJoin);
+router.patch('/:id/leave', marketersController.marketerLeave);
 
 router.post('/:id/exchange', marketersController.marketerExchange);
 router.patch(
