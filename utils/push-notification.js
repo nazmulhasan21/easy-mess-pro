@@ -48,6 +48,7 @@ exports.pushNotificationMultiple = async (title, body, tokens) => {
           //  imageUrl: image,
           clickAction: '',
           sound: 'default',
+          // sound: '../public/notification.mp3',
         },
         priority: 'high',
       },
