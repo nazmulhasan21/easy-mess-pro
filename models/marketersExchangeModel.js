@@ -23,6 +23,10 @@ const marketerExchangeSchema = mongoose.Schema(
       type: Date,
       required: true,
     },
+    exchangeMarketerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Marketer',
+    },
     status: {
       type: Boolean,
       default: false,

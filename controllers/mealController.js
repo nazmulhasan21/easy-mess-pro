@@ -326,6 +326,90 @@ exports.getLastDayMeal = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.updateMyMeal = async (req, res, next) => {
+  try {
+    const { user, body } = req;
+    const isValid = mongoose.Types.ObjectId.isValid(req.params.id);
+    if (!isValid) return next(new AppError(400, '_id', 'Id is not valid '));
+    // 1. find active month
+    const activeMonth = await Month.findOne({
+      $and: [{ messId: user.messId }, { active: true }],
+    });
+    if (!activeMonth)
+      return next(new AppError(404, 'month', `কোন সক্রিয় মাস নেই`));
+
+    let newDoc = {};
+    const doc = await Model.findOne({
+      $and: [
+        { _id: req.params.id },
+        { monthId: activeMonth._id },
+        { userId: user._id },
+      ],
+    });
+    if (!doc) return next(new AppError(404, model, 'এটি আপনার মিল না।'));
+    // only add this month date
+    const isMonthDate = moment(activeMonth.date).isSame(
+      body?.date || doc?.date,
+      'month'
+    );
+    if (!isMonthDate)
+      return next(
+        new AppError(402, 'date', 'আপনার সক্রিয় মাসের তারিখ নির্বাচন করুন')
+      );
+
+    // if update any one meal  run this if function
+
+    const breakfast =
+      body?.breakfast == 0 ? 0 : body?.breakfast || doc?.breakfast;
+    const lunch = body?.lunch == 0 ? 0 : body?.lunch || doc?.lunch;
+    const dinner = body?.dinner == 0 ? 0 : body?.dinner || doc?.dinner;
+    const total = breakfast + lunch + dinner;
+    newDoc = {
+      breakfast,
+      lunch,
+      dinner,
+      total,
+      editBy: user._id,
+    };
+
+    pushTitle = `${member.name} এর মিল পরিবর্তন করা হয়েছে`;
+    pushBody = `মোট মিল=${total}/= তারিখ:${moment(doc.date).format(
+      'DD/MM/YY'
+    )}`;
+
+    const upDoc = await Model.findByIdAndUpdate(req.params.id, newDoc, {
+      new: true,
+      runValidators: true,
+    });
+    // Push Notifications with Firebase
+
+    const FCMTokens = await getMessMemberFCMTokens(user.messId);
+    if (FCMTokens) {
+      await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
+    }
+
+    // await Notification.create({
+    //   monthId: activeMonth._id,
+    //   user: doc.userId,
+    //   title: pushTitle,
+    //   description: pushBody,
+    //   date: doc.updatedAt,
+    // });
+
+    // 3. send res
+    return res.status(200).json({
+      status: 'success',
+      message: 'সফল ভাবে পরিবর্তন করা হয়েছে',
+      data: {
+        upDoc,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 exports.getMeal = meal.getOne(Meal);
 exports.updateMeal = meal.updateOne(Meal, 'meal');
 exports.deleteMeal = meal.deleteOne(Meal, 'meal');

@@ -18,6 +18,7 @@ router.use(restrictToMessId);
 router.get('/', mealController.getMealList);
 router.get('/last-day', mealController.getLastDayMeal);
 router.get('/:id', mealController.getMeal);
+router.patch('/:id/personal', mealController.updateMyMeal);
 
 // Only manager have permission to access for the below APIs
 router.use(restrictTo('manager', 'subManager'));

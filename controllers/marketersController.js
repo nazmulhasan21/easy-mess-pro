@@ -370,8 +370,13 @@ exports.getMarketerExchangeOffer = async (req, res, next) => {
     // 2. get all cost in active month
     const features = new APIFeatures(
       MarketerExchange.find(findQuery)
-        .populate('marketersExchangeSender', 'name avatar role')
-        .select('monthId date marketersExchangeSender name avatar role')
+        .populate(
+          'marketersExchangeSender exchangeMarketerId',
+          'name avatar role date'
+        )
+        .select(
+          'monthId date marketersExchangeSender exchangeMarketerId name avatar role'
+        )
         .sort({ date: 1 }),
       req.query
     ).paginate();
@@ -382,6 +387,7 @@ exports.getMarketerExchangeOffer = async (req, res, next) => {
           _id: item._id,
           date: item.date,
           marketersExchangeSender: item.marketersExchangeSender,
+          exchangeDate: item.exchangeMarketerId.date,
           status: item.status,
         };
       });
@@ -430,8 +436,13 @@ exports.getMarketerExchangeSendOffer = async (req, res, next) => {
     // 2. get all cost in active month
     const features = new APIFeatures(
       MarketerExchange.find(findQuery)
-        .populate('marketersExchangeReceiver', 'name avatar role')
-        .select('monthId date marketersExchangeReceiver name avatar role')
+        .populate(
+          'marketersExchangeReceiver exchangeMarketerId',
+          'name avatar role date'
+        )
+        .select(
+          'monthId date marketersExchangeReceiver exchangeMarketerId name avatar role'
+        )
         .sort({ date: 1 }),
       req.query
     ).paginate();
@@ -442,6 +453,7 @@ exports.getMarketerExchangeSendOffer = async (req, res, next) => {
           _id: item._id,
           date: item.date,
           marketersExchangeReceiver: item.marketersExchangeReceiver,
+          exchangeDate: item.exchangeMarketerId.date,
           status: item.status,
         };
       });
@@ -464,7 +476,7 @@ exports.getMarketerExchangeSendOffer = async (req, res, next) => {
 exports.marketerExchange = async (req, res, next) => {
   try {
     const { user } = req;
-    const { exchangeReceiver, date } = req.body;
+    const { exchangeReceiver, exchangeMarketerId } = req.body;
 
     const isValid = mongoose.Types.ObjectId.isValid(req.params.id);
     if (!isValid) return next(new AppError(400, '_id', 'Id is not valid '));
@@ -497,6 +509,7 @@ exports.marketerExchange = async (req, res, next) => {
         { marketersExchangeSender: user._id },
         { marketersExchangeReceiver: exchangeReceiver },
         { date: marketers.date },
+        { exchangeMarketerId: exchangeMarketerId },
       ],
     });
     if (oldExchangeRequest)
@@ -513,6 +526,7 @@ exports.marketerExchange = async (req, res, next) => {
       marketersExchangeSender: user._id,
       marketersExchangeReceiver: exchangeReceiver,
       date: marketers.date,
+      exchangeMarketerId: exchangeMarketerId,
     });
     const member = await User.findById(exchangeReceiver).select(
       'FCMToken name'
@@ -554,7 +568,7 @@ exports.marketerExchangeAccept = async (req, res, next) => {
         new AppError(
           400,
           'exchangeReceiver',
-          'আপনার পরিবর্তে যে বাজার করবে তা নির্বাচন করুন।'
+          'আপনার পছন্দের অফারটি নির্বাচন কুুরন।'
         )
       );
     const activeMonth = await Month.findOne({
