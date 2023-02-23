@@ -561,8 +561,8 @@ exports.marketerExchangeAccept = async (req, res, next) => {
   try {
     const { user } = req;
 
-    const isValid = mongoose.Types.ObjectId.isValid(req.params.id);
-    if (!isValid) return next(new AppError(400, '_id', 'Id is not valid '));
+    // const isValid = mongoose.Types.ObjectId.isValid(req.params.id);
+    // if (!isValid) return next(new AppError(400, '_id', 'Id is not valid '));
     if (!mongoose.Types.ObjectId.isValid(req.params.exchangeId))
       return next(
         new AppError(
@@ -574,6 +574,15 @@ exports.marketerExchangeAccept = async (req, res, next) => {
     const activeMonth = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
     });
+
+    const marketerExchange = await MarketerExchange.findById(
+      req.params.exchangeId
+    );
+    // 2. Not found any cost
+    if (!activeMonth || !marketerExchange)
+      return next(
+        new AppError(404, 'marketers', 'এই বাজারকারিদের  পরিবর্তন করা যাবে না')
+      );
     const myMarkete = await Marketer.findOne({
       $and: [
         { _id: req.params.id },
@@ -581,18 +590,23 @@ exports.marketerExchangeAccept = async (req, res, next) => {
         { marketers: user._id },
       ],
     });
-    const marketerExchange = await MarketerExchange.findById(
-      req.params.exchangeId
-    );
-    // 2. Not found any cost
-    if (!myMarkete || !activeMonth || !marketerExchange)
-      return next(
-        new AppError(404, 'marketers', 'এই বাজারকারিদের  পরিবর্তন করা যাবে না')
-      );
-    // 1. add  sender in my market
-    myMarkete.marketers.pull(user._id);
-    myMarkete.marketers.push(marketerExchange.marketersExchangeSender);
-    await myMarkete.save();
+    //
+    let pushBody = '';
+    if (myMarkete) {
+      // 1. add  sender in my market
+      myMarkete.marketers.pull(user._id);
+      myMarkete.marketers.push(marketerExchange.marketersExchangeSender);
+      await myMarkete.save();
+      pushBody = `${user.name}, আপনার তারিখ:${moment(senderMarket.date).format(
+        'DD/MM/YY'
+      )} এর  বাজার করতে রাজি হয়েছেন। আর আপনাকে ${moment(myMarkete.date).format(
+        'DD/MM/YY'
+      )} দেওয়ার জন্য অনুরোধ পাঠিয়েছেন ।`;
+    } else {
+      pushBody = `${user.name}, আপনার তারিখ:${moment(senderMarket.date).format(
+        'DD/MM/YY'
+      )} এর  বাজার করতে রাজি হয়েছেন।`;
+    }
 
     //2. join sender market
     const senderMarket = await Marketer.findById(marketerExchange.marketerId);
@@ -600,18 +614,13 @@ exports.marketerExchangeAccept = async (req, res, next) => {
     senderMarket.marketers.push(user._id);
     await senderMarket.save();
 
-    marketerExchange.status == true;
+    marketerExchange.status == 'accept';
     await marketerExchange.save();
 
     const member = await User.findById(
       marketerExchange.marketersExchangeSender
     ).select('FCMToken name');
     const pushTitle = 'বাজার এর অনুরোধ গ্রহণ করেছে।';
-    const pushBody = `${user.name}, আপনার তারিখ:${moment(
-      senderMarket.date
-    ).format('DD/MM/YY')} এর  বাজার করতে রাজি হয়েছেন। আর আপনাকে ${moment(
-      myMarkete.date
-    ).format('DD/MM/YY')} দেওয়ার জন্য অনুরোধ পাঠিয়েছেন ।`;
 
     // Push Notifications with Firebase
 
@@ -628,12 +637,72 @@ exports.marketerExchangeAccept = async (req, res, next) => {
     // 3. send res
     res.status(200).json({
       status: 'success',
-      message: 'সফল ভাবে আপনার বাজারে অনুরোধ পাঠানো হয়েছে',
+      message: 'সফল ভাবে আপনার বাজারে অফারটি গ্রহণ করা হয়েছে।',
     });
   } catch (error) {
     next(error);
   }
 };
+exports.marketerExchangeReject = async (req, res, next) => {
+  try {
+    const { user } = req;
+
+    // const isValid = mongoose.Types.ObjectId.isValid(req.params.id);
+    // if (!isValid) return next(new AppError(400, '_id', 'Id is not valid '));
+    if (!mongoose.Types.ObjectId.isValid(req.params.exchangeId))
+      return next(
+        new AppError(
+          400,
+          'exchangeReceiver',
+          'আপনার পছন্দের অফারটি নির্বাচন কুুরন।'
+        )
+      );
+    const activeMonth = await Month.findOne({
+      $and: [{ messId: user.messId }, { active: true }],
+    });
+
+    const marketerExchange = await MarketerExchange.findById(
+      req.params.exchangeId
+    );
+    // 2. Not found any cost
+    if (!activeMonth || !marketerExchange)
+      return next(
+        new AppError(404, 'marketers', 'এই বাজারকারিদের  পরিবর্তন করা যাবে না')
+      );
+
+    marketerExchange.status == 'reject';
+    await marketerExchange.save();
+
+    const member = await User.findById(
+      marketerExchange.marketersExchangeSender
+    ).select('FCMToken name');
+    const pushTitle = 'বাজার এর অনুরোধ বাতিল করেছে।';
+    const pushBody = `${user.name}, আপনার তারিখ:${moment(
+      senderMarket.date
+    ).format('DD/MM/YY')} এর  বাজার করতে রাজি হয়নি।`;
+    // Push Notifications with Firebase
+
+    if (member && member.FCMToken) {
+      const FCMToken = member.FCMToken;
+      await pushNotification(pushTitle, pushBody, FCMToken);
+    }
+    // await Notification.create({
+    //   monthId: cost.messId,
+    //   title: pushTitle,
+    //   description: pushBody,
+    //   date: cost.updatedAt,
+    // });
+    // 3. send res
+    res.status(200).json({
+      status: 'success',
+      message: 'সফল ভাবে আপনার বাজারে অফারটি গ্রহণ করা হয়েছে।',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// marketers upd del
 
 exports.updateMarketers = async (req, res, next) => {
   try {

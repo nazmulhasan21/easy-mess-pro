@@ -36,6 +36,10 @@ router.patch(
   '/:id/exchange/:exchangeId',
   marketersController.marketerExchangeAccept
 );
+router.patch(
+  '/exchange/:exchangeId/reject',
+  marketersController.marketerExchangeReject
+);
 
 // Only manager have permission to access for the below APIs
 router.use(restrictTo('manager', 'subManager'));

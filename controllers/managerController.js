@@ -12,6 +12,7 @@ const Mess = require('../models/messModel');
 const { getMessMemberFCMTokens } = require('../utils/fun');
 const { pushNotificationMultiple } = require('../utils/push-notification');
 const Notification = require('../models/notificationsModel');
+const Month = require('../models/monthModel');
 
 exports.changeManager = async (req, res, next) => {
   try {
@@ -20,6 +21,19 @@ exports.changeManager = async (req, res, next) => {
     const isValid = mongoose.Types.ObjectId.isValid(userId);
     if (!isValid)
       return next(new AppError(400, 'userId', 'userId is not valid '));
+
+    // **** // find active month
+    const month = await Month.findOne({
+      $and: [{ messId: user.messId }, { active: true }],
+    });
+    if (month)
+      return next(
+        new AppError(
+          402,
+          'আপনি আগে সক্রিয় মাস টি নিষ্ক্রিয় করুন, তার পর মেসের ম্যানেজার পরিবর্তন করুন এবং ম্যানেজার কে নতুন একটি মাস তৈরি করতে বলুন।'
+        )
+      );
+
     //  1 check your mess and already exit this user in mess manager
     const manager = await Mess.findOne({
       $and: [{ _id: user.messId }, { manager: userId }],
@@ -42,6 +56,7 @@ exports.changeManager = async (req, res, next) => {
     );
     // update mess manager
     await Mess.findByIdAndUpdate(user.messId, { manager: userId });
+    // active month manager change
 
     // Push Notifications with Firebase
     const pushTitle = 'আপনার মেস ম্যানেজার পরিবর্তন হয়েছে';
