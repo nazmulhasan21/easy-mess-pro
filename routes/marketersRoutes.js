@@ -33,7 +33,7 @@ router.patch('/:id/leave', marketersController.marketerLeave);
 
 router.post('/:id/exchange', marketersController.marketerExchange);
 router.patch(
-  '/:id/exchange/:exchangeId',
+  '/exchange/:exchangeId/accept',
   marketersController.marketerExchangeAccept
 );
 router.patch(

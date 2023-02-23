@@ -561,9 +561,9 @@ exports.marketerExchangeAccept = async (req, res, next) => {
   try {
     const { user } = req;
 
-    // const isValid = mongoose.Types.ObjectId.isValid(req.params.id);
+    const isValid = mongoose.Types.ObjectId.isValid(req.params.exchangeId);
     // if (!isValid) return next(new AppError(400, '_id', 'Id is not valid '));
-    if (!mongoose.Types.ObjectId.isValid(req.params.exchangeId))
+    if (!isValid)
       return next(
         new AppError(
           400,
@@ -583,9 +583,19 @@ exports.marketerExchangeAccept = async (req, res, next) => {
       return next(
         new AppError(404, 'marketers', 'এই বাজারকারিদের  পরিবর্তন করা যাবে না')
       );
+
+    //2. join sender market
+    const senderMarket = await Marketer.findById(marketerExchange.marketerId);
+    senderMarket.marketers.pull(marketerExchange.marketersExchangeSender);
+    senderMarket.marketers.push(user._id);
+    await senderMarket.save();
+
+    marketerExchange.status == 'accept';
+    await marketerExchange.save();
+
     const myMarkete = await Marketer.findOne({
       $and: [
-        { _id: req.params.id },
+        { _id: marketerExchange.exchangeMarketerId },
         { monthId: activeMonth._id },
         { marketers: user._id },
       ],
@@ -607,15 +617,6 @@ exports.marketerExchangeAccept = async (req, res, next) => {
         'DD/MM/YY'
       )} এর  বাজার করতে রাজি হয়েছেন।`;
     }
-
-    //2. join sender market
-    const senderMarket = await Marketer.findById(marketerExchange.marketerId);
-    senderMarket.marketers.pull(marketerExchange.marketersExchangeSender);
-    senderMarket.marketers.push(user._id);
-    await senderMarket.save();
-
-    marketerExchange.status == 'accept';
-    await marketerExchange.save();
 
     const member = await User.findById(
       marketerExchange.marketersExchangeSender
@@ -647,9 +648,9 @@ exports.marketerExchangeReject = async (req, res, next) => {
   try {
     const { user } = req;
 
-    // const isValid = mongoose.Types.ObjectId.isValid(req.params.id);
+    const isValid = mongoose.Types.ObjectId.isValid(req.params.exchangeId);
     // if (!isValid) return next(new AppError(400, '_id', 'Id is not valid '));
-    if (!mongoose.Types.ObjectId.isValid(req.params.exchangeId))
+    if (!isValid)
       return next(
         new AppError(
           400,
@@ -678,7 +679,7 @@ exports.marketerExchangeReject = async (req, res, next) => {
     ).select('FCMToken name');
     const pushTitle = 'বাজার এর অনুরোধ বাতিল করেছে।';
     const pushBody = `${user.name}, আপনার তারিখ:${moment(
-      senderMarket.date
+      marketerExchange.senderMarket.date
     ).format('DD/MM/YY')} এর  বাজার করতে রাজি হয়নি।`;
     // Push Notifications with Firebase
 
@@ -695,7 +696,7 @@ exports.marketerExchangeReject = async (req, res, next) => {
     // 3. send res
     res.status(200).json({
       status: 'success',
-      message: 'সফল ভাবে আপনার বাজারে অফারটি গ্রহণ করা হয়েছে।',
+      message: 'সফল ভাবে আপনার বাজারে অফারটি বাতিল করা হয়েছে।',
     });
   } catch (error) {
     next(error);
@@ -732,6 +733,25 @@ exports.updateMarketers = async (req, res, next) => {
       return next(
         new AppError(402, 'date', 'আপনার সক্রিয় মাসের তারিখ নির্বাচন করুন')
       );
+    // find old marketers new date
+    if (body.date) {
+      const oldMarketers = await Marketer.find({
+        date: {
+          $gte: moment(body.date).startOf('day'),
+          $lte: moment(body.date).endOf('day'),
+        },
+      });
+      if (oldMarketers)
+        return next(
+          new AppError(
+            402,
+            `আপনার ${moment(body.date).format(
+              'DD/MM/YY'
+            )} তারিখের বাজার আগে থেকেই আছেন।`
+          )
+        );
+    }
+
     const newMarketers = {
       date: body.date,
       marketers: body.marketers || marketers.marketers,
