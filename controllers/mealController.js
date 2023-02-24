@@ -327,6 +327,122 @@ exports.getLastDayMeal = async (req, res, next) => {
   }
 };
 
+exports.getPersonalTodayMeal = async (req, res, next) => {
+  try {
+    const { user } = req;
+    const today = moment().format();
+
+    // 1. find active month
+    const activeMonth = await Month.findOne({
+      $and: [{ messId: user.messId }, { active: true }],
+    });
+    if (!activeMonth)
+      return next(new AppError(404, 'month', `কোন সক্রিয় মাস নেই`));
+
+    // find today meal
+    const userMeal = await Meal.findOne({
+      $and: [
+        { monthId: activeMonth._id },
+        { userId: user._id },
+        {
+          date: {
+            $gte: moment(today).startOf('day'),
+            $lte: moment(today).endOf('day'),
+          },
+        },
+      ],
+    });
+
+    if (!meal)
+      return res.status(200).json({
+        status: 'success',
+        message: `${moment(today).format(
+          'DD/MM/YY'
+        )} এই তারিখে কোন মিল যোগ করা হয়নি।`,
+        date: moment(today),
+      });
+
+    ///
+    const todayMeal = {
+      _id: userMeal?._id,
+      userId: user._id,
+      user,
+      breakfast: userMeal?.breakfast,
+      lunch: userMeal?.lunch,
+      dinner: userMeal?.dinner,
+      total: userMeal?.total,
+      date: userMeal?.date,
+    };
+
+    ///
+
+    res.status(200).json({
+      status: 'success',
+      todayMeal,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getPersonalNextDayMeal = async (req, res, next) => {
+  try {
+    const { user } = req;
+    const nextDay = moment().add(1, 'days');
+
+    // 1. find active month
+    const activeMonth = await Month.findOne({
+      $and: [{ messId: user.messId }, { active: true }],
+    });
+    if (!activeMonth)
+      return next(new AppError(404, 'month', `কোন সক্রিয় মাস নেই`));
+
+    // find today meal
+    const userMeal = await Meal.findOne({
+      $and: [
+        { monthId: activeMonth._id },
+        { userId: user._id },
+        {
+          date: {
+            $gte: moment(nextDay).startOf('day'),
+            $lte: moment(nextDay).endOf('day'),
+          },
+        },
+      ],
+    });
+
+    if (!meal)
+      return res.status(200).json({
+        status: 'success',
+        message: `${moment(nextDay).format(
+          'DD/MM/YY'
+        )} এই তারিখে কোন মিল যোগ করা হয়নি।`,
+        date: moment(nextDay),
+      });
+
+    ///
+    const nextDayMeal = {
+      _id: userMeal?._id,
+      userId: user._id,
+      user,
+      breakfast: userMeal?.breakfast,
+      lunch: userMeal?.lunch,
+      dinner: userMeal?.dinner,
+      total: userMeal?.total,
+      date: userMeal?.date,
+    };
+
+    ///
+
+    res.status(200).json({
+      status: 'success',
+      nextDayMeal,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 exports.updateMyMeal = async (req, res, next) => {
   try {
     const { user, body } = req;
