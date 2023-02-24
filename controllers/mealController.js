@@ -543,10 +543,10 @@ exports.getMeal = meal.getOne(Meal);
 exports.updateMeal = meal.updateOne(Meal, 'meal');
 exports.deleteMeal = meal.deleteOne(Meal, 'meal');
 
-// console.log(moment('2022-09-01T17:16:15.331+00:00').format('DD/MM/YYYY'));
+console.log(moment('2022-09-01T17:16:15.331+00:00').format('DD/MM/YYYY'));
 
-// console.log(
-//   moment.parseZone('2022-09-01T17:16:15.331+00:00').local(true).format()
-// );
+console.log(
+  moment.parseZone('2022-09-01T17:16:15.331+00:00').local(true).format()
+);
 
-//"2016-05-03T22:15:01-05:00"
+('2016-05-03T22:15:01-05:00');
