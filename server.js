@@ -5,7 +5,8 @@ dotenv.config({
 });
 
 process.env.PUPPETEER_SKIP_DOWNLOAD;
-
+const schedule = require('node-schedule');
+const { updateMeal } = require('./jobs/updateManager');
 // process.on('uncaughtException', (err) => {
 //   console.log('UNCAUGHT EXCEPTION!!! shutting down...');
 //   console.log(err.name, err.message);
@@ -14,6 +15,9 @@ process.env.PUPPETEER_SKIP_DOWNLOAD;
 
 const app = require('./app');
 // const app = require('express');
+
+///job
+
 const database = 'mongodb://0.0.0.0:27017/easy-mess';
 
 // -> Connect the database
@@ -39,6 +43,11 @@ app.listen(process.env.PORT || 8000, () => {
   console.log(`Application is running on port ${process.env.PORT || 8000}  `);
 });
 
-
+// schedule jobs
+schedule.scheduleJob(`00   15   05      *    *    *`, async () => {
+  // update every mess active month
+  console.log('Update server meal');
+  await updateMeal();
+});
 // Background  jobs
-require('./jobs');
+// require('./jobs');
