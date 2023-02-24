@@ -1,16 +1,21 @@
 const express = require('express');
 const router = express.Router();
+const api = require('express').Router();
 
 // middleware
-const { addCostInputValidated } = require('../middleware/inputValidation');
+const { addCostInputValidated } = require('../../middleware/inputValidation');
 
 const {
   protect,
   restrictToMessId,
   restrictTo,
   checkPassword,
-} = require('../controllers/authController');
-const marketersController = require('../controllers/marketersController');
+} = require('../../controllers/authController');
+const marketersController = require('../../controllers/marketers/marketersController');
+const {
+  marketerExchange,
+} = require('../../controllers/marketers/marketersExchangeController');
+const marketersExchangeRoutes = require('./marketersExchangeRoutes');
 
 // Protect all routes after this middleware
 
@@ -18,29 +23,13 @@ router.use(protect);
 
 router.use(restrictToMessId);
 router.get('/', marketersController.getMarketersList);
-// get marketer exchange offer
-router.get(
-  '/marketer-exchange-offer',
-  marketersController.getMarketerExchangeOffer
-);
-router.get(
-  '/marketer-exchange-send-offer',
-  marketersController.getMarketerExchangeSendOffer
-);
+
 router.get('/:id', marketersController.getMarketers);
 router.patch('/:id/join', marketersController.marketerJoin);
 router.patch('/:id/leave', marketersController.marketerLeave);
 
-router.post('/:id/exchange', marketersController.marketerExchange);
-router.patch(
-  '/exchange/:exchangeId/accept',
-  marketersController.marketerExchangeAccept
-);
-router.patch(
-  '/exchange/:exchangeId/reject',
-  marketersController.marketerExchangeReject
-);
-
+router.post('/:id/exchange', marketerExchange);
+api.use('/exchange', marketersExchangeRoutes);
 // Only manager have permission to access for the below APIs
 router.use(restrictTo('manager', 'subManager'));
 
@@ -49,3 +38,4 @@ router.route('/:id').patch(marketersController.updateMarketers);
 router.delete('/:id', checkPassword, marketersController.deleteMarketers);
 
 module.exports = router;
+module.exports = api;

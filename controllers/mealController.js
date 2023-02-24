@@ -353,7 +353,7 @@ exports.getPersonalTodayMeal = async (req, res, next) => {
       ],
     });
 
-    if (!meal)
+    if (!userMeal)
       return res.status(200).json({
         status: 'success',
         message: `${moment(today).format(
@@ -361,16 +361,21 @@ exports.getPersonalTodayMeal = async (req, res, next) => {
         )} এই তারিখে কোন মিল যোগ করা হয়নি।`,
         date: moment(today),
       });
-
+    // customize  user object
+    const customizeUser = {
+      _id: user._id,
+      name: user.name,
+      avatar: user.avatar,
+      role: user.role,
+    };
     ///
     const todayMeal = {
       _id: userMeal?._id,
       userId: user._id,
-      user,
+      user: customizeUser,
       breakfast: userMeal?.breakfast,
       lunch: userMeal?.lunch,
       dinner: userMeal?.dinner,
-      total: userMeal?.total,
       date: userMeal?.date,
     };
 
@@ -385,7 +390,7 @@ exports.getPersonalTodayMeal = async (req, res, next) => {
   }
 };
 
-exports.getPersonalNextDayMeal = async (req, res, next) => {
+exports.getPersonalTomorrowMeal = async (req, res, next) => {
   try {
     const { user } = req;
     const nextDay = moment().add(1, 'days');
@@ -411,7 +416,7 @@ exports.getPersonalNextDayMeal = async (req, res, next) => {
       ],
     });
 
-    if (!meal)
+    if (!userMeal)
       return res.status(200).json({
         status: 'success',
         message: `${moment(nextDay).format(
@@ -420,11 +425,19 @@ exports.getPersonalNextDayMeal = async (req, res, next) => {
         date: moment(nextDay),
       });
 
+    // customize  user object
+    const customizeUser = {
+      _id: user._id,
+      name: user.name,
+      avatar: user.avatar,
+      role: user.role,
+    };
+
     ///
-    const nextDayMeal = {
+    const tomorrowMeal = {
       _id: userMeal?._id,
       userId: user._id,
-      user,
+      user: customizeUser,
       breakfast: userMeal?.breakfast,
       lunch: userMeal?.lunch,
       dinner: userMeal?.dinner,
@@ -436,7 +449,7 @@ exports.getPersonalNextDayMeal = async (req, res, next) => {
 
     res.status(200).json({
       status: 'success',
-      nextDayMeal,
+      tomorrowMeal,
     });
   } catch (error) {
     next(error);
@@ -529,3 +542,11 @@ exports.updateMyMeal = async (req, res, next) => {
 exports.getMeal = meal.getOne(Meal);
 exports.updateMeal = meal.updateOne(Meal, 'meal');
 exports.deleteMeal = meal.deleteOne(Meal, 'meal');
+
+// console.log(moment('2022-09-01T17:16:15.331+00:00').format('DD/MM/YYYY'));
+
+// console.log(
+//   moment.parseZone('2022-09-01T17:16:15.331+00:00').local(true).format()
+// );
+
+//"2016-05-03T22:15:01-05:00"

@@ -9,7 +9,7 @@ const mealRoutes = require('./mealRoutes');
 const managerRoutes = require('./managerRoutes');
 const subManagerRoutes = require('./subManagerRoutes');
 const monthMemberDataRoutes = require('./monthMemberDataRoutes');
-const marketersRoutes = require('./marketersRoutes');
+const marketersRoutes = require('./marketers/marketersRoutes');
 
 api.use('/user-auth', authRoutes);
 api.use('/user', userRoutes);
