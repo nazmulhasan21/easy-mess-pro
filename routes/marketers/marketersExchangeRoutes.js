@@ -27,7 +27,11 @@ router.get(
 router.get('/:id', marketersExchangeController.getMarketerExchanger);
 
 router.patch('/:id/accept', marketersExchangeController.marketerExchangeAccept);
-router.patch('/:id/reject', marketersExchangeController.marketerExchangeReject);
+router.patch(
+  '/:id/reject',
+  checkPassword,
+  marketersExchangeController.marketerExchangeReject
+);
 
 router.delete(
   '/:id',
