@@ -404,7 +404,7 @@ exports.marketerExchangeReject = async (req, res, next) => {
     ).select('FCMToken name');
     const pushTitle = 'বাজার এর অনুরোধ বাতিল করেছে।';
     const pushBody = `${user.name}, আপনার তারিখ:${moment(
-      marketerExchange.senderMarket.date
+      marketerExchange?.senderMarket?.date
     ).format('DD/MM/YY')} এর  বাজার করতে রাজি হয়নি।`;
     // Push Notifications with Firebase
 

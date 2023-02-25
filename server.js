@@ -45,18 +45,18 @@ app.listen(process.env.PORT || 8000, () => {
 });
 
 cron.schedule(
-  '15 02 * * *',
+  '33 02 * * *',
   () => {
     console.log('running a task  02:20');
   },
   { scheduled: true, timezone: 'Asia/Dhaka' }
 );
 
-// schedule jobs
+//schedule jobs
 // schedule.scheduleJob(`00   15   05      *    *    *`, async () => {
 //   // update every mess active month
 //   console.log('Update server meal');
-//   await updateMeal();
+//   // await updateMeal();
 // });
 // Background  jobs
 // require('./jobs');
