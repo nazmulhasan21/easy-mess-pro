@@ -82,7 +82,9 @@ exports.deleteSubManager = async (req, res, next) => {
       );
 
     // 1. find user and update this user role
-    const month = activeMonthManager;
+    const month = await Month.findOne({
+      $and: [{ messId: user.messId }, { active: true }],
+    });
     const subManager = await User.findByIdAndUpdate(userId, { role: 'border' });
 
     // Push Notifications with Firebase
