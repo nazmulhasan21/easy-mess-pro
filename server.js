@@ -7,7 +7,7 @@ dotenv.config({
 process.env.PUPPETEER_SKIP_DOWNLOAD;
 // const schedule = require('node-schedule');
 var cron = require('node-cron');
-const { updateMeal } = require('./jobs/updateManager');
+const { updateMeal } = require('./cron');
 // process.on('uncaughtException', (err) => {
 //   console.log('UNCAUGHT EXCEPTION!!! shutting down...');
 //   console.log(err.name, err.message);
@@ -45,7 +45,7 @@ app.listen(process.env.PORT || 8000, () => {
 });
 
 cron.schedule(
-  '55 02 * * *',
+  '10 03 * * *',
   async () => {
     console.log('running a task  02:55');
     await updateMeal();

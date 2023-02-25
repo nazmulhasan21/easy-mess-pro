@@ -1,10 +1,10 @@
 const moment = require('moment');
-const Meal = require('../models/mealModel');
+const Meal = require('./models/mealModel');
 
-const Mess = require('../models/messModel');
-const Month = require('../models/monthModel');
-const User = require('../models/userModel');
-const { pushNotification } = require('../utils/push-notification');
+const Mess = require('./models/messModel');
+const Month = require('./models/monthModel');
+const User = require('./models/userModel');
+const { pushNotification } = require('./utils/push-notification');
 
 // update meal
 module.exports.updateMeal = async () => {
