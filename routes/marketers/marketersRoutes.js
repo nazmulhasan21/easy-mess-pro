@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const api = require('express').Router();
 
 // middleware
 const { addCostInputValidated } = require('../../middleware/inputValidation');
@@ -29,7 +28,7 @@ router.patch('/:id/join', marketersController.marketerJoin);
 router.patch('/:id/leave', marketersController.marketerLeave);
 
 router.post('/:id/exchange', marketerExchange);
-api.use('/exchange', marketersExchangeRoutes);
+router.use('/exchange', marketersExchangeRoutes);
 // Only manager have permission to access for the below APIs
 router.use(restrictTo('manager', 'subManager'));
 
@@ -38,4 +37,3 @@ router.route('/:id').patch(marketersController.updateMarketers);
 router.delete('/:id', checkPassword, marketersController.deleteMarketers);
 
 module.exports = router;
-module.exports = api;
