@@ -5,7 +5,8 @@ dotenv.config({
 });
 
 process.env.PUPPETEER_SKIP_DOWNLOAD;
-const schedule = require('node-schedule');
+// const schedule = require('node-schedule');
+var cron = require('node-cron');
 const { updateMeal } = require('./jobs/updateManager');
 // process.on('uncaughtException', (err) => {
 //   console.log('UNCAUGHT EXCEPTION!!! shutting down...');
@@ -43,11 +44,19 @@ app.listen(process.env.PORT || 8000, () => {
   console.log(`Application is running on port ${process.env.PORT || 8000}  `);
 });
 
+cron.schedule(
+  '15 02 * * *',
+  () => {
+    console.log('running a task  02:20');
+  },
+  { scheduled: true, timezone: 'Asia/Dhaka' }
+);
+
 // schedule jobs
-schedule.scheduleJob(`00   15   05      *    *    *`, async () => {
-  // update every mess active month
-  console.log('Update server meal');
-  await updateMeal();
-});
+// schedule.scheduleJob(`00   15   05      *    *    *`, async () => {
+//   // update every mess active month
+//   console.log('Update server meal');
+//   await updateMeal();
+// });
 // Background  jobs
 // require('./jobs');
