@@ -20,66 +20,66 @@ module.exports.updateMeal = async () => {
     const month = await Month.findOne({
       $and: [{ messId: mess._id }, { active: true }],
     });
-    console.log('cron job running for autoMeal Update');
-    // if (month) {
-    //   const members = mess.allMember;
-    //   // all Member meals add in next day
-    //   members.map(async (userId) => {
-    //     const date = moment().add(1, 'days');
-    //     const isMonthDate = moment(month.date).isSame(date, 'month');
-    //     // find oldMeals
-    //     if (isMonthDate) {
-    //       const oldMeals = await Meal.findOne({
-    //         $and: [
-    //           { userId: userId },
-    //           { monthId: month._id },
-    //           {
-    //             date: {
-    //               $gte: moment(date).startOf('day'),
-    //               $lte: moment(date).endOf('day'),
-    //             },
-    //           },
-    //         ],
-    //       });
 
-    //       // if no add next day meal
-    //       if (oldMeals) {
-    //         console.log('cron job auto update meal false');
-    //       } else {
-    //         // users Meals
-    //         const userMeals = await Meal.find({
-    //           $and: [{ userId: userId }, { monthId: month._id }],
-    //         });
-    //         const lastDayMeal = userMeals[userMeals.length - 1];
-    //         const userMeal = lastDayMeal;
-    //         // create new
-    //         const meal = await Meal.create({
-    //           userId: userId,
-    //           breakfast: userMeal?.breakfast || 0,
-    //           lunch: userMeal?.lunch || 0,
-    //           dinner: userMeal?.dinner || 0,
-    //           total: userMeal?.total || 0,
-    //           date: date,
-    //           messId: userMeal?.messId,
-    //           monthId: month?._id,
-    //           addBy: month?.manager,
-    //         });
+    if (month) {
+      const members = mess.allMember;
+      // all Member meals add in next day
+      members.map(async (userId) => {
+        const date = moment().add(1, 'days');
+        const isMonthDate = moment(month.date).isSame(date, 'month');
+        // find oldMeals
+        if (isMonthDate) {
+          const oldMeals = await Meal.findOne({
+            $and: [
+              { userId: userId },
+              { monthId: month._id },
+              {
+                date: {
+                  $gte: moment(date).startOf('day'),
+                  $lte: moment(date).endOf('day'),
+                },
+              },
+            ],
+          });
 
-    //         // test push notification
-    //         const pushTitle = `মিল যোগ করা হয়েছে`;
-    //         const body = `মোট মিল: ${meal?.total}টি , তারিখ: ${moment(
-    //           meal?.date
-    //         ).format('DD/MM/YY')}`;
-    //         const member = await User.findById(userId).select('FCMToken');
-    //         if (member && member.FCMToken) {
-    //           const FCMToken = member.FCMToken;
-    //           await pushNotification(pushTitle, body, FCMToken);
-    //         }
-    //       }
-    //     } else {
-    //     }
-    //   });
-    // }
+          // if no add next day meal
+          if (oldMeals) {
+            console.log('Old meal is found so not new add this day meal');
+          } else {
+            // users Meals
+            const userMeals = await Meal.find({
+              $and: [{ userId: userId }, { monthId: month._id }],
+            });
+            const lastDayMeal = userMeals[userMeals.length - 1];
+            const userMeal = lastDayMeal;
+            // create new
+            const meal = await Meal.create({
+              userId: userId,
+              breakfast: userMeal?.breakfast || 0,
+              lunch: userMeal?.lunch || 0,
+              dinner: userMeal?.dinner || 0,
+              total: userMeal?.total || 0,
+              date: date,
+              messId: userMeal?.messId,
+              monthId: month?._id,
+              addBy: month?.manager,
+            });
+
+            // test push notification
+            const pushTitle = `মিল যোগ করা হয়েছে`;
+            const body = `মোট মিল: ${meal?.total}টি , তারিখ: ${moment(
+              meal?.date
+            ).format('DD/MM/YY')}`;
+            const member = await User.findById(userId).select('FCMToken');
+            if (member && member.FCMToken) {
+              const FCMToken = member.FCMToken;
+              await pushNotification(pushTitle, body, FCMToken);
+            }
+          }
+        } else {
+        }
+      });
+    }
   });
 
   //   const users = await User.find().select('FCMToken');
