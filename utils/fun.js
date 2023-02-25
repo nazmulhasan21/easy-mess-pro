@@ -494,8 +494,6 @@ const tt = async () => {
       finalUserName += randomNum;
     }
 
-    console.log(finalUserName.toLowerCase());
-
     return finalUserName;
   } catch (error) {
     return error;

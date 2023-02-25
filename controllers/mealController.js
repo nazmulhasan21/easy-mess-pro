@@ -10,8 +10,13 @@ const _ = require('lodash');
 const Mess = require('../models/messModel');
 const User = require('../models/userModel');
 const UserMonthData = require('../models/userMonthDataModel');
-const { pushNotification } = require('../utils/push-notification');
+const {
+  pushNotification,
+  pushNotificationMultiple,
+} = require('../utils/push-notification');
 const Notification = require('../models/notificationsModel');
+const { default: mongoose } = require('mongoose');
+const { getMessMemberFCMTokens } = require('../utils/fun');
 
 exports.getMealList = async (req, res, next) => {
   try {
@@ -254,7 +259,7 @@ exports.getLastDayMeal = async (req, res, next) => {
           userMeals = await Meal.findOne({
             $and: [{ userId: userId }, { monthId: month._id }, dateFilter],
           });
-          console.log(userMeals);
+
           if (userMeals.length == 0) {
             meal = false;
           } else {
@@ -469,7 +474,7 @@ exports.updateMyMeal = async (req, res, next) => {
       return next(new AppError(404, 'month', `কোন সক্রিয় মাস নেই`));
 
     let newDoc = {};
-    const doc = await Model.findOne({
+    const doc = await Meal.findOne({
       $and: [
         { _id: req.params.id },
         { monthId: activeMonth._id },
@@ -507,7 +512,7 @@ exports.updateMyMeal = async (req, res, next) => {
       'DD/MM/YY'
     )}`;
 
-    const upDoc = await Model.findByIdAndUpdate(req.params.id, newDoc, {
+    const upDoc = await Meal.findByIdAndUpdate(req.params.id, newDoc, {
       new: true,
       runValidators: true,
     });
@@ -542,11 +547,3 @@ exports.updateMyMeal = async (req, res, next) => {
 exports.getMeal = meal.getOne(Meal);
 exports.updateMeal = meal.updateOne(Meal, 'meal');
 exports.deleteMeal = meal.deleteOne(Meal, 'meal');
-
-console.log(moment('2022-09-01T17:16:15.331+00:00').format('DD/MM/YYYY'));
-
-console.log(
-  moment.parseZone('2022-09-01T17:16:15.331+00:00').local(true).format()
-);
-
-('2016-05-03T22:15:01-05:00');

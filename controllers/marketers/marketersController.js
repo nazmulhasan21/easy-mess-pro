@@ -142,7 +142,6 @@ exports.createMarketers = async (req, res, next) => {
           },
         });
         if (findOldMarketers) {
-          console.log(findOldMarketers);
         } else {
           // 3. create Marketers list
           var marketers = await Marketer.create({
@@ -443,7 +442,7 @@ exports.deleteMarketers = async (req, res, next) => {
 
     // 3. delete Cost
     await Marketer.findByIdAndDelete(req.params.id);
-    console.log({ marketers });
+
     // Push Notifications with Firebase
     const pushTitle = 'বাজারকারীদের ডিলেট করা হয়েছে';
     const pushBody = `তারিখ:${moment(marketers.date).format(

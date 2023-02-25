@@ -55,7 +55,7 @@ exports.getOne = (Model, model) => async (req, res, next) => {
     const isValid = mongoose.Types.ObjectId.isValid(req.params.id);
     if (!isValid) return next(new AppError(400, '_id', 'Id is not valid '));
     const doc = await Model.findById(req.params.id);
-    console.log(doc);
+
     if (!doc) {
       return next(new AppError(404, model, `খুজে পাওয়া যায়নি`));
     }

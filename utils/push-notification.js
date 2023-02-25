@@ -25,10 +25,10 @@ exports.pushNotification = async (title, body, token) => {
 
       token,
     });
-    console.log(result);
+    // console.log(result);
     return result;
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     return error;
   }
 };
@@ -54,10 +54,10 @@ exports.pushNotificationMultiple = async (title, body, tokens) => {
       },
       tokens,
     });
-    console.log(result);
+    // console.log(result);
     return result;
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     return error;
   }
 };

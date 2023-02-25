@@ -177,7 +177,7 @@ exports.addMember = async (req, res, next) => {
   try {
     // this is a add Member email and other validation
     const errors = validationResult(req);
-    console.log(errors);
+
     if (!errors.isEmpty()) {
       return next(errors);
     }

@@ -36,13 +36,13 @@ module.exports = async (templateName, data) => {
       margin: 50,
     });
 
-    console.log('Done create pdf');
+    // console.log('Done create pdf');
 
     await browser.close();
     return true;
   } catch (error) {
-    console.log('Do not create pdf');
-    console.log(error);
+    // console.log('Do not create pdf');
+    // console.log(error);
     return false;
   }
 };

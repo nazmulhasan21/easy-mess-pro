@@ -156,7 +156,7 @@ exports.getMarketerExchangeOffer = async (req, res, next) => {
           _id: item._id,
           date: item.date,
           marketersExchangeSender: item.marketersExchangeSender,
-          exchangeDate: item.exchangeMarketerId.date,
+          exchangeDate: item.exchangeMarketerId?.date,
           status: item.status,
         };
       });

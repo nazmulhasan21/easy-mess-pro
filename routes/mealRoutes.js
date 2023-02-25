@@ -27,7 +27,7 @@ router.patch('/:id/personal', mealController.updateMyMeal);
 router.use(restrictTo('manager', 'subManager'));
 
 router.post('/', mealController.createMeal);
-router.route('/:id').patch(mealController.updateMeal);
+router.patch('/:id', mealController.updateMeal);
 // router.delete('/:id', checkPassword, mealController.deleteMeal);
 
 module.exports = router;

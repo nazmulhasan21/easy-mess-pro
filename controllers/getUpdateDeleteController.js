@@ -331,7 +331,6 @@ exports.deleteOne = (Model, model) => async (req, res, next) => {
         pushBody,
         FCMTokens
       );
-      console.log(send);
     }
 
     // await Notification.create({

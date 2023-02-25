@@ -8,7 +8,6 @@ const { pushNotification } = require('../utils/push-notification');
 
 // update meal
 module.exports.updateMeal = async () => {
-  console.log('update Meal');
   // all mess
   const allMess = await Mess.find({ _id: '63e771ae4bd932ba3cd793b7' }).select(
     'allMember'
@@ -44,7 +43,6 @@ module.exports.updateMeal = async () => {
 
           // if no add next day meal
           if (oldMeals) {
-            console.log({ oldMeals });
           } else {
             // users Meals
             const userMeals = await Meal.find({
@@ -77,7 +75,6 @@ module.exports.updateMeal = async () => {
             }
           }
         } else {
-          console.log({ isMonthDate });
         }
       });
     }
