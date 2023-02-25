@@ -45,9 +45,9 @@ app.listen(process.env.PORT || 8000, () => {
 });
 
 cron.schedule(
-  '43 02 * * *',
+  '55 02 * * *',
   async () => {
-    console.log('running a task  02:43');
+    console.log('running a task  02:55');
     await updateMeal();
   },
   { scheduled: true, timezone: 'Asia/Dhaka' }
