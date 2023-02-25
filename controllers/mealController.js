@@ -507,7 +507,7 @@ exports.updateMyMeal = async (req, res, next) => {
       editBy: user._id,
     };
 
-    pushTitle = `${member.name} এর মিল পরিবর্তন করা হয়েছে`;
+    pushTitle = `${user.name} এর মিল পরিবর্তন করা হয়েছে`;
     pushBody = `মোট মিল=${total}/= তারিখ:${moment(doc.date).format(
       'DD/MM/YY'
     )}`;
