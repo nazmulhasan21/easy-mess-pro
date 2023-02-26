@@ -49,13 +49,13 @@ app.use(cors());
 // -> Set security HTTP headers
 app.use(helmet());
 
-// // -> Limit request form the same API
-// const limiter = rateLimit({
-//   max: 150,
-//   windowMs: 60 * 60 * 1000,
-//   message: 'Too Many Request from this IP, please try again in an hour',
-// });
-// app.use('/api', limiter);
+// -> Limit request form the same API
+const limiter = rateLimit({
+  max: 150,
+  windowMs: 60 * 60 * 1000,
+  message: 'Too Many Request from this IP, please try again in an hour',
+});
+app.use('/api/user-auth', limiter);
 
 // -> Body parser, reading data from body into req.body
 app.use(
