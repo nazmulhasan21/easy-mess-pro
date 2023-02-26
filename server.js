@@ -45,7 +45,7 @@ app.listen(process.env.PORT || 8000, () => {
 });
 
 cron.schedule(
-  '09 09 * * *',
+  '10 10 * * *',
   async () => {
     console.log('running a task  02:55');
     await updateMeal();

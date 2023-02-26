@@ -62,6 +62,10 @@ exports.getMarketersList = async (req, res, next) => {
     const activeMonth = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
     });
+    if (!activeMonth)
+      return next(
+        new AppError(404, 'month', 'আপনার সক্রিয় মাস খুঁজে পাওয়া যায়নি।')
+      );
     // filter some query
     //1. date filter
     const dateFilter = date
@@ -292,6 +296,10 @@ exports.marketerLeave = async (req, res, next) => {
     const activeMonth = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
     });
+    if (!activeMonth)
+      return next(
+        new AppError(404, 'month', 'আপনার সক্রিয় মাস খুঁজে পাওয়া যায়নি।')
+      );
     const marketers = await Marketer.findOne({
       $and: [
         { _id: req.params.id },

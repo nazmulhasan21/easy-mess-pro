@@ -365,6 +365,7 @@ exports.getPersonalTodayMeal = async (req, res, next) => {
           'DD/MM/YY'
         )} এই তারিখে কোন মিল যোগ করা হয়নি।`,
         date: moment(today),
+        todayMeal: userMeal,
       });
     // customize  user object
     const customizeUser = {
@@ -428,6 +429,7 @@ exports.getPersonalTomorrowMeal = async (req, res, next) => {
           'DD/MM/YY'
         )} এই তারিখে কোন মিল যোগ করা হয়নি।`,
         date: moment(nextDay),
+        tomorrowMeal: userMeal,
       });
 
     // customize  user object
