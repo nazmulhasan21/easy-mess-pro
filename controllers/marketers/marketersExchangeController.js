@@ -136,6 +136,7 @@ exports.getMarketerExchangeOffer = async (req, res, next) => {
     const findQuery = {
       $and: [
         { monthId: activeMonth._id },
+        { status: 'pending' },
         { marketersExchangeReceiver: user._id },
         dateFilter,
       ],
@@ -218,7 +219,7 @@ exports.getMarketerExchangeSendOffer = async (req, res, next) => {
           'name avatar role date'
         )
         .select(
-          'monthId date marketersExchangeReceiver exchangeMarketerId name avatar role'
+          'monthId date status marketersExchangeReceiver exchangeMarketerId name avatar role'
         )
         .sort({ date: 1 }),
       req.query

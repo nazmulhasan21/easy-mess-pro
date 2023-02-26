@@ -252,7 +252,11 @@ exports.marketerJoin = async (req, res, next) => {
         new AppError(403, 'join', `আগে থেকেই দুইজন বাজারকারী বিদ্যমান আছে।`)
       );
 
-    if (marketers.marketers.find((user) => user == user._id))
+    if (
+      marketers.marketers.find(
+        (market) => JSON.stringify(market) === JSON.stringify(user._id)
+      )
+    )
       return next(
         new AppError(402, 'marketers', `আপনি আগে থেকেই এই তালিকায় আছেন।`)
       );
@@ -312,7 +316,11 @@ exports.marketerLeave = async (req, res, next) => {
       return next(
         new AppError(404, 'marketers', 'এই বাজারকারি আগে থেকেই লীভ নিয়েছেন।')
       );
-    if (marketers.marketers.find((user) => user == user._id)) {
+    if (
+      marketers.marketers.find(
+        (market) => JSON.stringify(market) === JSON.stringify(user._id)
+      )
+    ) {
       marketers.marketers.pull(user._id);
       await marketers.save();
     }
@@ -376,10 +384,15 @@ exports.updateMarketers = async (req, res, next) => {
     // find old marketers new date
     if (body.date) {
       const oldMarketers = await Marketer.find({
-        date: {
-          $gte: moment(body.date).startOf('day'),
-          $lte: moment(body.date).endOf('day'),
-        },
+        $and: [
+          { _id: req.params.id },
+          {
+            date: {
+              $gte: moment(body.date).startOf('day'),
+              $lte: moment(body.date).endOf('day'),
+            },
+          },
+        ],
       });
       if (oldMarketers)
         return next(
