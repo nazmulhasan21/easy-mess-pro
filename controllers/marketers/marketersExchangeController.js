@@ -313,7 +313,9 @@ exports.marketerExchangeAccept = async (req, res, next) => {
       $and: [{ messId: user.messId }, { active: true }],
     });
 
-    const marketerExchange = await MarketerExchange.findById(req.params.id);
+    const marketerExchange = await MarketerExchange.findOne({
+      $and: [{ _id: req.params.id }, { marketersExchangeReceiver: user._id }],
+    });
     // 2. Not found any cost
     if (!activeMonth || !marketerExchange)
       return next(
@@ -326,7 +328,7 @@ exports.marketerExchangeAccept = async (req, res, next) => {
     senderMarket.marketers.push(user._id);
     await senderMarket.save();
 
-    marketerExchange.status == 'accept';
+    marketerExchange.status = 'accept';
     await marketerExchange.save();
 
     const myMarket = await Marketer.findOne({
@@ -398,14 +400,16 @@ exports.marketerExchangeReject = async (req, res, next) => {
       $and: [{ messId: user.messId }, { active: true }],
     });
 
-    const marketerExchange = await MarketerExchange.findById(req.params.id);
+    const marketerExchange = await MarketerExchange.findOne({
+      $and: [{ _id: req.params.id }, { marketersExchangeReceiver: user._id }],
+    });
     // 2. Not found any cost
     if (!activeMonth || !marketerExchange)
       return next(
         new AppError(404, 'marketers', 'এই বাজারকারিদের  পরিবর্তন করা যাবে না')
       );
 
-    marketerExchange.status == 'reject';
+    marketerExchange.status = 'reject';
     await marketerExchange.save();
 
     const member = await User.findById(
