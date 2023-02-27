@@ -20,6 +20,9 @@ router.get('/last-day', mealController.getLastDayMeal);
 
 router.get('/personal-today-meal', mealController.getPersonalTodayMeal);
 router.get('/personal-tomorrow-meal', mealController.getPersonalTomorrowMeal);
+router.get('/auto-meal-of-on', mealController.getAutoMealOfOn);
+router.patch('/auto-meal-of-on', mealController.autoMealOfOn);
+
 router.get('/:id', mealController.getMeal);
 router.patch('/:id/personal', mealController.updateMyMeal);
 

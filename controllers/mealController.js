@@ -17,6 +17,8 @@ const {
 const Notification = require('../models/notificationsModel');
 const { default: mongoose } = require('mongoose');
 const { getMessMemberFCMTokens } = require('../utils/fun');
+const { expectCt } = require('helmet');
+const AutoMealUpdate = require('../models/autoMealUpdateModel');
 
 exports.getMealList = async (req, res, next) => {
   try {
@@ -457,6 +459,70 @@ exports.getPersonalTomorrowMeal = async (req, res, next) => {
     res.status(200).json({
       status: 'success',
       tomorrowMeal,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getAutoMealOfOn = async (req, res, next) => {
+  try {
+    const { user } = req;
+
+    // 1. find active month
+    const activeMonth = await Month.findOne({
+      $and: [{ messId: user.messId }, { active: true }],
+    });
+    if (!activeMonth)
+      return next(new AppError(404, 'month', `কোন সক্রিয় মাস নেই`));
+
+    const autoMealUpdate = await AutoMealUpdate.findOne({
+      $and: [{ messId: user.messId }, { monthId: activeMonth._id }],
+    });
+
+    res.status(200).json({
+      status: 'success',
+      autoMealUpdate,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.autoMealOfOn = async (req, res, next) => {
+  try {
+    const { user, body } = req;
+
+    // 1. find active month
+    const activeMonth = await Month.findOne({
+      $and: [{ messId: user.messId }, { active: true }],
+    });
+    if (!activeMonth)
+      return next(new AppError(404, 'month', `কোন সক্রিয় মাস নেই`));
+
+    const autoMealUpdate = await AutoMealUpdate.findOne({
+      $and: [{ messId: user.messId }, { monthId: activeMonth._id }],
+    });
+    const autoMealUpdateObject = {
+      breakfast: body.breakfast || autoMealUpdate.breakfast,
+      lunch: body.lunch || autoMealUpdate.lunch,
+      dinner: body.dinner || autoMealUpdate.dinner,
+      tomorrow: body.tomorrow || autoMealUpdate.tomorrow,
+      date: moment().format(),
+    };
+
+    const upDoc = await AutoMealUpdate.findByIdAndUpdate(
+      req.params.id,
+      autoMealUpdateObject,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    res.status(200).json({
+      status: 'success',
+      upDoc,
     });
   } catch (error) {
     next(error);

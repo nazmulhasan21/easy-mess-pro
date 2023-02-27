@@ -35,6 +35,7 @@ const {
   pushNotification,
 } = require('../utils/push-notification');
 const Notification = require('../models/notificationsModel');
+const AutoMealUpdate = require('../models/autoMealUpdateModel');
 
 exports.createMonth = async (req, res, next) => {
   try {
@@ -152,6 +153,11 @@ exports.autoMealUpdate = async (req, res, next) => {
       );
     month.autoMealUpdate = autoMealUpdate;
     await month.save();
+    const autoMeal = await AutoMealUpdate.create({
+      messId: user.messId,
+      monthId: month._id,
+      date: moment().format(),
+    });
 
     // Push Notifications with Firebase
 
@@ -194,9 +200,6 @@ exports.autoMealUpdate = async (req, res, next) => {
 exports.getAutoMealOption = async (req, res, next) => {
   try {
     const { user } = req;
-    const autoMealUpdate = req.body;
-    console.log(user);
-    return;
 
     //1. find active month and update fixed meal
     const month = await Month.findOne({
@@ -206,41 +209,11 @@ exports.getAutoMealOption = async (req, res, next) => {
       return next(
         new AppError(404, 'month', 'আপনার সক্রিয় মাস খুঁজে পাওয়া যায়নি')
       );
-    month.autoMealUpdate = autoMealUpdate;
-    await month.save();
-
-    // Push Notifications with Firebase
-
-    let pushTitle, pushBody, message;
-    if (autoMealUpdate) {
-      pushTitle = `নিজের মিল পরিবর্তন অনুমতি দেওয়া হলো`;
-      pushBody = `তারিখ: ${moment().format(
-        'DD/MM/YYYY'
-      )} থেকে আপনি আপনার নিজের মিল নিজে পরিবর্তন করতে পারবেন ।`;
-      message = 'সফল ভাবে অটমিল অফশনটি চালু করা হয়েছে।';
-    } else {
-      pushTitle = `নিজের মিল পরিবর্তন অনুমতি বন্ধ করা হলো`;
-      pushBody = `তারিখ: ${moment().format(
-        'DD/MM/YYYY'
-      )} থেকে আপনি আপনার নিজের মিল নিজে আর পরিবর্তন করতে পারবেনা ।`;
-      message = 'সফল ভাবে অটমিল অফশনটি বন্ধ করা হয়েছে।';
-    }
-
-    const FCMTokens = await getMessMemberFCMTokens(user.messId);
-    if (FCMTokens) {
-      await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
-    }
-
-    // await Notification.create({
-    //   monthId: month._id,
-    //   title: pushTitle,
-    //   description: pushBody,
-    //   date: month.updatedAt,
-    // });
 
     res.status(200).json({
       status: 'success',
-      message: message,
+      message: '',
+      autoMealUpdate: month?.autoMealUpdate,
     });
   } catch (error) {
     next(error);
