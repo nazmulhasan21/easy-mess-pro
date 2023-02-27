@@ -153,22 +153,40 @@ exports.autoMealUpdate = async (req, res, next) => {
       );
     month.autoMealUpdate = autoMealUpdate;
     await month.save();
-    const autoMeal = await AutoMealUpdate.create({
-      messId: user.messId,
-      monthId: month._id,
-      date: moment().format(),
-    });
 
     // Push Notifications with Firebase
 
     let pushTitle, pushBody, message;
     if (autoMealUpdate) {
+      // find old auto meal
+      const oldAutoMeal = await AutoMealUpdate.findOne({
+        $and: [{ messId: user.messId }, { monthId: month._id }],
+      });
+      if (oldAutoMeal) {
+        const updateOldAutoMeal = {
+          ...oldAutoMeal,
+          data: moment().format(),
+        };
+        await updateOldAutoMeal.save();
+      } else {
+        const autoMeal = await AutoMealUpdate.create({
+          breakfast: true,
+          messId: user.messId,
+          monthId: month._id,
+          date: moment().format(),
+        });
+      }
+
       pushTitle = `নিজের মিল পরিবর্তন অনুমতি দেওয়া হলো`;
       pushBody = `তারিখ: ${moment().format(
         'DD/MM/YYYY'
       )} থেকে আপনি আপনার নিজের মিল নিজে পরিবর্তন করতে পারবেন ।`;
       message = 'সফল ভাবে অটমিল অফশনটি চালু করা হয়েছে।';
-    } else {
+    } else if (!autoMealUpdate) {
+      await AutoMealUpdate.findOneAndDelete({
+        $and: [{ messId: user.messId }, { monthId: month._id }],
+      });
+
       pushTitle = `নিজের মিল পরিবর্তন অনুমতি বন্ধ করা হলো`;
       pushBody = `তারিখ: ${moment().format(
         'DD/MM/YYYY'

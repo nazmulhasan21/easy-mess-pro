@@ -46,7 +46,7 @@ app.listen(process.env.PORT || 8000, () => {
 });
 
 cron.schedule(
-  '10 10 * * *',
+  '30 08 * * *',
   async () => {
     console.log('running a task  02:55');
     await updateMeal();
@@ -57,10 +57,14 @@ cron.schedule(
 const endOfMonth = moment().clone().endOf('month').format('DD');
 console.log(endOfMonth);
 //
-cron.schedule(`59 23 ${endOfMonth} * *`, async () => {
-  console.log('month status false done');
-  await updateMonthStatus();
-});
+cron.schedule(
+  `59 23 ${endOfMonth} * *`,
+  async () => {
+    console.log('month status false done');
+    await updateMonthStatus();
+  },
+  { scheduled: true, timezone: 'Asia/Dhaka' }
+);
 //schedule jobs
 // schedule.scheduleJob(`00   15   05      *    *    *`, async () => {
 //   // update every mess active month

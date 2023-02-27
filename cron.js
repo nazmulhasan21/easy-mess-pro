@@ -1,4 +1,5 @@
 const moment = require('moment');
+const AutoMealUpdate = require('./models/autoMealUpdateModel');
 const Meal = require('./models/mealModel');
 
 const Mess = require('./models/messModel');
@@ -80,21 +81,32 @@ module.exports.updateMeal = async () => {
         }
       });
     }
+
+    // auto meal update
+    const autoMealUpdate = await AutoMealUpdate.findOne({
+      $and: [{ messId: mess._id }, { monthId: month._id }],
+    });
+    if (autoMealUpdate) {
+      const autoMealUpdateObject = {
+        breakfast: true,
+        lunch: false,
+        dinner: false,
+        tomorrow: false,
+        date: moment().format(),
+      };
+
+      const upDoc = await AutoMealUpdate.findByIdAndUpdate(
+        autoMealUpdate._id,
+        autoMealUpdateObject,
+        {
+          new: true,
+          runValidators: true,
+        }
+      );
+
+      console.log('auto meal update cron');
+    }
   });
-
-  //   const users = await User.find().select('FCMToken');
-
-  // Push Notifications with Firebase
-
-  // users.forEach(async (user) => {
-  //   const pushBody = ` ${user.name} আপনাকে Easy Mess App এর পক্ষথেকে Valentines Day 2023 এর শুভেচ্ছা জানাই। ভালো বাসা ছড়িয়ে পরুক সবখানে।`;
-  //   const pushTitle = `Happy Valentines Day 2023`;
-
-  //   if (user.FCMToken) {
-  //     const send = await pushNotification(pushTitle, pushBody, user.FCMToken);
-  //     console.log(send);
-  //   }
-  // });
 };
 
 module.exports.updateMonthStatus = async () => {
