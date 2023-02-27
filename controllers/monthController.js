@@ -129,7 +129,118 @@ exports.addFixedMeal = async (req, res, next) => {
 
     res.status(200).json({
       status: 'success',
-      message: 'আপনার মাসে  মিল সফলভাবে যোগ করা হয়েছে।',
+      message: 'আপনার মাসে Fixed মিল সফলভাবে যোগ করা হয়েছে।',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// add fixed Meal
+exports.autoMealUpdate = async (req, res, next) => {
+  try {
+    const { user } = req;
+    const autoMealUpdate = req.body;
+
+    //1. find active month and update fixed meal
+    const month = await Month.findOne({
+      $and: [{ messId: user.messId }, { active: true }],
+    });
+    if (!month)
+      return next(
+        new AppError(404, 'month', 'আপনার সক্রিয় মাস খুঁজে পাওয়া যায়নি')
+      );
+    month.autoMealUpdate = autoMealUpdate;
+    await month.save();
+
+    // Push Notifications with Firebase
+
+    let pushTitle, pushBody, message;
+    if (autoMealUpdate) {
+      pushTitle = `নিজের মিল পরিবর্তন অনুমতি দেওয়া হলো`;
+      pushBody = `তারিখ: ${moment().format(
+        'DD/MM/YYYY'
+      )} থেকে আপনি আপনার নিজের মিল নিজে পরিবর্তন করতে পারবেন ।`;
+      message = 'সফল ভাবে অটমিল অফশনটি চালু করা হয়েছে।';
+    } else {
+      pushTitle = `নিজের মিল পরিবর্তন অনুমতি বন্ধ করা হলো`;
+      pushBody = `তারিখ: ${moment().format(
+        'DD/MM/YYYY'
+      )} থেকে আপনি আপনার নিজের মিল নিজে আর পরিবর্তন করতে পারবেনা ।`;
+      message = 'সফল ভাবে অটমিল অফশনটি বন্ধ করা হয়েছে।';
+    }
+
+    const FCMTokens = await getMessMemberFCMTokens(user.messId);
+    if (FCMTokens) {
+      await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
+    }
+
+    // await Notification.create({
+    //   monthId: month._id,
+    //   title: pushTitle,
+    //   description: pushBody,
+    //   date: month.updatedAt,
+    // });
+
+    res.status(200).json({
+      status: 'success',
+      message: message,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+// add fixed Meal
+exports.getAutoMealOption = async (req, res, next) => {
+  try {
+    const { user } = req;
+    const autoMealUpdate = req.body;
+    console.log(user);
+    return;
+
+    //1. find active month and update fixed meal
+    const month = await Month.findOne({
+      $and: [{ messId: user.messId }, { active: true }],
+    });
+    if (!month)
+      return next(
+        new AppError(404, 'month', 'আপনার সক্রিয় মাস খুঁজে পাওয়া যায়নি')
+      );
+    month.autoMealUpdate = autoMealUpdate;
+    await month.save();
+
+    // Push Notifications with Firebase
+
+    let pushTitle, pushBody, message;
+    if (autoMealUpdate) {
+      pushTitle = `নিজের মিল পরিবর্তন অনুমতি দেওয়া হলো`;
+      pushBody = `তারিখ: ${moment().format(
+        'DD/MM/YYYY'
+      )} থেকে আপনি আপনার নিজের মিল নিজে পরিবর্তন করতে পারবেন ।`;
+      message = 'সফল ভাবে অটমিল অফশনটি চালু করা হয়েছে।';
+    } else {
+      pushTitle = `নিজের মিল পরিবর্তন অনুমতি বন্ধ করা হলো`;
+      pushBody = `তারিখ: ${moment().format(
+        'DD/MM/YYYY'
+      )} থেকে আপনি আপনার নিজের মিল নিজে আর পরিবর্তন করতে পারবেনা ।`;
+      message = 'সফল ভাবে অটমিল অফশনটি বন্ধ করা হয়েছে।';
+    }
+
+    const FCMTokens = await getMessMemberFCMTokens(user.messId);
+    if (FCMTokens) {
+      await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
+    }
+
+    // await Notification.create({
+    //   monthId: month._id,
+    //   title: pushTitle,
+    //   description: pushBody,
+    //   date: month.updatedAt,
+    // });
+
+    res.status(200).json({
+      status: 'success',
+      message: message,
     });
   } catch (error) {
     next(error);
@@ -361,6 +472,7 @@ exports.changeMonthStatus = async (req, res, next) => {
   try {
     const { user } = req;
     const { active } = req.body;
+
     //1. find is mess active month
     const activeMonth = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
@@ -394,18 +506,6 @@ exports.changeMonthStatus = async (req, res, next) => {
     next(error);
   }
 };
-
-const endOfMonth = moment().clone().endOf('month').format('DD');
-
-var j = schedule.scheduleJob(
-  `00 20 21 */${endOfMonth} * * `,
-  async function () {
-    await Month.updateMany({ active: false });
-    console.log('Your scheduled job at all month in unActive');
-    const today = moment().format('YYYY-MM-DD hh:mm:ss');
-    console.log(today);
-  }
-);
 
 ////
 exports.getMonth = base.getOne(Month, 'month');

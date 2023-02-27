@@ -22,6 +22,7 @@ router.use(restrictToMessId);
 router.get('/chart', monthController.getMonthChart);
 router.get('/:id', monthController.getMonth);
 router.get('/', monthController.getActiveMonth);
+router.get('/auto-meal-update', monthController.getAutoMealOption);
 
 router.patch('/:id/status', restrictToAdmin, monthController.changeMonthStatus);
 
@@ -29,6 +30,11 @@ router.patch(
   '/',
   restrictTo('manager', 'subManager'),
   monthController.addFixedMeal
+);
+router.patch(
+  '/auto-meal-update',
+  restrictTo('manager', 'subManager'),
+  monthController.autoMealUpdate
 );
 
 router.use(restrictTo('manager'));

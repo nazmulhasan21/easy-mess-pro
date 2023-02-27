@@ -96,3 +96,10 @@ module.exports.updateMeal = async () => {
   //   }
   // });
 };
+
+module.exports.updateMonthStatus = async () => {
+  await Month.updateMany({ active: false });
+  console.log('Your scheduled job at all month in unActive');
+  const today = moment().format('YYYY-MM-DD hh:mm:ss');
+  console.log(today);
+};

@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
+const moment = require('moment');
 dotenv.config({
   path: './config.env',
 });
@@ -7,7 +8,7 @@ dotenv.config({
 process.env.PUPPETEER_SKIP_DOWNLOAD;
 // const schedule = require('node-schedule');
 var cron = require('node-cron');
-const { updateMeal } = require('./cron');
+const { updateMeal, updateMonthStatus } = require('./cron');
 // process.on('uncaughtException', (err) => {
 //   console.log('UNCAUGHT EXCEPTION!!! shutting down...');
 //   console.log(err.name, err.message);
@@ -53,6 +54,13 @@ cron.schedule(
   { scheduled: true, timezone: 'Asia/Dhaka' }
 );
 
+const endOfMonth = moment().clone().endOf('month').format('DD');
+console.log(endOfMonth);
+//
+cron.schedule(`59 23 ${endOfMonth} * *`, async () => {
+  console.log('month status false done');
+  await updateMonthStatus();
+});
 //schedule jobs
 // schedule.scheduleJob(`00   15   05      *    *    *`, async () => {
 //   // update every mess active month

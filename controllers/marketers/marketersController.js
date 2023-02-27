@@ -405,9 +405,17 @@ exports.updateMarketers = async (req, res, next) => {
         );
     }
 
+    // find array
+    const marketersId = [];
+    body.marketers.find((marketer) => {
+      if (marketer) {
+        marketersId.push(marketer);
+      }
+    });
+
     const newMarketers = {
       date: body.date,
-      marketers: body.marketers || marketers.marketers,
+      marketers: marketersId || marketers.marketers,
     };
     const doc = await Marketer.findByIdAndUpdate(req.params.id, newMarketers, {
       new: true,

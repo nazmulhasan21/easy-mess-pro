@@ -110,6 +110,10 @@ const monthSchema = mongoose.Schema(
       type: Number,
       default: 1,
     },
+    autoMealUpdate: {
+      type: Boolean,
+      default: false,
+    },
     active: {
       type: Boolean,
       default: true,
