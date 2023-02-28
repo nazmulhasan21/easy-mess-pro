@@ -223,10 +223,25 @@ exports.getAutoMealOption = async (req, res, next) => {
       return next(
         new AppError(404, 'month', 'আপনার সক্রিয় মাস খুঁজে পাওয়া যায়নি')
       );
+    // find today meal
+    const today = moment().format();
+    const userMeal = await Meal.find({
+      $and: [
+        { monthId: activeMonth._id },
+        { userId: user._id },
+        {
+          date: {
+            $gte: moment(today).startOf('day'),
+            $lte: moment(today).endOf('day'),
+          },
+        },
+      ],
+    });
 
     res.status(200).json({
       status: 'success',
       message: '',
+      mealAdd: true,
       autoMealUpdate: month?.autoMealUpdate,
     });
   } catch (error) {
