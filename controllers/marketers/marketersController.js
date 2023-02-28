@@ -382,28 +382,28 @@ exports.updateMarketers = async (req, res, next) => {
         new AppError(402, 'date', 'আপনার সক্রিয় মাসের তারিখ নির্বাচন করুন')
       );
     // find old marketers new date
-    if (body.date) {
-      const oldMarketers = await Marketer.find({
-        $and: [
-          { _id: req.params.id },
-          {
-            date: {
-              $gte: moment(body.date).startOf('day'),
-              $lte: moment(body.date).endOf('day'),
-            },
-          },
-        ],
-      });
-      if (oldMarketers)
-        return next(
-          new AppError(
-            402,
-            `আপনার ${moment(body.date).format(
-              'DD/MM/YY'
-            )} তারিখের বাজার আগে থেকেই আছেন।`
-          )
-        );
-    }
+    // if (body.date) {
+    //   const oldMarketers = await Marketer.find({
+    //     $and: [
+    //       { _id: req.params.id },
+    //       {
+    //         date: {
+    //           $gte: moment(body.date).startOf('day'),
+    //           $lte: moment(body.date).endOf('day'),
+    //         },
+    //       },
+    //     ],
+    //   });
+    //   if (oldMarketers)
+    //     return next(
+    //       new AppError(
+    //         402,
+    //         `আপনার ${moment(body.date).format(
+    //           'DD/MM/YY'
+    //         )} তারিখের বাজার আগে থেকেই আছেন।`
+    //       )
+    //     );
+    // }
 
     // find array
     const marketersId = [];
