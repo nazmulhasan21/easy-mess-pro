@@ -128,7 +128,7 @@ exports.createMeal = async (req, res, next) => {
   try {
     const { user } = req;
     const { meals } = req.body;
-    const date = moment(req.body.date);
+    const date = moment(req?.body?.date).format();
 
     if (date == '') {
       return next(new AppError(402, 'date', 'দয়া করে তারিখ নির্বাচন করুন।'));
@@ -465,7 +465,7 @@ exports.getPersonalTomorrowMeal = async (req, res, next) => {
   }
 };
 
-exports.getAutoMealOfOn = async (req, res, next) => {
+exports.getAutoMealOnOf = async (req, res, next) => {
   try {
     const { user } = req;
 
@@ -476,22 +476,24 @@ exports.getAutoMealOfOn = async (req, res, next) => {
     if (!activeMonth)
       return next(new AppError(404, 'month', `কোন সক্রিয় মাস নেই`));
 
-    const autoMealUpdate = await AutoMealUpdate.findOne({
+    const autoMealOnOf = await AutoMealUpdate.findOne({
       $and: [{ messId: user.messId }, { monthId: activeMonth._id }],
-    });
+    }).select('breakfast lunch dinner tomorrow date');
 
     res.status(200).json({
       status: 'success',
-      autoMealUpdate,
+      autoMealUpdate: activeMonth.autoMealUpdate,
+      autoMealOnOf,
     });
   } catch (error) {
     next(error);
   }
 };
 
-exports.autoMealOfOn = async (req, res, next) => {
+exports.autoMealOnOf = async (req, res, next) => {
   try {
     const { user, body } = req;
+    const { breakfast, lunch, dinner, tomorrow } = body;
 
     // 1. find active month
     const activeMonth = await Month.findOne({
@@ -503,17 +505,77 @@ exports.autoMealOfOn = async (req, res, next) => {
     const autoMealUpdate = await AutoMealUpdate.findOne({
       $and: [{ messId: user.messId }, { monthId: activeMonth._id }],
     });
-    const autoMealUpdateObject = {
-      breakfast: body.breakfast || autoMealUpdate.breakfast,
-      lunch: body.lunch || autoMealUpdate.lunch,
-      dinner: body.dinner || autoMealUpdate.dinner,
-      tomorrow: body.tomorrow || autoMealUpdate.tomorrow,
-      date: moment().format(),
-    };
+
+    let updateObj = {},
+      pushBody,
+      pushTitle,
+      message;
+
+    if (breakfast == true) {
+      updateObj = {
+        ...autoMealUpdate._doc,
+        breakfast: true,
+      };
+      pushTitle = `রান্নার চাউল দেওয়া হয়েছে।`;
+      pushBody = `তারিখ: ${moment().format(
+        'DD/MM/YYYY hh:mm'
+      )}  সকলের চাউল দেওয়া হয়েছে, মিল বন্ধ বা চালু করতে মেসেজারের সাথে যোগাযোগ করুন।`;
+      message = 'সফল ভাবে সকালের মিল পরিবর্তনের অনুমতি বন্ধ করা হলো।';
+    } else if (lunch == true) {
+      updateObj = {
+        ...autoMealUpdate._doc,
+        breakfast: true,
+        lunch: true,
+      };
+      pushTitle = `রান্নার চাউল দেওয়া হয়েছে।`;
+      pushBody = `তারিখ: ${moment().format(
+        'DD/MM/YYYY hh:mm'
+      )}  দুপুরের চাউল দেওয়া হয়েছে, মিল বন্ধ বা চালু করতে মেসেজারের সাথে যোগাযোগ করুন।`;
+      message = 'সফল ভাবে দুপুরের মিল পরিবর্তনের অনুমতি বন্ধ করা হলো।';
+    } else if (dinner == true) {
+      updateObj = {
+        ...autoMealUpdate._doc,
+        breakfast: true,
+        lunch: true,
+        dinner: true,
+      };
+      pushTitle = `রান্নার চাউল দেওয়া হয়েছে।`;
+      pushBody = `তারিখ: ${moment().format(
+        'DD/MM/YYYY hh:mm'
+      )}  রাতের চাউল দেওয়া হয়েছে, মিল বন্ধ বা চালু করতে মেসেজারের সাথে যোগাযোগ করুন।`;
+      message = 'সফল ভাবে রাতের মিল পরিবর্তনের অনুমতি বন্ধ করা হলো।';
+    } else if (tomorrow == true) {
+      updateObj = {
+        ...autoMealUpdate._doc,
+        breakfast: true,
+        lunch: true,
+        dinner: true,
+        tomorrow: true,
+      };
+      pushTitle = `রান্নার চাউল দেওয়া হয়েছে।`;
+      pushBody = `তারিখ: ${moment().format(
+        'DD/MM/YYYY hh:mm'
+      )}  আগামীকাল সকালের চাউল দেওয়া হয়েছে, মিল বন্ধ বা চালু করতে মেসেজারের সাথে যোগাযোগ করুন।`;
+      message = 'সফল ভাবে আগামীকাল সকালের মিল পরিবর্তনের অনুমতি বন্ধ করা হলো।';
+    } else {
+      updateObj = {
+        ...autoMealUpdate._doc,
+        ...body,
+      };
+
+      pushTitle = `কিছু সময়ের জন্য মিল চালানোর অনুমতি দেওয়া হলো`;
+      pushBody = `ম্যানেজার কিছু সময়ের জন্য  মিল চালানোর অনুমতি দিয়েছে।`;
+    }
+    /// push notification all border
+
+    const FCMTokens = await getMessMemberFCMTokens(user.messId);
+    if (FCMTokens) {
+      await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
+    }
 
     const upDoc = await AutoMealUpdate.findByIdAndUpdate(
-      req.params.id,
-      autoMealUpdateObject,
+      autoMealUpdate._id,
+      updateObj,
       {
         new: true,
         runValidators: true,

@@ -20,9 +20,9 @@ router.use(protect);
 router.use(restrictToMessId);
 
 router.get('/chart', monthController.getMonthChart);
+router.get('/auto-meal-update', monthController.getAutoMealOption);
 router.get('/:id', monthController.getMonth);
 router.get('/', monthController.getActiveMonth);
-router.get('/auto-meal-update', monthController.getAutoMealOption);
 
 router.patch('/:id/status', restrictToAdmin, monthController.changeMonthStatus);
 

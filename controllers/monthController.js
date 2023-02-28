@@ -137,11 +137,11 @@ exports.addFixedMeal = async (req, res, next) => {
   }
 };
 
-// add fixed Meal
+// auto meal update on of
 exports.autoMealUpdate = async (req, res, next) => {
   try {
     const { user } = req;
-    const autoMealUpdate = req.body;
+    const autoMealUpdate = req.body.autoMealUpdate;
 
     //1. find active month and update fixed meal
     const month = await Month.findOne({
@@ -157,17 +157,13 @@ exports.autoMealUpdate = async (req, res, next) => {
     // Push Notifications with Firebase
 
     let pushTitle, pushBody, message;
-    if (autoMealUpdate) {
+    if (autoMealUpdate == true) {
       // find old auto meal
       const oldAutoMeal = await AutoMealUpdate.findOne({
         $and: [{ messId: user.messId }, { monthId: month._id }],
       });
       if (oldAutoMeal) {
-        const updateOldAutoMeal = {
-          ...oldAutoMeal,
-          data: moment().format(),
-        };
-        await updateOldAutoMeal.save();
+        (oldAutoMeal.date = moment().format()), await oldAutoMeal.save();
       } else {
         const autoMeal = await AutoMealUpdate.create({
           breakfast: true,
@@ -182,7 +178,7 @@ exports.autoMealUpdate = async (req, res, next) => {
         'DD/MM/YYYY'
       )} থেকে আপনি আপনার নিজের মিল নিজে পরিবর্তন করতে পারবেন ।`;
       message = 'সফল ভাবে অটমিল অফশনটি চালু করা হয়েছে।';
-    } else if (!autoMealUpdate) {
+    } else {
       await AutoMealUpdate.findOneAndDelete({
         $and: [{ messId: user.messId }, { monthId: month._id }],
       });
