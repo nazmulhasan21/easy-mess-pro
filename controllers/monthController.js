@@ -225,18 +225,18 @@ exports.getAutoMealOption = async (req, res, next) => {
       );
     // find today meal
     const today = moment().format();
-    const userMeal = await Meal.find({
-      $and: [
-        { monthId: activeMonth._id },
-        { userId: user._id },
-        {
-          date: {
-            $gte: moment(today).startOf('day'),
-            $lte: moment(today).endOf('day'),
-          },
-        },
-      ],
-    });
+    // const userMeal = await Meal.find({
+    //   $and: [
+    //     { monthId: month._id },
+    //     { userId: user._id },
+    //     {
+    //       date: {
+    //         $gte: moment(today).startOf('day'),
+    //         $lte: moment(today).endOf('day'),
+    //       },
+    //     },
+    //   ],
+    // });
 
     res.status(200).json({
       status: 'success',

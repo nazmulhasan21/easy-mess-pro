@@ -501,7 +501,15 @@ exports.autoMealOnOf = async (req, res, next) => {
     });
     if (!activeMonth)
       return next(new AppError(404, 'month', `কোন সক্রিয় মাস নেই`));
-
+    if (!activeMonth.autoMealUpdate) {
+      return next(
+        new AppError(
+          402,
+          'autoMeal',
+          'আপনাকে আগে অটো মিল অপশটটি চালু করতে হবে।'
+        )
+      );
+    }
     const autoMealUpdate = await AutoMealUpdate.findOne({
       $and: [{ messId: user.messId }, { monthId: activeMonth._id }],
     });
@@ -513,7 +521,7 @@ exports.autoMealOnOf = async (req, res, next) => {
 
     if (breakfast == true) {
       updateObj = {
-        ...autoMealUpdate._doc,
+        ...autoMealUpdate?._doc,
         breakfast: true,
       };
       pushTitle = `রান্নার চাউল দেওয়া হয়েছে।`;
@@ -523,7 +531,7 @@ exports.autoMealOnOf = async (req, res, next) => {
       message = 'সফল ভাবে সকালের মিল পরিবর্তনের অনুমতি বন্ধ করা হলো।';
     } else if (lunch == true) {
       updateObj = {
-        ...autoMealUpdate._doc,
+        ...autoMealUpdate?._doc,
         breakfast: true,
         lunch: true,
       };
@@ -534,7 +542,7 @@ exports.autoMealOnOf = async (req, res, next) => {
       message = 'সফল ভাবে দুপুরের মিল পরিবর্তনের অনুমতি বন্ধ করা হলো।';
     } else if (dinner == true) {
       updateObj = {
-        ...autoMealUpdate._doc,
+        ...autoMealUpdate?._doc,
         breakfast: true,
         lunch: true,
         dinner: true,
@@ -546,7 +554,7 @@ exports.autoMealOnOf = async (req, res, next) => {
       message = 'সফল ভাবে রাতের মিল পরিবর্তনের অনুমতি বন্ধ করা হলো।';
     } else if (tomorrow == true) {
       updateObj = {
-        ...autoMealUpdate._doc,
+        ...autoMealUpdate?._doc,
         breakfast: true,
         lunch: true,
         dinner: true,
@@ -559,7 +567,7 @@ exports.autoMealOnOf = async (req, res, next) => {
       message = 'সফল ভাবে আগামীকাল সকালের মিল পরিবর্তনের অনুমতি বন্ধ করা হলো।';
     } else {
       updateObj = {
-        ...autoMealUpdate._doc,
+        ...autoMealUpdate?._doc,
         ...body,
       };
 
@@ -584,7 +592,6 @@ exports.autoMealOnOf = async (req, res, next) => {
 
     res.status(200).json({
       status: 'success',
-      upDoc,
     });
   } catch (error) {
     next(error);
