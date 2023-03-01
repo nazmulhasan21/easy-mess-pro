@@ -500,7 +500,7 @@ exports.deleteMarketers = async (req, res, next) => {
 // const mydate = '2023-03-01T03:54:36+06:00';
 
 // const oldDate = moment(mydate).format();
-// const date = moment().format();
+const date = moment().format();
 // console.log({ oldDate, date });
 // const same = moment(mydate).isSameOrBefore(date, 'hour'); // false
-// console.log(same);
+// console.log(date);

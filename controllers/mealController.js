@@ -221,7 +221,10 @@ exports.createMeal = async (req, res, next) => {
 exports.getLastDayMeal = async (req, res, next) => {
   try {
     const { user } = req;
-    const { day } = req.query;
+    const day = req.query.day;
+    // const day = moment(getDay).format('MM/DD/YYYY');
+    // console.log(day);
+
     let dateFilter = {};
     dateFilter = {
       date: {
@@ -256,13 +259,13 @@ exports.getLastDayMeal = async (req, res, next) => {
         const user = await User.findById(userId).select('name avatar role');
 
         let userMeals = [];
-        let meal = '';
+        let meal = {};
         if (day && dateFilter) {
           userMeals = await Meal.findOne({
             $and: [{ userId: userId }, { monthId: month._id }, dateFilter],
           });
 
-          if (userMeals.length == 0) {
+          if (!userMeals) {
             meal = false;
           } else {
             meal = {
@@ -277,23 +280,47 @@ exports.getLastDayMeal = async (req, res, next) => {
             };
           }
         } else {
-          userMeals = await Meal.find({
-            $and: [{ userId: userId }, { monthId: month._id }],
+          let dateFilter = {};
+          dateFilter = {
+            date: {
+              $gte: moment().startOf('day'),
+              $lte: moment().endOf('day'),
+            },
+          };
+          userMeals = await Meal.findOne({
+            $and: [{ userId: userId }, { monthId: month._id }, dateFilter],
           });
 
-          const lastDayMeal = userMeals[userMeals.length - 1];
-          const userMeal = lastDayMeal;
-          // create new
-          meal = {
-            _id: userMeal?._id,
-            userId: userId,
-            user,
-            breakfast: userMeal?.breakfast || 0,
-            lunch: userMeal?.lunch || 0,
-            dinner: userMeal?.dinner || 0,
-            total: userMeal?.total || 0,
-            date: userMeal?.date || '',
-          };
+          if (userMeals) {
+            meal = {
+              _id: userMeals?._id,
+              userId: userId,
+              user,
+              breakfast: userMeals?.breakfast,
+              lunch: userMeals?.lunch,
+              dinner: userMeals?.dinner,
+              total: userMeals?.total,
+              date: userMeals?.date,
+            };
+          } else {
+            userMeals = await Meal.find({
+              $and: [{ userId: userId }, { monthId: month._id }],
+            });
+
+            const lastDayMeal = userMeals[userMeals.length - 1];
+            const userMeal = lastDayMeal;
+            // create new
+            meal = {
+              _id: userMeal?._id,
+              userId: userId,
+              user,
+              breakfast: userMeal?.breakfast || 0,
+              lunch: userMeal?.lunch || 0,
+              dinner: userMeal?.dinner || 0,
+              total: userMeal?.total || 0,
+              date: userMeal?.date || '',
+            };
+          }
         }
 
         return meal;
