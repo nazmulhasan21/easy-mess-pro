@@ -10,16 +10,14 @@ const { pushNotification } = require('./utils/push-notification');
 // update meal
 module.exports.updateMeal = async () => {
   // all mess
-  const allMess = await Mess.find({ _id: '63e771ae4bd932ba3cd793b7' }).select(
-    'allMember'
-  );
+  const allMess = await Mess.find().select('allMember');
 
   // forEach work
 
   allMess.forEach(async (mess) => {
     // find active month
     const month = await Month.findOne({
-      $and: [{ messId: mess._id }, { active: true }],
+      $and: [{ messId: mess._id }, { active: true }, { autoMealUpdate: true }],
     });
 
     if (month) {
@@ -30,9 +28,8 @@ module.exports.updateMeal = async () => {
         const isMonthDate = moment(month.date).isSame(date, 'month');
         // find oldMeals
         if (isMonthDate) {
-          const oldMeals = await Meal.findOne({
+          const oldMeals = await Meal.find({
             $and: [
-              { userId: userId },
               { monthId: month._id },
               {
                 date: {
@@ -44,7 +41,7 @@ module.exports.updateMeal = async () => {
           });
 
           // if no add next day meal
-          if (oldMeals) {
+          if (oldMeals.length > 0) {
             console.log('Old meal is found so not new add this day meal');
           } else {
             // users Meals
@@ -109,9 +106,9 @@ module.exports.updateMeal = async () => {
   });
 };
 
-module.exports.updateMonthStatus = async () => {
-  await Month.updateMany({ active: false });
-  console.log('Your scheduled job at all month in unActive');
-  const today = moment().format('YYYY-MM-DD hh:mm:ss');
-  console.log(today);
-};
+// module.exports.updateMonthStatus = async () => {
+//   await Month.updateMany({ active: false });
+//   console.log('Your scheduled job at all month in unActive');
+//   const today = moment().format('YYYY-MM-DD hh:mm:ss');
+//   console.log(today);
+// };
