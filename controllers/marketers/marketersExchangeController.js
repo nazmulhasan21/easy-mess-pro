@@ -30,12 +30,21 @@ exports.marketerExchange = async (req, res, next) => {
 
     const isValid = mongoose.Types.ObjectId.isValid(req.params.id);
     if (!isValid) return next(new AppError(400, '_id', 'Id is not valid '));
+
     if (!mongoose.Types.ObjectId.isValid(exchangeReceiver))
       return next(
         new AppError(
           400,
           'exchangeReceiver',
           'আপনার পরিবর্তে যে বাজার করবে তা নির্বাচন করুন।'
+        )
+      );
+    if (!mongoose.Types.ObjectId.isValid(exchangeMarketerId))
+      return next(
+        new AppError(
+          402,
+          'marker',
+          'যার বাজার আছে শুধু তার সাথেই বাজার পরিবর্তন করতে পারবেন।'
         )
       );
     const activeMonth = await Month.findOne({
