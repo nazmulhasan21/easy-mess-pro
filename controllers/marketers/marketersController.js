@@ -95,7 +95,7 @@ exports.getMarketersList = async (req, res, next) => {
         .select('monthId date marketers name avatar role')
         .sort({ date: 1 }),
       req.query
-    ).paginate();
+    );
     const doc = async () => {
       const data = await features.query;
       return data.map((item) => {
@@ -180,10 +180,16 @@ exports.createMarketers = async (req, res, next) => {
           new AppError(402, 'date', 'আপনার সক্রিয় মাসের তারিখ নির্বাচন করুন')
         );
       const findOldMarketers = await Marketer.findOne({
-        date: {
-          $gte: moment(date).startOf('day'),
-          $lte: moment(date).endOf('day'),
-        },
+        $and: [
+          { messId: user?.messId },
+          { monthId: month?._id },
+          {
+            date: {
+              $gte: moment(date).startOf('day'),
+              $lte: moment(date).endOf('day'),
+            },
+          },
+        ],
       });
       if (findOldMarketers) {
         return next(
@@ -196,13 +202,24 @@ exports.createMarketers = async (req, res, next) => {
           )
         );
       } else {
-        // 3. create Marketers list
-        var marketers = await Marketer.create({
-          messId: user.messId,
-          monthId: month._id,
-          marketers: marketersId,
-          date: date,
-        });
+        const isSame = marketersId[0] === marketersId[1] ? true : false;
+        if (isSame) {
+          return next(
+            new AppError(
+              402,
+              'same',
+              'আপনি ভিন্ন দুইজন বাজারকারী নির্বাচন করুন।'
+            )
+          );
+        } else {
+          // 3. create Marketers list
+          var marketers = await Marketer.create({
+            messId: user.messId,
+            monthId: month._id,
+            marketers: marketersId,
+            date: date,
+          });
+        }
       }
 
       res.status(201).json({
@@ -413,12 +430,12 @@ exports.updateMarketers = async (req, res, next) => {
     // }
 
     // find array
-    const marketersId = [];
-    body.marketers.find((marketer) => {
-      if (marketer) {
-        marketersId.push(marketer);
-      }
-    });
+    const marketersId = body.marketers.filter(Boolean);
+    const isSame = marketersId[0] === marketersId[1] ? true : false;
+    if (isSame)
+      return next(
+        new AppError(402, 'same', 'আপনি ভিন্ন দুইজন বাজারকারী নির্বাচন করুন।')
+      );
 
     const newMarketers = {
       date: body.date,
@@ -504,11 +521,3 @@ exports.deleteMarketers = async (req, res, next) => {
     next(error);
   }
 };
-
-// const mydate = '2023-03-01T03:54:36+06:00';
-
-// const oldDate = moment(mydate).format();
-const date = moment().format();
-// console.log({ oldDate, date });
-// const same = moment(mydate).isSameOrBefore(date, 'hour'); // false
-// console.log(date);
