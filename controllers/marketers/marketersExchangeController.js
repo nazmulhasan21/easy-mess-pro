@@ -332,6 +332,8 @@ exports.marketerExchangeAccept = async (req, res, next) => {
       );
 
     //2. join sender market
+    if (marketerExchange?.status == 'accept')
+      return next(new AppError(402, 'accept', 'আপনি আগেই গ্রহন করেছেন'));
     const senderMarket = await Marketer.findById(marketerExchange.marketerId);
     senderMarket.marketers.pull(marketerExchange.marketersExchangeSender);
     senderMarket.marketers.push(user._id);
