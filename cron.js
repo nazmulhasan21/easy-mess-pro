@@ -17,11 +17,11 @@ module.exports.updateMeal = async () => {
   allMess.forEach(async (mess) => {
     // find active month
     const month = await Month.findOne({
-      $and: [{ messId: mess._id }, { active: true }, { autoMealUpdate: true }],
+      $and: [{ messId: mess?._id }, { active: true }, { autoMealUpdate: true }],
     });
 
     if (month) {
-      const members = mess.allMember;
+      const members = mess?.allMember;
       // all Member meals add in next day
       members.map(async (userId) => {
         const date = moment().add(1, 'days');
@@ -30,7 +30,7 @@ module.exports.updateMeal = async () => {
         if (isMonthDate) {
           const oldMeals = await Meal.find({
             $and: [
-              { monthId: month._id },
+              { monthId: month?._id },
               {
                 date: {
                   $gte: moment(date).startOf('day'),
@@ -41,14 +41,14 @@ module.exports.updateMeal = async () => {
           });
 
           // if no add next day meal
-          if (oldMeals.length > 0) {
+          if (oldMeals?.length > 0) {
             console.log('Old meal is found so not new add this day meal');
           } else {
             // users Meals
             const userMeals = await Meal.find({
-              $and: [{ userId: userId }, { monthId: month._id }],
+              $and: [{ userId: userId }, { monthId: month?._id }],
             });
-            const lastDayMeal = userMeals[userMeals.length - 1];
+            const lastDayMeal = userMeals[userMeals?.length - 1];
             const userMeal = lastDayMeal;
             // create new
             const meal = await Meal.create({
@@ -69,39 +69,39 @@ module.exports.updateMeal = async () => {
               meal?.date
             ).format('DD/MM/YY')}`;
             const member = await User.findById(userId).select('FCMToken');
-            if (member && member.FCMToken) {
-              const FCMToken = member.FCMToken;
+            if (member && member?.FCMToken) {
+              const FCMToken = member?.FCMToken;
               await pushNotification(pushTitle, body, FCMToken);
             }
           }
         } else {
         }
       });
-    }
 
-    // auto meal update
-    const autoMealUpdate = await AutoMealUpdate.findOne({
-      $and: [{ messId: mess._id }, { monthId: month._id }],
-    });
-    if (autoMealUpdate) {
-      const autoMealUpdateObject = {
-        breakfast: true,
-        lunch: false,
-        dinner: false,
-        tomorrow: false,
-        date: moment().format(),
-      };
+      // auto meal update
+      const autoMealUpdate = await AutoMealUpdate.findOne({
+        $and: [{ messId: mess?._id }, { monthId: month?._id }],
+      });
+      if (autoMealUpdate) {
+        const autoMealUpdateObject = {
+          breakfast: true,
+          lunch: false,
+          dinner: false,
+          tomorrow: false,
+          date: moment().format(),
+        };
 
-      const upDoc = await AutoMealUpdate.findByIdAndUpdate(
-        autoMealUpdate._id,
-        autoMealUpdateObject,
-        {
-          new: true,
-          runValidators: true,
-        }
-      );
+        const upDoc = await AutoMealUpdate.findByIdAndUpdate(
+          autoMealUpdate?._id,
+          autoMealUpdateObject,
+          {
+            new: true,
+            runValidators: true,
+          }
+        );
 
-      console.log('auto meal update cron');
+        console.log('auto meal update cron');
+      }
     }
   });
 };
