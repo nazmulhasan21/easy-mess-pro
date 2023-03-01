@@ -81,7 +81,12 @@ exports.getMarketersList = async (req, res, next) => {
     const userIdFilter = userId ? { marketers: userId } : {};
     // find query
     const findQuery = {
-      $and: [{ monthId: activeMonth._id }, dateFilter, userIdFilter],
+      $and: [
+        { monthId: activeMonth?._id },
+        { messId: user?.messId },
+        dateFilter,
+        userIdFilter,
+      ],
     };
     // 2. get all cost in active month
     const features = new APIFeatures(
@@ -95,9 +100,9 @@ exports.getMarketersList = async (req, res, next) => {
       const data = await features.query;
       return data.map((item) => {
         return {
-          _id: item._id,
-          date: item.date,
-          marketers: item.marketers,
+          _id: item?._id,
+          date: item?.date,
+          marketers: item?.marketers,
         };
       });
     };
@@ -133,34 +138,36 @@ exports.createMarketers = async (req, res, next) => {
       );
     // if crate marketers list auto
     if (createAuto && marketDays) {
-      const monthName = moment(month?.date).format('MMM');
-      const startDate = moment().month(monthName).startOf('month');
-      const endOfMonth = moment().month(monthName).endOf('month').format('DD');
+      // find old marketers
+      const deleteOldMarketers = await Marketer.deleteMany({
+        $and: [{ monthId: month?._id }, { messId: user?.messId }],
+      });
 
-      for (let i = 0; i < endOfMonth; i += marketDays) {
-        const marketDate = moment(startDate).add(i, 'days').format();
-        const findOldMarketers = await Marketer.findOne({
-          date: {
-            $gte: moment(marketDate).startOf('day'),
-            $lte: moment(marketDate).endOf('day'),
-          },
-        });
-        if (findOldMarketers) {
-        } else {
+      if (deleteOldMarketers) {
+        const monthName = moment(month?.date).format('MMM');
+        const startDate = moment().month(monthName).startOf('month');
+        const endOfMonth = moment()
+          .month(monthName)
+          .endOf('month')
+          .format('DD');
+
+        for (let i = 0; i < endOfMonth; i += marketDays) {
+          let marketDate = moment(startDate).add(i, 'days').format();
+          console.log(marketDate);
+
           // 3. create Marketers list
-          var marketers = await Marketer.create({
-            messId: user.messId,
-            monthId: month._id,
+          var marketersOne = await Marketer.create({
+            messId: user?.messId,
+            monthId: month?._id,
             marketers: [],
             date: marketDate,
           });
         }
+        res.status(201).json({
+          status: 'success',
+          message: 'সফলভাবে বাজারের তালিকা তৈরি করা হয়েছে।',
+        });
       }
-      res.status(201).json({
-        status: 'success',
-        message: 'সফলভাবে বাজারের তালিকা তৈরি করা হয়েছে।',
-        marketers,
-      });
     } else {
       // create marketers for one by one..
       if (!date) return next(new AppError(402, 'date', 'তারিখ নির্বাচন করুন।'));
@@ -470,28 +477,29 @@ exports.deleteMarketers = async (req, res, next) => {
       return next(new AppError(404, 'marketers', 'এটি ‍ডিলেট করতে পারবেন না।'));
 
     // 3. delete Cost
-    await Marketer.findByIdAndDelete(req.params.id);
+    const delateMarketers = await Marketer.findByIdAndDelete(req.params.id);
+    if (delateMarketers) {
+      // Push Notifications with Firebase
+      const pushTitle = 'বাজারকারীদের ডিলেট করা হয়েছে';
+      const pushBody = `তারিখ:${moment(marketers.date).format(
+        'DD/MM/YY'
+      )} বাজারকারীদের  ডিলেট করা হলো।`;
+      const FCMTokens = await getMessMemberFCMTokens(user.messId);
+      if (FCMTokens) {
+        await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
+      }
 
-    // Push Notifications with Firebase
-    const pushTitle = 'বাজারকারীদের ডিলেট করা হয়েছে';
-    const pushBody = `তারিখ:${moment(marketers.date).format(
-      'DD/MM/YY'
-    )} বাজারকারীদের  ডিলেট করা হলো।`;
-    const FCMTokens = await getMessMemberFCMTokens(user.messId);
-    if (FCMTokens) {
-      await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
+      // await Notification.create({
+      //   monthId: cost.messId,
+      //   title: pushTitle,
+      //   description: pushBody,
+      //   date: cost.updatedAt,
+      // });
+      res.status(200).json({
+        status: 'success',
+        message: 'বাজারকারীদের সফল ভাবে ডিলেট হয়েছে।',
+      });
     }
-
-    // await Notification.create({
-    //   monthId: cost.messId,
-    //   title: pushTitle,
-    //   description: pushBody,
-    //   date: cost.updatedAt,
-    // });
-    res.status(200).json({
-      status: 'success',
-      message: 'বাজারকারীদের সফল ভাবে ডিলেট হয়েছে।',
-    });
   } catch (error) {
     next(error);
   }
