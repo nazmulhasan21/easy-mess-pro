@@ -223,7 +223,7 @@ exports.getLastDayMeal = async (req, res, next) => {
     const { user } = req;
     const day = req.query.day;
     // const day = moment(getDay).format('MM/DD/YYYY');
-    // console.log(day);
+    console.log(day);
 
     let dateFilter = {};
     dateFilter = {
@@ -330,12 +330,12 @@ exports.getLastDayMeal = async (req, res, next) => {
       return res.status(200).json({
         status: 'success',
         message: `${moment(day).format(
-          'DD/MM/YY'
+          'DD/MM/YYYY'
         )} এই তারিখে কোন মিল যোগ করা হয়নি।`,
         data: {
           data: [],
           total: {},
-          date: moment(day),
+          date: moment(day).format(),
         },
       });
     }
