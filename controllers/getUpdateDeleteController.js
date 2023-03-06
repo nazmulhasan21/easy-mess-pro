@@ -10,7 +10,10 @@ const APIFeatures = require('../utils/apiFeatures');
 
 const moment = require('moment');
 const User = require('../models/userModel');
-const { pushNotificationMultiple } = require('../utils/push-notification');
+const {
+  pushNotificationMultiple,
+  pushNotification,
+} = require('../utils/push-notification');
 const { getMessMemberFCMTokens } = require('../utils/fun');
 const Notification = require('../models/notificationsModel');
 
@@ -209,6 +212,10 @@ exports.updateOne = (Model, model) => async (req, res, next) => {
       pushBody = `মোট মিল=${total}/= তারিখ:${moment(doc.date).format(
         'DD/MM/YY'
       )}`;
+
+      if (member?.FCMToken) {
+        await pushNotification(pushTitle, pushBody, member?.FCMToken);
+      }
     } else {
       newDoc = {
         ...body,
@@ -218,6 +225,11 @@ exports.updateOne = (Model, model) => async (req, res, next) => {
       pushBody = `${doc.type}=${body.amount || doc.amount}/= তারিখ:${moment(
         body.date || doc.date
       ).format('DD/MM/YY')}`;
+
+      const FCMTokens = await getMessMemberFCMTokens(user.messId);
+      if (FCMTokens) {
+        await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
+      }
     }
 
     const upDoc = await Model.findByIdAndUpdate(req.params.id, newDoc, {
@@ -225,11 +237,6 @@ exports.updateOne = (Model, model) => async (req, res, next) => {
       runValidators: true,
     });
     // Push Notifications with Firebase
-
-    const FCMTokens = await getMessMemberFCMTokens(user.messId);
-    if (FCMTokens) {
-      await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
-    }
 
     // await Notification.create({
     //   monthId: activeMonth._id,

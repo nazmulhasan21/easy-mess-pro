@@ -16,7 +16,10 @@ const {
 } = require('../utils/push-notification');
 const Notification = require('../models/notificationsModel');
 const { default: mongoose } = require('mongoose');
-const { getMessMemberFCMTokens } = require('../utils/fun');
+const {
+  getMessMemberFCMTokens,
+  getMessManagerSubFCMTokens,
+} = require('../utils/fun');
 const { expectCt } = require('helmet');
 const AutoMealUpdate = require('../models/autoMealUpdateModel');
 
@@ -673,7 +676,7 @@ exports.updateMyMeal = async (req, res, next) => {
 
     pushTitle = `${user.name} এর মিল পরিবর্তন করা হয়েছে`;
     pushBody = `মোট মিল=${total}/= তারিখ:${moment(doc.date).format(
-      'DD/MM/YY'
+      'DD/MM/YYYY'
     )}`;
 
     const upDoc = await Meal.findByIdAndUpdate(req.params.id, newDoc, {
@@ -682,7 +685,7 @@ exports.updateMyMeal = async (req, res, next) => {
     });
     // Push Notifications with Firebase
 
-    const FCMTokens = await getMessMemberFCMTokens(user.messId);
+    const FCMTokens = await getMessManagerSubFCMTokens(user.messId);
     if (FCMTokens) {
       await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
     }

@@ -8,7 +8,11 @@ dotenv.config({
 process.env.PUPPETEER_SKIP_DOWNLOAD;
 // const schedule = require('node-schedule');
 var cron = require('node-cron');
-const { updateMeal, updateMonthStatus } = require('./cron');
+const {
+  updateMeal,
+  updateMonthStatus,
+  pushNotificationMarketers,
+} = require('./cron');
 // process.on('uncaughtException', (err) => {
 //   console.log('UNCAUGHT EXCEPTION!!! shutting down...');
 //   console.log(err.name, err.message);
@@ -50,6 +54,15 @@ cron.schedule(
   async () => {
     console.log('running a task  02:55');
     await updateMeal();
+    await pushNotificationMarketers('আজ');
+  },
+  { scheduled: true, timezone: 'Asia/Dhaka' }
+);
+
+cron.schedule(
+  '00 19 * * *',
+  async () => {
+    await pushNotificationMarketers('আগামীকাল');
   },
   { scheduled: true, timezone: 'Asia/Dhaka' }
 );

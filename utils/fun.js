@@ -270,6 +270,24 @@ exports.getMessMemberFCMTokens = async (messId) => {
   });
   return membersFCMTokens;
 };
+// get mess manager and sub manager
+exports.getMessManagerSubFCMTokens = async (messId) => {
+  const managerSub = await User.find({
+    $and: [
+      { messId: messId },
+      { $or: [{ role: 'manager' }, { role: 'subManager' }] },
+    ],
+  }).select('FCMToken');
+  const membersFCMTokens = [];
+  managerSub.forEach((managerSub) => {
+    if (managerSub) {
+      if (managerSub.FCMToken) {
+        membersFCMTokens.push(managerSub.FCMToken);
+      }
+    }
+  });
+  return membersFCMTokens;
+};
 
 // get pdf
 /**

@@ -1,5 +1,6 @@
 const moment = require('moment');
 const AutoMealUpdate = require('./models/autoMealUpdateModel');
+const Marketer = require('./models/marketersModel');
 const Meal = require('./models/mealModel');
 
 const Mess = require('./models/messModel');
@@ -101,6 +102,65 @@ module.exports.updateMeal = async () => {
         );
 
         console.log('auto meal update cron');
+      }
+    }
+  });
+};
+
+module.exports.pushNotificationMarketers = async (params) => {
+  // all mess
+  const allMess = await Mess.find().select('allMember');
+
+  // forEach work
+
+  allMess.forEach(async (mess) => {
+    // find active month
+    const month = await Month.findOne({
+      $and: [{ messId: mess?._id }, { active: true }],
+    });
+
+    if (month) {
+      // all Member meals add in next day
+      let date;
+      if (params == 'আগামীকাল') {
+        date = moment().add(1, 'days');
+      } else {
+        date = moment().format();
+      }
+
+      const isMonthDate = moment(month.date).isSame(date, 'month');
+      // find oldMeals
+      if (isMonthDate) {
+        // users Meals
+        const tomorrowMarketers = await Marketer.findOne({
+          $and: [
+            { messId: mess?._id },
+            { monthId: month?._id },
+            {
+              date: {
+                $gte: moment(date).startOf('day'),
+                $lte: moment(date).endOf('day'),
+              },
+            },
+          ],
+        });
+        if (tomorrowMarketers) {
+          // send push notification for marketers
+          tomorrowMarketers.map(async (marketersId) => {
+            const marker = await User.findById(marketersId).select('FCMToken');
+
+            if (marker?.FCMToken) {
+              const pushBody = `আপনার ${params} বাজার।`;
+              const pushTitle = `${
+                marker.name
+              } ${params} আপনার বাজার তারিখ: ${moment(date).format(
+                'DD/MM/YYYY'
+              )}`;
+
+              await pushNotification(pushTitle, pushBody, marker?.FCMToken);
+            }
+          });
+        }
       }
     }
   });

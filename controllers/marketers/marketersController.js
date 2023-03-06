@@ -21,7 +21,10 @@ const {
   pushNotificationMultiple,
   pushNotification,
 } = require('../../utils/push-notification');
-const { getMessMemberFCMTokens } = require('../../utils/fun');
+const {
+  getMessMemberFCMTokens,
+  getMessManagerSubFCMTokens,
+} = require('../../utils/fun');
 
 // get cost one
 exports.getMarketers = async (req, res, next) => {
@@ -219,6 +222,23 @@ exports.createMarketers = async (req, res, next) => {
             marketers: marketersId,
             date: date,
           });
+
+          if (marketersId.length > 0) {
+            marketersId?.map(async (marketersId) => {
+              const marker = await User.findById(marketersId).select(
+                'FCMToken'
+              );
+
+              if (marker?.FCMToken) {
+                const pushBody = `আপনার বাজার দেওয়া হয়েছে:`;
+                const pushTitle = `${marker.name}  আপনার বাজার তারিখ: ${moment(
+                  date
+                ).format('DD/MM/YYYY')}`;
+
+                await pushNotification(pushTitle, pushBody, marker?.FCMToken);
+              }
+            });
+          }
         }
       }
 
@@ -289,13 +309,13 @@ exports.marketerJoin = async (req, res, next) => {
     await marketers.save();
 
     const pushTitle = 'বাজার কারী যুক্ত হয়েছেন';
-    const pushBody = `তারিখ:${moment(marketers.date).format('DD/MM/YY')},নাম:${
+    const pushBody = `তারিখ:${moment(marketers.date).format('DD/MM/YY')}, নাম:${
       user.name
     }  বাজারে যুক্ত হয়েছেন।`;
 
     // Push Notifications with Firebase
 
-    const FCMTokens = await getMessMemberFCMTokens(user.messId);
+    const FCMTokens = await getMessManagerSubFCMTokens(user.messId);
     if (FCMTokens) {
       await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
     }
@@ -309,7 +329,7 @@ exports.marketerJoin = async (req, res, next) => {
     // 3. send res
     res.status(200).json({
       status: 'success',
-      message: 'সফল ভাবে আপনি বাজারে যোগদান করেছে।',
+      message: 'সফল ভাবে আপনি বাজারে যোগদান করেছেন।',
     });
   } catch (error) {
     next(error);
@@ -350,13 +370,13 @@ exports.marketerLeave = async (req, res, next) => {
     }
 
     const pushTitle = 'বাজার কারী লীভ নিয়েছেন।';
-    const pushBody = ` তারিখ:${moment(marketers.date).format('DD/MM/YY')}নাম: ${
-      user.name
-    }  বাজার থেকে লীভ গ্রহন করেছেন।`;
+    const pushBody = ` তারিখ:${moment(marketers.date).format(
+      'DD/MM/YY'
+    )} নাম: ${user.name}  বাজার থেকে লীভ গ্রহন করেছেন।`;
 
     // Push Notifications with Firebase
 
-    const FCMTokens = await getMessMemberFCMTokens(user.messId);
+    const FCMTokens = await getMessManagerSubFCMTokens(user.messId);
     if (FCMTokens) {
       await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
     }
@@ -452,7 +472,16 @@ exports.updateMarketers = async (req, res, next) => {
     )}  থেকে তারিখ:${moment(newMarketers.date || marketers.date).format(
       'DD/MM/YY'
     )} পরিবর্তন করা হলো।`;
-    const FCMTokens = await getMessMemberFCMTokens(user.messId);
+
+    doc?.marketers?.map(async (marketersId) => {
+      const marker = await User.findById(marketersId).select('FCMToken');
+
+      if (marker?.FCMToken) {
+        await pushNotification(pushTitle, pushBody, marker?.FCMToken);
+      }
+    });
+
+    const FCMTokens = await getMessManagerSubFCMTokens(user.messId);
     if (FCMTokens) {
       await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
     }
@@ -501,7 +530,16 @@ exports.deleteMarketers = async (req, res, next) => {
       const pushBody = `তারিখ:${moment(marketers.date).format(
         'DD/MM/YY'
       )} বাজারকারীদের  ডিলেট করা হলো।`;
-      const FCMTokens = await getMessMemberFCMTokens(user.messId);
+
+      delateMarketers.marketers?.map(async (marketersId) => {
+        const marker = await User.findById(marketersId).select('FCMToken');
+
+        if (marker?.FCMToken) {
+          await pushNotification(pushTitle, pushBody, marker?.FCMToken);
+        }
+      });
+
+      const FCMTokens = await getMessManagerSubFCMTokens(user.messId);
       if (FCMTokens) {
         await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
       }
