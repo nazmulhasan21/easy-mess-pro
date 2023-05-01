@@ -12,7 +12,10 @@ const AppError = require('../utils/appError');
 const monthMemberData = require('../controllers/getUpdateDeleteController');
 
 const moment = require('moment');
-const { pushNotificationMultiple } = require('../utils/push-notification');
+const {
+  pushNotificationMultiple,
+  pushNotification,
+} = require('../utils/push-notification');
 const User = require('../models/userModel');
 const Notification = require('../models/notificationsModel');
 const { getMessMemberFCMTokens } = require('../utils/fun');
@@ -65,11 +68,15 @@ exports.createMonthMemberData = async (req, res, next) => {
     const pushBody = `${type}=${amount}/= তারিখ:${moment(date).format(
       'DD/MM/YY'
     )}`;
-    const FCMTokens = await getMessMemberFCMTokens(user.messId);
-    if (FCMTokens) {
-      await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
+    // const FCMTokens = await getMessMemberFCMTokens(user.messId);
+    // if (FCMTokens) {
+    //   await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
+    // }
+    // const member = await User.findById(myMeal.userId).select('FCMToken');
+    if (member && member.FCMToken) {
+      const FCMToken = member.FCMToken;
+      await pushNotification(pushTitle, pushBody, FCMToken);
     }
-
     // await Notification.create({
     //   monthId: month._id,
     //   user: userId,

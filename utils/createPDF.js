@@ -46,13 +46,6 @@ module.exports = async (templateName, data) => {
         'Accept-Language': 'bn',
       },
       preferCSSPageSize: true,
-      // Use a custom font that supports Bangali characters
-      // For example, you can download a free Bangali font from Google Fonts:
-      // https://fonts.google.com/specimen/Bangla
-      // Then, load the font in your HTML/CSS and specify it here:
-      // See https://developers.google.com/fonts/docs/getting_started#specifying_font_families_and_styles_in_a_stylesheet
-      // for instructions on how to load Google Fonts in your HTML/CSS.
-      // fontFamily: 'Bangla, sans-serif',
     });
     console.log('Done create pdf');
 
