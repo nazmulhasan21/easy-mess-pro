@@ -1,0 +1,220 @@
+<html lang='bn'>
+  <head>
+    <meta charset='UTF-8' />
+    <meta http-equiv='X-UA-Compatible' content='IE=edge' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title>{{title}}</title>
+    <link
+      href='https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css'
+      rel='stylesheet'
+      integrity='sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC'
+      crossorigin='anonymous'
+    />
+    <link
+      rel='stylesheet'
+      href='https://fonts.googleapis.com/css?family=Hind Siliguri'
+    />
+    <style>
+      body { font-family: 'Hind Siliguri', serif; font-size: 48px; }
+    </style>
+  </head>
+  <body class='p-4'>
+    <div class='container-fluid'>
+      <h1 class='text-center'>{{messId.messName}}</h1>
+      <h5 class='text-center'>Manager
+        <img
+          src='{{manager.avatar}}'
+          width='35'
+          height='35'
+        />{{manager.name}}</h5>
+
+      <h6 class='text-center'>Month Title:{{monthTitle}}</h6>
+      <h6 class='text-center'>Rice Balance:{{riceBalance}}</h6>
+      <h6 class='text-center'>MealRate:{{mealRate}}</h6>
+      <div class='row'>
+        <div class=''>
+          <table class='table table-bordered table-striped p-0'>
+            <thead>
+              <tr class='p-0 m-0'>
+                <th class='p-0 m-0'>নাম</th>
+                <th class='p-0 m-0'>মিল</th>
+                <th class='p-0 m-0'>ফি:মিল</th>
+                <th class='p-0 m-0'>ফি:মি:খরচ</th>
+                <th class='p-0 m-0'>অন্ন্যান্য খরচ</th>
+                <th class='p-0 m-0'>মোট খরচ</th>
+                <th class='p-0 m-0'>জমা</th>
+                <th class='p-0 m-0'>উদ্বৃত্ত</th>
+                <th class='p-0 m-0'>চাউল উদ্বৃত্ত</th>
+              </tr>
+            </thead>
+            <tbody class='p-0 m-0'>
+              {{#each userMonthData as |member|}}
+                <tr>
+                  <td class='p-0 m-0'><img
+                      src='{{member.userId.avatar}}'
+                      width='35'
+                      height='35'
+                    />{{member.userId.name}}</td>
+                  <td class='p-0 m-0'>{{member.totalMeal}}</td>
+                  <td class='p-0 m-0'>{{member.fixedMeal}}</td>
+                  <td class='p-0 m-0'>{{member.mealCost}}</td>
+                  <td class='p-0 m-0'>{{member.otherCost}}</td>
+                  <td class='p-0 m-0'>{{member.totalCost}}</td>
+                  <td class='p-0 m-0'>{{member.totalDeposit}}</td>
+                  <td class='p-0 m-0'>{{member.balance}}</td>
+                  <td class='p-0 m-0'>{{member.riceBalance}}</td>
+                </tr>
+              {{/each}}
+            </tbody>
+            <thead>
+              <tr>
+                <th class='p-0 m-0'>Total Border =
+                  {{userMonthData.length}}</th>
+                <th class='p-0 m-0'>{{totalMeal}}</th>
+                <th class='p-0 m-0'>{{totalFixedMeal}}</th>
+                <th class='p-0 m-0'>{{totalMealCost}}</th>
+                <th class='p-0 m-0'>{{totalOtherCost}}</th>
+                <th class='p-0 m-0'>{{totalCost}}</th>
+                <th class='p-0 m-0'>{{totalDeposit}}</th>
+                <th class='p-0 m-0'></th>
+                <th class='p-0 m-0'>{{riceBalance}}</th>
+
+              </tr>
+            </thead>
+          </table>
+        </div>
+      </div>
+
+      {{! rice table }}
+
+      <div class='row'>
+
+        {{! cost table }}
+
+        <div class='py-5'>
+          <h6 class='text-center'> সকল বডারের তথ্য</h6>
+          <table class='table table-bordered table-striped'>
+            <thead>
+              <tr>
+                <th class='p-0 m-0'>নাম</th>
+                <th class='p-0 m-0'> টাকা জমা</th>
+                <th class='p-0 m-0'> চাউল জমা</th>
+                <th class='p-0 m-0'> অতিরিক্ত চাউল</th>
+                <th class='p-0 m-0'>অতিথি মিলের টাকা</th>
+
+              </tr>
+            </thead>
+            <tbody>
+              {{#each monthMemberData}}
+                <tr>
+                  <td class='p-0 m-0'><img
+                      src='{{avatar}}'
+                      width='35'
+                      height='35'
+                    />{{name}}</td>
+
+                  <td class='p-0 m-0'>{{cashTotal}}</td>
+                  <td class='p-0 m-0'>{{riceTotal}}</td>
+                  <td class='p-0 m-0'>{{extraRiceTotal}}</td>
+                  <td class='p-0 m-0'>{{guestMealTotal}}</td>
+
+                </tr>
+              {{/each}}
+            </tbody>
+            {{!-- <thead><th class='p-0 m-0'>total</th><th class='p-0 m-0'>{{total}}</thead> --}}
+          </table>
+
+          {{! cost table }}
+        </div>
+
+      </div>
+
+      <div class='pt-5'>
+        <div class='row pt-5'>
+          {{! cost table }}
+          {{#each costs}}
+            <div class='col-6 pt-2'>
+              <h6 class='text-center'>{{title}}</h6>
+              <table class='table table-bordered table-striped'>
+                <thead>
+                  <tr>
+                    <th class='p-0 m-0'>Title</th>
+                    <th class='p-0 m-0'>amount</th>
+                    <th class='p-0 m-0'>date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {{#data}}
+                    <tr>
+                      <td class='p-0 m-0'>{{title}}</td>
+                      <td class='p-0 m-0'>{{amount}}</td>
+                      <td class='p-0 m-0'>{{dateFormat date}}</td>
+                    </tr>
+                  {{/data}}
+                </tbody>
+                <thead><tr><th class='p-0 m-0'>total</th><th
+                      class='p-0 m-0'
+                    >{{total}}</th><th class='p-0 m-0'></th></tr></thead>
+              </table>
+
+              {{! cost table }}
+            </div>
+          {{/each}}
+
+          <div class='col-6 pt-2'>
+            <h6 class='text-center'>চলতি মাসের হিসাব</h6>
+            <table class='table table-striped'>
+              <thead>
+                <tr>
+                  <th class='p-0 m-0'>Title</th>
+                  <th class='p-0 m-0'>amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{#each meals}}
+                  <tr class='p-0 m-0'>
+                    <td class='p-0 m-0'>{{title}}</td>
+                    <td class='p-0 m-0 text-right'>{{mark}} {{amount}}</td>
+                  </tr>
+                {{/each}}
+              </tbody>
+            </table>
+
+          </div>
+        </div>
+      </div>
+      {{! meal table }}
+      {{!-- <h6 class='text-center'>meal Table</h6>
+    {{!  <table class='table table-bordered table-striped'>
+        <thead>
+          <tr>
+            <th class='p-0 m-0'>Name</th>
+            <th class='p-0 m-0'>breakfast</th>
+            <th class='p-0 m-0'>lunch</th>
+            <th class='p-0 m-0'>dinner</th>
+            <th class='p-0 m-0'>total</th>
+            <th class='p-0 m-0'>date</th>
+
+          </tr>
+        </thead>
+        <tbody>
+
+          {{#each meals as |meal|}}
+            <tr>
+              <td class='p-0 m-0'>{{meal.userId.name}}</td>
+              <td class='p-0 m-0'>{{meal.breakfast}}</td>
+              <td class='p-0 m-0'>{{meal.lunch}}</td>
+              <td class='p-0 m-0'>{{meal.dinner}}</td>
+              <td class='p-0 m-0'>{{meal.total}}</td>
+              <td class='p-0 m-0'>{{dateFormat meal.date}}</td>
+              {{!-- <td class='p-0 m-0'>{{cash.date.substring(0,15)}}</td> --}}
+
+      {{!      </tr>
+          {{/each}}
+      {{! </tbody> }}
+
+      {{! </table> }}
+      {{! meal table }}
+    </div>
+  </body>
+</html>
