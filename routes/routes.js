@@ -10,6 +10,8 @@ const managerRoutes = require('./managerRoutes');
 const subManagerRoutes = require('./subManagerRoutes');
 const monthMemberDataRoutes = require('./monthMemberDataRoutes');
 const marketersRoutes = require('./marketers/marketersRoutes');
+const superAdminMonthRoutes = require('./superAdminRoute/superAdminMonthRoutes');
+const superAdminUserDataRoutes = require('./superAdminRoute/superAdminUserDataRoutes');
 
 api.use('/user-auth', authRoutes);
 api.use('/user', userRoutes);
@@ -21,5 +23,7 @@ api.use('/month-marketers', marketersRoutes);
 api.use('/month-cost', costRoutes);
 api.use('/month-meal', mealRoutes);
 api.use('/month-member-data', monthMemberDataRoutes);
+api.use('/super-admin-month', superAdminMonthRoutes);
+api.use('/super-admin-user-data', superAdminUserDataRoutes);
 
 module.exports = api;

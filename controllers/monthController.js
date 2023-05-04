@@ -157,8 +157,95 @@ exports.autoMealUpdate = async (req, res, next) => {
     // Push Notifications with Firebase
 
     let pushTitle, pushBody, message;
+    //  mess
+
     if (autoMealUpdate == true) {
-      // find old auto meal
+      const date = moment().add(1, 'days');
+      const isMonthDate = moment(month.date).isSame(date, 'month');
+
+      //create meal to after day
+      if (isMonthDate) {
+        const oldMeals = await Meal.find({
+          $and: [
+            { monthId: month?._id },
+            {
+              date: {
+                $gte: moment(date).startOf('day'),
+                $lte: moment(date).endOf('day'),
+              },
+            },
+          ],
+        });
+
+        // if no add next day meal
+        if (oldMeals?.length > 0) {
+          console.log('Old meal is found so not new add this day meal');
+        } else {
+          // add all member after day meal
+          const mess = await Mess.findById(user.messId).select('allMember');
+          if (month) {
+            const members = mess?.allMember;
+            // all Member meals add in next day
+            members.map(async (userId) => {
+              // users Meals
+              const userMeals = await Meal.find({
+                $and: [{ userId: userId }, { monthId: month?._id }],
+              });
+              const lastDayMeal = userMeals[userMeals?.length - 1];
+              const userMeal = lastDayMeal;
+              // create new
+              const meal = await Meal.create({
+                userId: userId,
+                breakfast: userMeal?.breakfast || 0,
+                lunch: userMeal?.lunch || 0,
+                dinner: userMeal?.dinner || 0,
+                total: userMeal?.total || 0,
+                date: date,
+                messId: userMeal?.messId,
+                monthId: month?._id,
+                addBy: month?.manager,
+              });
+
+              // test push notification
+              const pushTitle = `মিল যোগ করা হয়েছে`;
+              const body = `মোট মিল: ${meal?.total}টি , তারিখ: ${moment(
+                meal?.date
+              ).format('DD/MM/YY')}`;
+              const member = await User.findById(userId).select('FCMToken');
+              if (member && member?.FCMToken) {
+                const FCMToken = member?.FCMToken;
+                await pushNotification(pushTitle, body, FCMToken);
+              }
+            });
+          }
+        }
+        // auto meal update
+        const autoMealUpdate = await AutoMealUpdate.findOne({
+          $and: [{ messId: user?.messId }, { monthId: month?._id }],
+        });
+        if (autoMealUpdate) {
+          const autoMealUpdateObject = {
+            breakfast: true,
+            lunch: false,
+            dinner: false,
+            tomorrow: false,
+            date: moment().format(),
+          };
+
+          const upDoc = await AutoMealUpdate.findByIdAndUpdate(
+            autoMealUpdate?._id,
+            autoMealUpdateObject,
+            {
+              new: true,
+              runValidators: true,
+            }
+          );
+
+          console.log('auto meal update cron');
+        }
+      }
+
+      // find old auto meal data
       const oldAutoMeal = await AutoMealUpdate.findOne({
         $and: [{ messId: user.messId }, { monthId: month._id }],
       });
@@ -224,22 +311,15 @@ exports.getAutoMealOption = async (req, res, next) => {
         new AppError(404, 'month', 'আপনার সক্রিয় মাস খুঁজে পাওয়া যায়নি')
       );
     // find today meal
-    const today = moment().format();
-    const restrictToTime = moment().set({ hour: 08, minute: 30 });
-    const userMeal = await Meal.find({
-      $and: [
-        { monthId: month._id },
-        { userId: user._id },
-        {
-          date: {
-            $gte: moment(today).startOf('day'),
-            $lte: moment(today).endOf('day'),
-          },
-        },
-      ],
+
+    const userMeals = await Meal.find({
+      $and: [{ monthId: month._id }, { userId: user._id }],
     });
-    const mealAdd = moment(userMeal[0].createdAt).isSameOrBefore(
-      restrictToTime
+
+    const today = moment().format();
+    // meal add true or false
+    const mealAdd = moment(userMeals[userMeals.length - 1].date).isSameOrBefore(
+      today
     );
 
     res.status(200).json({

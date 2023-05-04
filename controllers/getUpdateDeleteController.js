@@ -331,13 +331,10 @@ exports.deleteOne = (Model, model) => async (req, res, next) => {
     const pushBody = `${type} = ${doc?.amount}/= তারিখ:${moment(
       doc?.date
     ).format('DD/MM/YY')} ডিলেট করা হয়েছে`;
-    const FCMTokens = await getMessMemberFCMTokens(user.messId);
-    if (FCMTokens) {
-      const send = await pushNotificationMultiple(
-        pushTitle,
-        pushBody,
-        FCMTokens
-      );
+
+    if (member && member.FCMToken) {
+      const FCMToken = member.FCMToken;
+      await pushNotification(pushTitle, pushBody, FCMToken);
     }
 
     // await Notification.create({
