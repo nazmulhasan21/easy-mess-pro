@@ -213,6 +213,10 @@ exports.userMonthCal = async (userId, month) => {
       userMonthData.totalExtraRice = extraRice;
 
       userMonthData.riceBalance = rice - userMonthData.totalMeal - extraRice;
+    } else {
+      userMonthData.totalDepositRice = 0;
+      userMonthData.totalExtraRice = 0;
+      userMonthData.riceBalance = 0;
     }
 
     userMonthData.mealCost = (userMonthData.fixedMeal * month.mealRate).toFixed(
