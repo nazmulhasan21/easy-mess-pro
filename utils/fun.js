@@ -455,7 +455,7 @@ exports.getMonthPdf = async (month, next) => {
         title: '       অন্যান্য খরচের হিসাব',
       },
       {
-        title: 'আপা,wifi ও অন্যান্য খরচ',
+        title: 'আপা ও অন্যান্য খরচ',
         mark: '=',
         amount: month.totalOtherCost,
       },

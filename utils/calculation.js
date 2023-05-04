@@ -114,7 +114,18 @@ exports.monthCal = async (month) => {
     month.totalCost = bigCost + smallCost + otherCost;
     month.balance = cash - (bigCost + smallCost + otherCost);
     month.totalMeal = monthMeal?.total || 1;
-    month.riceBalance = rice - month.totalMeal - extraRice;
+    const addRich = await MonthMemberData.find({
+      $and: [
+        { messId: month.messId },
+        { monthId: month._id },
+        { type: 'rice' },
+      ],
+    });
+    if (addRich.length > 0) {
+      month.riceBalance = rice - month.totalMeal - extraRice;
+    } else {
+      month.riceBalance = 0;
+    }
 
     month.totalFixedMeal = monthFixedMeal?.total;
 
@@ -188,10 +199,21 @@ exports.userMonthCal = async (userId, month) => {
         ? userMonthData.totalMeal
         : month.fixedMeal;
     userMonthData.totalDeposit = cash;
-    userMonthData.totalDepositRice = rice;
-    userMonthData.totalExtraRice = extraRice;
 
-    userMonthData.riceBalance = rice - userMonthData.totalMeal - extraRice;
+    const addRich = await MonthMemberData.find({
+      $and: [
+        { messId: month.messId },
+        { monthId: month._id },
+        { type: 'rice' },
+        { userId: userId },
+      ],
+    });
+    if (addRich.length > 0) {
+      userMonthData.totalDepositRice = rice;
+      userMonthData.totalExtraRice = extraRice;
+
+      userMonthData.riceBalance = rice - userMonthData.totalMeal - extraRice;
+    }
 
     userMonthData.mealCost = (userMonthData.fixedMeal * month.mealRate).toFixed(
       2
