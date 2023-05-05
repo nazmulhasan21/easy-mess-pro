@@ -96,15 +96,15 @@ module.exports.addMemberEmailValidated = [
       // const equal = user.messId.equals(req.user.messId);
       const messId = user.messId || false;
       // if(messId ){}
-      const mess = await Mess.findOne({
-        $and: [{ _id: messId }, { allMember: req.user._id }],
-      }).select('allMember');
+      // const mess = await Mess.findOne({
+      //   $and: [{ _id: messId }, { allMember: req.user._id }],
+      // }).select('allMember');
       const equal = JSON.stringify(messId) === JSON.stringify(req.user.messId);
       const notequal =
         JSON.stringify(messId) === JSON.stringify(req.user.messId);
 
       // console.log(user.messId, req.user.messId);
-      if (equal && mess) {
+      if (equal) {
         return Promise.reject('ব্যাক্তিটি আপনার মেসে আগে থেকেই আছে।');
       }
       if (notequal) {
