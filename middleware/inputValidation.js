@@ -94,18 +94,20 @@ module.exports.addMemberEmailValidated = [
       }
       // const equal = user.messId.equals(req.user.messId);
       const messId = user.messId || false;
+
       // if(messId ){}
       const equal = JSON.stringify(messId) === JSON.stringify(req.user.messId);
-      const notequal =
-        JSON.stringify(messId) !== JSON.stringify(req.user.messId);
-      console.log({ equal, notequal });
+
       // console.log(user.messId, req.user.messId);
       if (equal) {
         return Promise.reject('ব্যাক্তিটি আপনার মেসে আগে থেকেই আছে।');
-      } else if (notequal) {
+      }
+      // const notequal =
+      //   JSON.stringify(messId) === JSON.stringify(req.user.messId);
+
+      if (messId) {
         return Promise.reject('ব্যাক্তিটি অন্য মেসে আগে থেকেই আছে।');
       }
-
       return (req.newUser = user);
     })
 

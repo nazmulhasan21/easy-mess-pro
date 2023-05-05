@@ -183,6 +183,11 @@ exports.addMember = async (req, res, next) => {
     }
 
     const { user } = req;
+    if (!req.body.rollNo) {
+      return next(
+        new AppError(402, 'rollNo', 'আপনার মেসের সদস্যের রোল নং দিন।')
+      );
+    }
 
     // 1. find mess
     const mess = await Mess.findById(user.messId)
@@ -195,6 +200,7 @@ exports.addMember = async (req, res, next) => {
     for (let i = 0; i < mess.allMember.length; i++) {
       rollNos.push(mess.allMember[i].rollNo);
     }
+
     if (rollNos.includes(req.body.rollNo)) {
       return next(
         new AppError(
