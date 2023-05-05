@@ -98,12 +98,11 @@ module.exports.addMemberEmailValidated = [
       const equal = JSON.stringify(messId) === JSON.stringify(req.user.messId);
       const notequal =
         JSON.stringify(messId) === JSON.stringify(req.user.messId);
-
+      console.log({ equal, notequal });
       // console.log(user.messId, req.user.messId);
       if (equal) {
         return Promise.reject('ব্যাক্তিটি আপনার মেসে আগে থেকেই আছে।');
-      }
-      if (notequal) {
+      } else if (notequal) {
         return Promise.reject('ব্যাক্তিটি অন্য মেসে আগে থেকেই আছে।');
       }
 
