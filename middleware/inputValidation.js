@@ -97,7 +97,7 @@ module.exports.addMemberEmailValidated = [
       // if(messId ){}
       const equal = JSON.stringify(messId) === JSON.stringify(req.user.messId);
       const notequal =
-        JSON.stringify(messId) === JSON.stringify(req.user.messId);
+        JSON.stringify(messId) !== JSON.stringify(req.user.messId);
       console.log({ equal, notequal });
       // console.log(user.messId, req.user.messId);
       if (equal) {
