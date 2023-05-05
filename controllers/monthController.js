@@ -318,7 +318,15 @@ exports.getAutoMealOption = async (req, res, next) => {
       // find today meal
 
       const userMeals = await Meal.find({
-        $and: [{ monthId: month._id }, { userId: user._id }],
+        $and: [
+          { monthId: month._id },
+          {
+            date: {
+              $gte: moment(today).startOf('day'),
+              $lte: moment(today).endOf('day'),
+            },
+          },
+        ],
       });
 
       // meal add true or false
@@ -585,7 +593,7 @@ exports.changeMonthStatus = async (req, res, next) => {
     if (active == 0 || active == false) {
       await Month.updateOne(
         { $and: [{ _id: req.params.id }, { messId: user.messId }] },
-        { active: false }
+        { active: false, autoMealUpdate: false }
       );
 
       return res.status(200).json({
@@ -605,3 +613,13 @@ exports.getMonth = base.getOne(Month, 'month');
 // const createdAt = '2023-03-20T18:15:46.671Z';
 // const isSameOrBefore = moment(createdAt).isSameOrBefore(setTime);
 // console.log(isSameOrBefore);
+// const getTest = async () => {
+//   const mess = await Mess.findOne({
+//     $and: [
+//       { _id: '645254da0c21328d4233daec' },
+//       { allMember: '6455217f8460dc45fd0b8299' },
+//     ],
+//   });
+//   console.log(mess);
+// };
+// getTest();
