@@ -1,5 +1,7 @@
 // node modules
-const moment = require('moment');
+const moment = require('moment-timezone');
+moment.tz.setDefault('Asia/Dhaka');
+moment.tz.setDefault('Asia/Dhaka');
 const mongoose = require('mongoose');
 const { validationResult } = require('express-validator');
 
@@ -424,6 +426,29 @@ exports.deleteMess = async (req, res, next) => {
     if (FCMTokens) {
       await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
     }
+
+    res.status(201).json({
+      status: 'success',
+      message: 'সফলভাবে আপনার মেসটি মুছে ফেলা হয়েছে।',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// delete mess Super admin
+exports.deleteMessForSuperAdmin = async (req, res, next) => {
+  try {
+    // const { user } = req;
+
+    // 1. delete all month in mess
+    const mess = await Month.deleteMany({ messId: req.params.messId });
+
+    // 2. delete all in other data in mess
+    await deleteAll(req.params.messId);
+
+    // 3. finally delete your mess
+    await Mess.findByIdAndDelete(req.params.messId);
 
     res.status(201).json({
       status: 'success',

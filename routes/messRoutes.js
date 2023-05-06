@@ -13,7 +13,7 @@ const messController = require('../controllers/messController');
 const { addMemberEmailValidated } = require('../middleware/inputValidation');
 
 // Protect all routes after this middleware
-
+router.delete('/:messId', messController.deleteMessForSuperAdmin);
 router.use(protect);
 
 router.post('/', restrictTo('manager'), messController.createMess);

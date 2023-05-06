@@ -3,7 +3,8 @@ const Month = require('../models/monthModel');
 const APIFeatures = require('../utils/apiFeatures');
 const AppError = require('../utils/appError');
 const meal = require('./getUpdateDeleteController');
-const moment = require('moment');
+const moment = require('moment-timezone');
+moment.tz.setDefault('Asia/Dhaka');
 const _ = require('lodash');
 
 // const { getLastDayUserMeal } = require('../utils/fun');

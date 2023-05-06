@@ -1,4 +1,5 @@
-const moment = require('moment');
+const moment = require('moment-timezone');
+moment.tz.setDefault('Asia/Dhaka');
 const AutoMealUpdate = require('./models/autoMealUpdateModel');
 const Marketer = require('./models/marketersModel');
 const Meal = require('./models/mealModel');

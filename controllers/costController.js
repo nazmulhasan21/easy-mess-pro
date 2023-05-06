@@ -1,7 +1,8 @@
 // node modules
 const mongoose = require('mongoose');
 const _ = require('lodash');
-const moment = require('moment');
+const moment = require('moment-timezone');
+moment.tz.setDefault('Asia/Dhaka');
 const { validationResult } = require('express-validator');
 
 // all Models

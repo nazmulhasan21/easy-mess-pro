@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-const moment = require('moment');
+const moment = require('moment-timezone');
+moment.tz.setDefault('Asia/Dhaka');
 dotenv.config({
   path: './config.env',
 });

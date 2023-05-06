@@ -1,5 +1,6 @@
 // node modules
-const moment = require('moment');
+const moment = require('moment-timezone');
+moment.tz.setDefault('Asia/Dhaka');
 const _ = require('lodash');
 const { default: mongoose } = require('mongoose');
 const path = require('path');

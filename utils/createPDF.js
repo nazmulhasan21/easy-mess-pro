@@ -2,7 +2,8 @@ const Puppeteer = require('puppeteer');
 const hbs = require('handlebars');
 const path = require('path');
 const fs = require('fs-extra');
-const moment = require('moment');
+const moment = require('moment-timezone');
+moment.tz.setDefault('Asia/Dhaka');
 const { degrees, PDFDocument, StandardFonts, rgb } = require('pdf-lib');
 //...
 

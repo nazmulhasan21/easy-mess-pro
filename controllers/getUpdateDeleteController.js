@@ -8,7 +8,8 @@ const Month = require('../models/monthModel');
 const AppError = require('../utils/appError');
 const APIFeatures = require('../utils/apiFeatures');
 
-const moment = require('moment');
+const moment = require('moment-timezone');
+moment.tz.setDefault('Asia/Dhaka');
 const User = require('../models/userModel');
 const {
   pushNotificationMultiple,
