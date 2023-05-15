@@ -16,6 +16,7 @@ const OtpCode = require('../models/otpCodeModel');
 const { sendEmail } = require('./sendEmail');
 const createPDF = require('./createPDF');
 const Mess = require('../models/messModel');
+const { pushNotificationMultiple } = require('./push-notification');
 
 /**
  *
@@ -738,3 +739,33 @@ hbs.registerHelper('dateFormat', function (date, options) {
     'DD/MM/YYYY';
   return moment(date).format(formatToUse);
 });
+
+// send review notification
+exports.sendReviewNotification = async (messId = '') => {
+  let members;
+  if (messId) {
+    members = await User.find({ messId: messId }).select('FCMToken');
+  } else {
+    members = await User.find().select('FCMToken');
+  }
+
+  const membersFCMTokens = [];
+  members.forEach((member) => {
+    if (member) {
+      if (member.FCMToken) {
+        membersFCMTokens.push(member.FCMToken);
+      }
+    }
+  });
+  // console.log(membersFCMTokens);
+  // Push Notifications with Firebase
+
+  const pushTitle = `Easy Mess অ্যাপ সম্পর্কে আপনার মতামত দিন।`;
+  const pushBody = `আপনার মূল্যবান মতামতটি Play Store এ রিভিউ দিয়ে জানিয়ে দিন। আপনার একটি মতামত আমাদেরকে নতুন নতুন ফিচার/ Update যুক্ত করতে উৎসাহিত করবে।`;
+
+  // const result = await pushNotification(pushTitle, pushBody, FCMToken);
+  // console.log(result);
+  if (membersFCMTokens) {
+    await pushNotificationMultiple(pushTitle, pushBody, membersFCMTokens);
+  }
+};

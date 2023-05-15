@@ -16,6 +16,18 @@ const createToken = (id) => {
 exports.login = async (req, res, next) => {
   try {
     const { email, password, FCMToken } = req.body;
+    ///
+    const https = require('https');
+    const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+
+    https.get(`https://ipapi.co/${ip}/json/`, (response) => {
+      let data = '';
+      response.on('data', (chunk) => {
+        data += chunk;
+      });
+    });
+
+    ////
     // -> 1 <- check if email and password exist
     if (!email || !password) {
       return next(

@@ -23,6 +23,7 @@ const {
   activeMonthAllData,
   getMonthPdf,
   getMessMemberFCMTokens,
+  sendReviewNotification,
 } = require('../utils/fun');
 const UserMonthData = require('../models/userMonthDataModel');
 const { monthCal, userMonthCal } = require('../utils/calculation');
@@ -547,16 +548,18 @@ exports.getPDF = async (req, res, next) => {
       return next(new AppError(404, 'mess', 'আপনার কোন মেস নেই'));
     const month = await Month.findOne({
       $and: [{ messId: messId }, { active: true }],
-    }).populate('manager', 'name avatar');
+    }).populate('manager messId', 'name avatar messName');
 
     const data = await getMonthPdf(month, next);
     const getPdf = await createPDF('month', data);
     // const getPdf = await getMonthPdf(month._id);
     if (getPdf) {
       const filePath = path.join(process.cwd(), `monthDetails_watermark.pdf`);
+      sendReviewNotification(messId);
+      console.log({ messId });
       res.download(filePath);
     } else {
-      res.status(200).json({
+      res.status(403).json({
         status: 'fail',
         message: 'can not create file',
         getPdf,

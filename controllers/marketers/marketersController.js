@@ -141,7 +141,11 @@ exports.createMarketers = async (req, res, next) => {
         new AppError(404, 'month', 'আপনার সক্রিয় মাস খুঁজে পাওয়া যায়নি।')
       );
     // if crate marketers list auto
-    if (createAuto && marketDays) {
+    if (createAuto) {
+      if (!marketDays)
+        return next(
+          new AppError(402, 'market Days', 'একটি বাজার কত দিনের তা  লিখুন')
+        );
       // find old marketers
       const deleteOldMarketers = await Marketer.deleteMany({
         $and: [{ monthId: month?._id }, { messId: user?.messId }],

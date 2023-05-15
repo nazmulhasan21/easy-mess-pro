@@ -42,7 +42,7 @@ module.exports = async (templateName, data) => {
       path: `monthDetails.pdf`,
       format: 'A4',
       printBackground: true,
-      margin: 50,
+      margin: { top: 25, bottom: 25 },
       extraHTTPHeaders: {
         'Accept-Language': 'bn',
       },
@@ -65,7 +65,7 @@ module.exports = async (templateName, data) => {
     for (const page of pages) {
       const { width, height } = page.getSize();
       const fontSize = 50;
-      console.log(width);
+      //  console.log(width);
       const text = 'Easy               Mess App';
       const textWidth = font.widthOfTextAtSize(text, fontSize);
 

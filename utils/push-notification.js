@@ -45,7 +45,8 @@ exports.pushNotificationMultiple = async (title, body, tokens) => {
       },
       android: {
         notification: {
-          //  imageUrl: image,
+          imageUrl:
+            'https://res.cloudinary.com/messmanager/image/upload/v1680824555/WhatsApp_Image_2022-12-04_at_4.42.26_PM_z9esnc.jpg',
           clickAction: '',
           sound: 'default',
           // sound: '../public/notification.mp3',

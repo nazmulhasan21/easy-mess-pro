@@ -16,11 +16,12 @@
     />
     <style>
       body { font-family: 'Hind Siliguri', serif; font-size: 48px; }
+
     </style>
   </head>
   <body class='p-4'>
     <div class='container-fluid'>
-      <h1 class='text-center'>{{messId.messName}}</h1>
+      <h2 class='text-center'>মেসের নাম:  {{messId.messName}}</h2>
       <h5 class='text-center'>Manager
         <img
           src='{{manager.avatar}}'
@@ -28,13 +29,13 @@
           height='35'
         />{{manager.name}}</h5>
 
-      <h6 class='text-center'>Month Title:{{monthTitle}}</h6>
-      <h6 class='text-center'>Rice Balance:{{riceBalance}}</h6>
-      <h6 class='text-center'>MealRate:{{mealRate}}</h6>
+      <h6 class='text-center'>মাসের নাম: {{ monthTitle}}</h6>
+      <h6 class='text-center'>চাউল উদ্বৃত্ত: {{ riceBalance}}</h6>
+      <h6 class='text-center'>মিল রেট : {{ mealRate}}</h6>
       <div class='row'>
         <div class=''>
           <table class='table table-bordered table-striped p-0'>
-            <thead>
+            <thead class="text-center">
               <tr class='p-0 m-0'>
                 <th class='p-0 m-0'>নাম</th>
                 <th class='p-0 m-0'>মিল</th>
@@ -55,47 +56,42 @@
                       width='35'
                       height='35'
                     />{{member.userId.name}}</td>
-                  <td class='p-0 m-0'>{{member.totalMeal}}</td>
-                  <td class='p-0 m-0'>{{member.fixedMeal}}</td>
-                  <td class='p-0 m-0'>{{member.mealCost}}</td>
-                  <td class='p-0 m-0'>{{member.otherCost}}</td>
-                  <td class='p-0 m-0'>{{member.totalCost}}</td>
-                  <td class='p-0 m-0'>{{member.totalDeposit}}</td>
-                  <td class='p-0 m-0'>{{member.balance}}</td>
-                  <td class='p-0 m-0'>{{member.riceBalance}}</td>
+                  <td class='p-0 m-0 text-center'>{{member.totalMeal}}</td>
+                  <td class='p-0 m-0 text-center'>{{member.fixedMeal}}</td>
+                  <td class='p-0 m-0 text-center'>{{member.mealCost}}</td>
+                  <td class='p-0 m-0 text-center'>{{member.otherCost}}</td>
+                  <td class='p-0 m-0 text-center'>{{member.totalCost}}</td>
+                  <td class='p-0 m-0 text-center'>{{member.totalDeposit}}</td>
+                  <td class='p-0 m-0 text-center'>{{member.balance}}</td>
+                  <td class='p-0 m-0 text-center'>{{member.riceBalance}}</td>
                 </tr>
               {{/each}}
             </tbody>
             <thead>
               <tr>
-                <th class='p-0 m-0'>Total Border =
+                <th class='p-0 m-0'>মোট সদস্য =
                   {{userMonthData.length}}</th>
-                <th class='p-0 m-0'>{{totalMeal}}</th>
-                <th class='p-0 m-0'>{{totalFixedMeal}}</th>
-                <th class='p-0 m-0'>{{totalMealCost}}</th>
-                <th class='p-0 m-0'>{{totalOtherCost}}</th>
-                <th class='p-0 m-0'>{{totalCost}}</th>
-                <th class='p-0 m-0'>{{totalDeposit}}</th>
-                <th class='p-0 m-0'></th>
-                <th class='p-0 m-0'>{{riceBalance}}</th>
+                <th class='p-0 m-0 text-center'>{{totalMeal}}</th>
+                <th class='p-0 m-0 text-center'>{{totalFixedMeal}}</th>
+                <th class='p-0 m-0 text-center'>{{totalMealCost}}</th>
+                <th class='p-0 m-0 text-center'>{{totalOtherCost}}</th>
+                <th class='p-0 m-0 text-center'>{{totalCost}}</th>
+                <th class='p-0 m-0 text-center'>{{totalDeposit}}</th>
+                <th class='p-0 m-0 text-center'></th>
+                <th class='p-0 m-0 text-center'>{{riceBalance}}</th>
 
               </tr>
             </thead>
           </table>
         </div>
       </div>
-
-      {{! rice table }}
-
-      <div class='row'>
-
-        {{! cost table }}
-
+    <div class='row'> 
         <div class='py-5'>
-          <h6 class='text-center'> সকল বডারের তথ্য</h6>
-          <table class='table table-bordered table-striped'>
-            <thead>
-              <tr>
+          <table class='table table-bordered table-striped p-0'>
+            <thead class="text-center">
+              <tr class='p-0 m-0'><th colspan='5'>সকল বডারের
+                  তথ্য</th></tr>
+              <tr class='p-0 m-0' >
                 <th class='p-0 m-0'>নাম</th>
                 <th class='p-0 m-0'> টাকা জমা</th>
                 <th class='p-0 m-0'> চাউল জমা</th>
@@ -113,10 +109,10 @@
                       height='35'
                     />{{name}}</td>
 
-                  <td class='p-0 m-0'>{{cashTotal}}</td>
-                  <td class='p-0 m-0'>{{riceTotal}}</td>
-                  <td class='p-0 m-0'>{{extraRiceTotal}}</td>
-                  <td class='p-0 m-0'>{{guestMealTotal}}</td>
+                  <td class='p-0 m-0 text-center'>{{cashTotal}}</td>
+                  <td class='p-0 m-0 text-center'>{{riceTotal}}</td>
+                  <td class='p-0 m-0 text-center'>{{extraRiceTotal}}</td>
+                  <td class='p-0 m-0 text-center'>{{guestMealTotal}}</td>
 
                 </tr>
               {{/each}}
@@ -129,45 +125,51 @@
 
       </div>
 
-      <div class='pt-5'>
-        <div class='row pt-5'>
+   
+        <div class='row'>
           {{! cost table }}
           {{#each costs}}
-            <div class='col-6 pt-2'>
-              <h6 class='text-center'>{{title}}</h6>
-              <table class='table table-bordered table-striped'>
-                <thead>
-                  <tr>
-                    <th class='p-0 m-0'>Title</th>
-                    <th class='p-0 m-0'>amount</th>
-                    <th class='p-0 m-0'>date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {{#data}}
-                    <tr>
-                      <td class='p-0 m-0'>{{title}}</td>
-                      <td class='p-0 m-0'>{{amount}}</td>
-                      <td class='p-0 m-0'>{{dateFormat date}}</td>
-                    </tr>
-                  {{/data}}
-                </tbody>
-                <thead><tr><th class='p-0 m-0'>total</th><th
-                      class='p-0 m-0'
-                    >{{total}}</th><th class='p-0 m-0'></th></tr></thead>
-              </table>
+            <div class='col-6 py-5'>
 
-              {{! cost table }}
+<table class='table table-bordered table-striped p-0'>
+            <thead class="text-center">
+              <tr class='p-0 m-0'><th colspan='3'>{{title}}</th></tr>
+              <tr class='p-0 m-0' >
+                <th class='p-0 m-0 '>বিবরণ</th>
+                    <th class='p-0 m-0'>টাকা/পরিমাণ</th>
+                    <th class='p-0 m-0 '>তারিখ</th>
+
+              </tr>
+            </thead>
+            <tbody>
+              {{#data}}
+                <tr>
+                  <td class='p-0 m-0 text-center'>{{title}}</td>
+                  <td class='p-0 m-0 text-center'>{{amount}}</td>
+                  <td class='p-0 m-0 text-center'>{{dateFormat date}}</td>
+                </tr>
+               {{/data}}
+            </tbody>
+            <thead><tr><th class='p-0 m-0'>মোট =</th><th
+                      class='p-0 m-0 text-center'
+                    >{{total}}</th><th class='p-0 m-0'></th></tr></thead>
+           
+          </table>
+
+
+              
             </div>
           {{/each}}
 
-          <div class='col-6 pt-2'>
-            <h6 class='text-center'>চলতি মাসের হিসাব</h6>
-            <table class='table table-striped'>
-              <thead>
-                <tr>
-                  <th class='p-0 m-0'>Title</th>
-                  <th class='p-0 m-0'>amount</th>
+
+          <div class='col-6 py-5'>
+
+            <table class='table table-bordered table-striped p-0'>
+              <thead class="text-center">
+                <tr><th class='p-0 m-0' colspan='2'>চলতি মাসের হিসাব</th></tr>
+                <tr class='p-0 m-0'>
+                  <th class='p-0 m-0'>বিবরণ</th>
+                  <th class='p-0 m-0'>টাকা/পরিমাণ</th>
                 </tr>
               </thead>
               <tbody>
@@ -181,7 +183,8 @@
             </table>
 
           </div>
-        </div>
+          </div>
+     
       </div>
       {{! meal table }}
       {{!-- <h6 class='text-center'>meal Table</h6>
