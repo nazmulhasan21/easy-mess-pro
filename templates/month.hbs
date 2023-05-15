@@ -85,7 +85,69 @@
           </table>
         </div>
       </div>
-    <div class='row'> 
+
+        <div class='row'>
+          {{! cost table }}
+          {{#each costs}}
+            <div class='col-6 py-5 p-2'>
+
+<table class='table table-bordered table-striped p-0'>
+            <thead class="text-center">
+              <tr class='p-0 m-0'><th colspan='3'>{{title}}</th></tr>
+              <tr class='p-0 m-0' >
+                <th class='p-0 m-0 '>তারিখ</th>
+                <th class='p-0 m-0 '>বিবরণ</th>
+                    <th class='p-0 m-0 '>টাকা/পরিমাণ</th>
+                    
+
+              </tr>
+            </thead>
+            <tbody>
+              {{#data}}
+                <tr>
+                   <td class='p-0 m-0 text-center'>{{dateFormat date}}</td>
+                  <td class='p-0 m-0'>{{title}}</td>
+                  <td class='p-0 m-0 text-center'>{{amount}}</td>
+                 
+                </tr>
+               {{/data}}
+            </tbody>
+            <thead><tr><th class='p-0 m-0'></th><th class='p-0 m-0'>মোট =</th><th
+                      class='p-0 m-0 text-center'
+                    >{{total}}</th></tr></thead>
+           
+          </table>
+
+
+              
+            </div>
+          {{/each}}
+
+
+          <div class='col-6 py-5'>
+
+            <table class='table table-bordered table-striped p-0'>
+              <thead class="text-center">
+                <tr><th class='p-0 m-0' colspan='2'>চলতি মাসের হিসাব</th></tr>
+                <tr class='p-0 m-0'>
+                  <th class='p-0 m-0'>বিবরণ</th>
+                  <th class='p-0 m-0'>টাকা/পরিমাণ</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{#each meals}}
+                  <tr class='p-0 m-0'>
+                    <td class='p-0 m-0'>{{title}}</td>
+                    <td class='p-0 m-0 text-right'>{{mark}} {{amount}}</td>
+                  </tr>
+                {{/each}}
+              </tbody>
+            </table>
+
+          </div>
+          </div>
+     
+<div class='row'> 
         <div class='py-5'>
           <table class='table table-bordered table-striped p-0'>
             <thead class="text-center">
@@ -125,66 +187,7 @@
 
       </div>
 
-   
-        <div class='row'>
-          {{! cost table }}
-          {{#each costs}}
-            <div class='col-6 py-5'>
 
-<table class='table table-bordered table-striped p-0'>
-            <thead class="text-center">
-              <tr class='p-0 m-0'><th colspan='3'>{{title}}</th></tr>
-              <tr class='p-0 m-0' >
-                <th class='p-0 m-0 '>বিবরণ</th>
-                    <th class='p-0 m-0'>টাকা/পরিমাণ</th>
-                    <th class='p-0 m-0 '>তারিখ</th>
-
-              </tr>
-            </thead>
-            <tbody>
-              {{#data}}
-                <tr>
-                  <td class='p-0 m-0 text-center'>{{title}}</td>
-                  <td class='p-0 m-0 text-center'>{{amount}}</td>
-                  <td class='p-0 m-0 text-center'>{{dateFormat date}}</td>
-                </tr>
-               {{/data}}
-            </tbody>
-            <thead><tr><th class='p-0 m-0'>মোট =</th><th
-                      class='p-0 m-0 text-center'
-                    >{{total}}</th><th class='p-0 m-0'></th></tr></thead>
-           
-          </table>
-
-
-              
-            </div>
-          {{/each}}
-
-
-          <div class='col-6 py-5'>
-
-            <table class='table table-bordered table-striped p-0'>
-              <thead class="text-center">
-                <tr><th class='p-0 m-0' colspan='2'>চলতি মাসের হিসাব</th></tr>
-                <tr class='p-0 m-0'>
-                  <th class='p-0 m-0'>বিবরণ</th>
-                  <th class='p-0 m-0'>টাকা/পরিমাণ</th>
-                </tr>
-              </thead>
-              <tbody>
-                {{#each meals}}
-                  <tr class='p-0 m-0'>
-                    <td class='p-0 m-0'>{{title}}</td>
-                    <td class='p-0 m-0 text-right'>{{mark}} {{amount}}</td>
-                  </tr>
-                {{/each}}
-              </tbody>
-            </table>
-
-          </div>
-          </div>
-     
       </div>
       {{! meal table }}
       {{!-- <h6 class='text-center'>meal Table</h6>

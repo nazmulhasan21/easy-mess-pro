@@ -24,7 +24,10 @@ const {
   getMessMemberFCMTokens,
   findBorderMissingRollNo,
 } = require('../utils/fun');
-const { pushNotificationMultiple } = require('../utils/push-notification');
+const {
+  pushNotificationMultiple,
+  pushNotification,
+} = require('../utils/push-notification');
 const Notification = require('../models/notificationsModel');
 
 // ********** Start Mess Controller *************** //
@@ -194,7 +197,7 @@ exports.addMember = async (req, res, next) => {
     // 1. find mess
     const mess = await Mess.findById(user.messId)
       .populate('allMember', 'rollNo')
-      .select('allMember');
+      .select('allMember messName');
 
     // get missingRollNo
     // * get allMember rollNo
@@ -236,6 +239,11 @@ exports.addMember = async (req, res, next) => {
         FCMTokens
       );
     }
+    const push = `${mess.messName} মেসে নতুন বডার যোগ হয়েছে`;
+    const body = `নাম: ${newUser.name}, মোট বডার = ${mess.totalBorder}`;
+    const adminFCMToken =
+      'd5r79b2YTo6ahfvpFscLOz:APA91bFithm7kVaD36PXGVBn8HG6jVxs8gonBi4elaRqScE72_RdimQqtr63FWza0VrnjyXQ63Cq4TNxrE2Jm_M43k60LIr8n0frAn-MCBuFx7gOqXsVfANW7at5-Z62t_sn9aD8qxgz';
+    const adminSend = await pushNotification(push, body, adminFCMToken);
 
     // 3. find active month
     const month = await Month.findOne({
