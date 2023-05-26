@@ -7,7 +7,10 @@ const Mess = require('../models/messModel');
 const OtpCode = require('../models/otpCodeModel');
 
 const { sendVerificationCode } = require('../utils/fun');
-const { pushNotification } = require('../utils/push-notification');
+const {
+  pushNotification,
+  pushNotificationMultiple,
+} = require('../utils/push-notification');
 
 // create jwt token
 const createToken = (id) => {
@@ -147,6 +150,7 @@ exports.verification = async (req, res, next) => {
       user.emailVerified = true;
       user.FCMToken = FCMToken;
       await user.save();
+
       return res.status(200).json({
         status: 'success',
         message: 'ইমেল সফলভাবে যাচাইকরণ হয়েছে।',
@@ -188,9 +192,12 @@ exports.verification = async (req, res, next) => {
 
       const pushTitle = `নতুন ব্যবহারকারি যোগ হয়েছে`;
       const body = `নাম: ${user.name} , ${user.role} হিসেবে,  মোবাইল: ${user.phone}`;
-      const adminFCMToken =
-        'd5r79b2YTo6ahfvpFscLOz:APA91bFithm7kVaD36PXGVBn8HG6jVxs8gonBi4elaRqScE72_RdimQqtr63FWza0VrnjyXQ63Cq4TNxrE2Jm_M43k60LIr8n0frAn-MCBuFx7gOqXsVfANW7at5-Z62t_sn9aD8qxgz';
-      await pushNotification(pushTitle, body, adminFCMToken);
+      const adminFCMToken = [
+        'd5r79b2YTo6ahfvpFscLOz:APA91bFithm7kVaD36PXGVBn8HG6jVxs8gonBi4elaRqScE72_RdimQqtr63FWza0VrnjyXQ63Cq4TNxrE2Jm_M43k60LIr8n0frAn-MCBuFx7gOqXsVfANW7at5-Z62t_sn9aD8qxgz',
+        'c8yVgK22RTCLuBU92oG7eR:APA91bE-WP3fnTnRTO2R4g7uDViy0C_H-FB1n-LoET4MfUiQKfZgU6hwk6tZuIRXRpbfEZNgkKIZsObUvKT9-A3-Z8JAOOqZKdwbfILNVxa5hE-NvR38RVX-OqlOSn2EIeXddnfH2Tmx',
+      ];
+
+      await pushNotificationMultiple(pushTitle, body, adminFCMToken);
 
       //const token = createToken(user.id);
       // Remove the password from the output

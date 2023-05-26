@@ -555,7 +555,7 @@ exports.getPDF = async (req, res, next) => {
     // const getPdf = await getMonthPdf(month._id);
     if (getPdf) {
       const filePath = path.join(process.cwd(), `monthDetails_watermark.pdf`);
-      sendReviewNotification(messId);
+      // sendReviewNotification(messId);
       console.log({ messId });
       res.download(filePath);
     } else {

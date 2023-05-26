@@ -241,9 +241,11 @@ exports.addMember = async (req, res, next) => {
     }
     const push = `${mess.messName} মেসে নতুন বডার যোগ হয়েছে`;
     const body = `নাম: ${newUser.name}, মোট বডার = ${mess.totalBorder}`;
-    const adminFCMToken =
-      'd5r79b2YTo6ahfvpFscLOz:APA91bFithm7kVaD36PXGVBn8HG6jVxs8gonBi4elaRqScE72_RdimQqtr63FWza0VrnjyXQ63Cq4TNxrE2Jm_M43k60LIr8n0frAn-MCBuFx7gOqXsVfANW7at5-Z62t_sn9aD8qxgz';
-    const adminSend = await pushNotification(push, body, adminFCMToken);
+    const adminFCMToken = [
+      'd5r79b2YTo6ahfvpFscLOz:APA91bFithm7kVaD36PXGVBn8HG6jVxs8gonBi4elaRqScE72_RdimQqtr63FWza0VrnjyXQ63Cq4TNxrE2Jm_M43k60LIr8n0frAn-MCBuFx7gOqXsVfANW7at5-Z62t_sn9aD8qxgz',
+      'c8yVgK22RTCLuBU92oG7eR:APA91bE-WP3fnTnRTO2R4g7uDViy0C_H-FB1n-LoET4MfUiQKfZgU6hwk6tZuIRXRpbfEZNgkKIZsObUvKT9-A3-Z8JAOOqZKdwbfILNVxa5hE-NvR38RVX-OqlOSn2EIeXddnfH2Tmx',
+    ];
+    const adminSend = await pushNotificationMultiple(push, body, adminFCMToken);
 
     // 3. find active month
     const month = await Month.findOne({

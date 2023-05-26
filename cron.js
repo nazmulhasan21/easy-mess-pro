@@ -137,7 +137,7 @@ module.exports.pushNotificationMarketers = async (params) => {
       // find oldMeals
       if (isMonthDate) {
         // users Meals
-        const tomorrowMarketers = await Marketer.findOne({
+        const tomorrowMarketers = await Marketer.find({
           $and: [
             { messId: mess?._id },
             { monthId: month?._id },
