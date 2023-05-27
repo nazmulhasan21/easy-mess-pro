@@ -187,6 +187,13 @@ exports.addMember = async (req, res, next) => {
       return next(errors);
     }
 
+    const userFind = await Mess.find({
+      $and: [{ _id: user.messId }, { allMember: req.newUser._id }],
+    });
+    if (userFind)
+      return next(
+        new AppError(403, 'user', 'ব্যাক্তিটি আপনার মেসে আগে থেকেই আছে।')
+      );
     const { user } = req;
     if (!req.body.rollNo) {
       return next(
