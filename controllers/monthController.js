@@ -369,6 +369,7 @@ exports.getActiveMonth = async (req, res, next) => {
         data: null,
       });
     }
+
     if (['manager', 'subManager'].includes(user.role)) {
       await monthCal(month);
       await month.save();
