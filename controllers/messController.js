@@ -186,15 +186,15 @@ exports.addMember = async (req, res, next) => {
     if (!errors.isEmpty()) {
       return next(errors);
     }
-
-    // const userFind = await Mess.find({
-    //   $and: [{ _id: user.messId }, { allMember: req.newUser._id }],
-    // });
-    // if (userFind)
-    //   return next(
-    //     new AppError(403, 'user', 'ব্যাক্তিটি আপনার মেসে আগে থেকেই আছে।')
-    //   );
     const { user } = req;
+    const userFind = await Mess.find({
+      $and: [{ _id: user.messId }, { allMember: req.newUser._id }],
+    });
+    if (userFind.length > 0)
+      return next(
+        new AppError(403, 'user', 'ব্যাক্তিটি আপনার মেসে আগে থেকেই আছে।')
+      );
+
     if (!req.body.rollNo) {
       return next(
         new AppError(402, 'rollNo', 'আপনার মেসের সদস্যের রোল নং দিন।')
