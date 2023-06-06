@@ -456,7 +456,8 @@ exports.getActiveMonth = async (req, res, next) => {
 exports.getMonthChart = async (req, res, next) => {
   try {
     const { user } = req;
-    const monthId = req.query;
+    const monthId = req.query.monthId;
+
     let month;
     if (monthId) {
       const isValid = mongoose.Types.ObjectId.isValid(monthId);
@@ -483,7 +484,6 @@ exports.getMonthChart = async (req, res, next) => {
     const data = await activeMonthAllData(month, next);
     // const data = await getMonthPdf(month, next);
     if (data) {
-      data.meals = [];
       // // send res
       res.status(200).json({
         status: 'success',

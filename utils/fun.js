@@ -629,6 +629,7 @@ exports.activeMonthAllData = async (month, next) => {
         })
       );
     };
+
     const cash = await getItem('cash');
     const rice = await getItem('rice');
     const extraRice = await getItem('extraRice');
@@ -663,39 +664,62 @@ exports.activeMonthAllData = async (month, next) => {
         };
       });
     };
-    month.meals = await Promise.all(
+    const meals = await Promise.all(
       allUserMonthData.map(async (item, index) => {
         if (item.userId) {
           const data = await mealData(item.userId._id);
 
           const total = _.sumBy(data, 'total');
+          const breakfast = _.sumBy(data, 'breakfast');
+          const lunch = _.sumBy(data, 'lunch');
+          const dinner = _.sumBy(data, 'dinner');
           return {
+            userId: item.userId,
             name: item.userId.name,
             avatar: item.userId.avatar,
-            item: data,
+            breakfast,
+            lunch,
+            dinner,
             total,
           };
         }
       })
     );
+    const mealsSum = {
+      breakfast: _.sumBy(meals, 'breakfast'),
+      lunch: _.sumBy(meals, 'lunch'),
+      dinner: _.sumBy(meals, 'dinner'),
+      total: sum(meals),
+    };
 
     month.costs = [
       { title: 'বড় বাজার খরচ', data: bigCost, total: bigCostSum },
       { title: 'অন্যান্য খরচ', data: otherCost, total: otherCostSum },
       { title: 'খুচরা খরচ', data: smallCost, total: smallCostSum },
     ];
+
     month.monthMemberData = [
-      { title: 'টাকা', data: cash, total: cashSum, type: 'cash' },
-      { title: 'চাউল', data: rice, total: riceSum, type: 'rice' },
+      {
+        title: 'টাকা',
+        data: cash.filter(Boolean),
+        total: cashSum,
+        type: 'cash',
+      },
+      {
+        title: 'চাউল',
+        data: rice.filter(Boolean),
+        total: riceSum,
+        type: 'rice',
+      },
       {
         title: 'অতিরিক্ত চাউল',
-        data: extraRice,
+        data: extraRice.filter(Boolean),
         total: extraRiceSum,
         type: 'extraRice',
       },
       {
         title: 'অতিথি মিল',
-        data: guestMeal,
+        data: guestMeal.filter(Boolean),
         total: guestMealSum,
         type: 'guestMeal',
       },
@@ -706,6 +730,7 @@ exports.activeMonthAllData = async (month, next) => {
       //   type: 'extraCost',
       // },
     ];
+    month.meals = [{ title: 'মিল', data: meals, total: mealsSum }];
     const userMonthData = allUserMonthData;
     month.userMonthData = userMonthData;
 

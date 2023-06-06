@@ -135,8 +135,9 @@ exports.getMonthList = async (req, res, next) => {
     // 1.
     const features = new APIFeatures(
       Month.find(findQuery)
+        .select('manager date monthTitle active')
         .populate('manager', 'name avatar')
-        .sort({ active: -1 }),
+        .sort({ date: -1 }),
       req.query
     ).limitFields();
 

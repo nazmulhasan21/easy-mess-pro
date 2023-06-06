@@ -93,7 +93,7 @@ exports.getMealList = async (req, res, next) => {
         .populate('addBy editBy userId', 'name avatar role')
         .sort({ createdAt: -1 }),
       req.query
-    ).paginate();
+    );
     const doc = async () => {
       const data = await features.query;
       return data.map((item) => {
@@ -258,7 +258,7 @@ exports.addSingleMeal = async (req, res, next) => {
           },
         },
       ],
-    });
+    }).select('monthId userId date');
     //c
 
     if (oldMeal)
@@ -283,7 +283,7 @@ exports.addSingleMeal = async (req, res, next) => {
           },
         },
       ],
-    });
+    }).select('monthId date');
 
     if ((oldAnotherMeal.length = 0))
       return next(
@@ -340,6 +340,7 @@ exports.addSingleMeal = async (req, res, next) => {
     next(error);
   }
 };
+
 exports.getLastDayMeal = async (req, res, next) => {
   try {
     const { user } = req;
@@ -502,21 +503,7 @@ exports.getMealBoard = async (req, res, next) => {
     // 2. find user active month
     const month = await Month.findOne({
       $and: [{ messId: mess._id }, { active: true }],
-    });
-    // only add this month date
-    const isMonthDate = moment(month.date).isSame(day, 'month');
-    if (!isMonthDate)
-      return res.status(200).json({
-        status: 'success',
-        message: `${moment(month.date).format(
-          'MMMM YYYY'
-        )} মাসের তারিখ নির্বাচন করুন`,
-        data: {
-          data: [],
-          total: {},
-          date: moment(day).format(),
-        },
-      });
+    }).select('date active');
 
     // find allMember in this month
     const userData = await UserMonthData.find({
@@ -541,7 +528,7 @@ exports.getMealBoard = async (req, res, next) => {
         if (day && dateFilter) {
           userMeals = await Meal.findOne({
             $and: [{ userId: userId }, { monthId: month._id }, dateFilter],
-          });
+          }).select('userId monthId breakfast lunch dinner total date');
 
           if (userMeals) {
             meal = {
@@ -556,6 +543,8 @@ exports.getMealBoard = async (req, res, next) => {
             };
           }
         } else {
+          // find today meal
+
           let dateFilter = {};
           dateFilter = {
             date: {
@@ -563,10 +552,28 @@ exports.getMealBoard = async (req, res, next) => {
               $lte: moment().endOf('day'),
             },
           };
+
           userMeals = await Meal.findOne({
             $and: [{ userId: userId }, { monthId: month._id }, dateFilter],
-          });
+          }).select('userId monthId breakfast lunch dinner total date');
+          if (!userMeals) {
+            const { date } = await Meal.findOne({
+              monthId: month._id,
+            })
+              .select('date')
+              .sort({ date: -1 });
+            dateFilter = {
+              date: {
+                $gte: moment(date).startOf('day'),
+                $lte: moment(date).endOf('day'),
+              },
+            };
+            userMeals = await Meal.findOne({
+              $and: [{ userId: userId }, { monthId: month._id }, dateFilter],
+            }).select('userId monthId breakfast lunch dinner total date');
+          }
 
+          // create new
           if (userMeals) {
             meal = {
               _id: userMeals?._id,
@@ -579,44 +586,30 @@ exports.getMealBoard = async (req, res, next) => {
               date: userMeals?.date,
             };
           }
-
-          // else {
-          //   userMeals = await Meal.find({
-          //     $and: [{ userId: userId }, { monthId: month._id }],
-          //   });
-
-          //   const lastDayMeal = userMeals[userMeals.length - 1];
-          //   const userMeal = lastDayMeal;
-          //   // create new
-          //   if (userMeal) {
-          //     meal = {
-          //       _id: userMeal?._id,
-          //       userId: userId,
-          //       user,
-          //       breakfast: userMeal?.breakfast,
-          //       lunch: userMeal?.lunch,
-          //       dinner: userMeal?.dinner,
-          //       total: userMeal?.total,
-          //       date: userMeal?.date,
-          //     };
-          //   }
-          // }
         }
 
         return meal;
       })
     );
     if (meals[0] == undefined) {
+      let message;
+      const isMonthDate = moment(month.date).isSame(day, 'month');
+      if (!isMonthDate) {
+        message = `${moment(month.date).format(
+          'MMMM YYYY'
+        )} এই মাসের যে কোন তারিখ নির্বাচন করুন।`;
+      } else {
+        message = `${moment(day).format(
+          'DD/MM/YYYY'
+        )} এই তারিখে কোন মিল যোগ করা হয়নি।`;
+      }
+
       return res.status(200).json({
         status: 'success',
-        message: `${moment(day).format(
-          'DD/MM/YYYY'
-        )} এই তারিখে কোন মিল যোগ করা হয়নি।`,
-        data: {
-          data: [],
-          total: {},
-          date: moment(day).format(),
-        },
+        message: message,
+        meals: [],
+        total: {},
+        date: moment(day).format(),
       });
     }
 
@@ -627,15 +620,12 @@ exports.getMealBoard = async (req, res, next) => {
       lunch: _.sumBy(meals, 'lunch'),
       dinner: _.sumBy(meals, 'dinner'),
     };
-    console.log(meals);
 
     res.status(200).json({
       status: 'success',
-      data: {
-        data: meals.filter(Boolean),
-        total: total,
-        date: meals[0].date,
-      },
+      meals: meals.filter(Boolean),
+      total: total,
+      date: meals[0].date,
     });
   } catch (error) {
     next(error);
