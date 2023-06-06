@@ -31,9 +31,11 @@ exports.addSubManager = async (req, res, next) => {
     const month = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
     }).select('_id monthName');
+    month.subManager.push(userId);
+    await month.save();
     // Push Notifications with Firebase
     const pushTitle = 'সাব ম্যানেজার যোগ করা হয়েছে';
-    const pushBody = ` ${subManager.name} ${month.monthName} মাসের সাব ম্যানেজার হিসেবে যুক্ত হয়েছেন।`;
+    const pushBody = ` ${subManager.name} ${month.monthTitle} মাসের সাব ম্যানেজার হিসেবে যুক্ত হয়েছেন।`;
     const FCMTokens = await getMessMemberFCMTokens(user.messId);
     if (FCMTokens) {
       await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
@@ -86,10 +88,12 @@ exports.deleteSubManager = async (req, res, next) => {
       $and: [{ messId: user.messId }, { active: true }],
     });
     const subManager = await User.findByIdAndUpdate(userId, { role: 'border' });
+    month.subManager.pull(userId);
+    await month.save();
 
     // Push Notifications with Firebase
     const pushTitle = 'সাব ম্যানেজার বাদ দেওয়া হয়েছে';
-    const pushBody = ` ${subManager.name} ${month.monthName} মাসের সাব ম্যানেজার হিসেবে  এখন আর নেই।`;
+    const pushBody = ` ${subManager.name} ${month.monthTitle} মাসের সাব ম্যানেজার হিসেবে  এখন আর নেই।`;
     const FCMTokens = await getMessMemberFCMTokens(user.messId);
     if (FCMTokens) {
       await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);

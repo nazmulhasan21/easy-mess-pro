@@ -61,8 +61,8 @@ exports.deleteMonth = async (req, res, next) => {
     await month.remove();
 
     // Push Notifications with Firebase
-    const pushTitle = `আপনার ${month.monthName} মাসটি মুছেফেলা হয়েছে।`;
-    const pushBody = `আপনার মেসের ${month.monthName} মাসটি মুছেফেলা হয়েছে।`;
+    const pushTitle = `আপনার ${month.monthTitle} মাসটি মুছেফেলা হয়েছে।`;
+    const pushBody = `আপনার মেসের ${month.monthTitle} মাসটি মুছেফেলা হয়েছে।`;
     const FCMTokens = await getMessMemberFCMTokens(mess._id);
     if (FCMTokens) {
       await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);

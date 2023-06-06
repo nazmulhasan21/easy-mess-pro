@@ -17,6 +17,7 @@ router.use(restrictToMessId);
 
 router.get('/', mealController.getMealList);
 router.get('/last-day', mealController.getLastDayMeal);
+router.get('/meal-board', mealController.getMealBoard);
 
 router.get('/personal-today-meal', mealController.getPersonalTodayMeal);
 router.get('/personal-tomorrow-meal', mealController.getPersonalTomorrowMeal);
@@ -30,6 +31,7 @@ router.patch('/:id/personal', mealController.updateMyMeal);
 router.use(restrictTo('manager', 'subManager'));
 
 router.post('/', mealController.createMeal);
+router.post('/single-meal', mealController.addSingleMeal);
 router.patch('/:id', mealController.updateMeal);
 // router.delete('/:id', checkPassword, mealController.deleteMeal);
 

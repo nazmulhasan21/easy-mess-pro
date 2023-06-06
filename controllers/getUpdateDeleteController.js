@@ -1,5 +1,6 @@
 // node modules
 const mongoose = require('mongoose');
+const _ = require('lodash');
 
 // all Models
 const Month = require('../models/monthModel');
@@ -118,8 +119,8 @@ exports.getList = (Model) => async (req, res, next) => {
         .select('userId type amount addBy editBy date createdAt updatedAt')
         .sort({ createdAt: -1 }),
       req.query
-    ).paginate();
-    const doc = async () => {
+    );
+    const findDoc = async () => {
       const data = await features.query;
       return data.map((item) => {
         return {
@@ -135,6 +136,8 @@ exports.getList = (Model) => async (req, res, next) => {
         };
       });
     };
+    const doc = await findDoc();
+    const total = _.sumBy(doc, 'amount');
     const results = await Model.countDocuments(findQuery);
 
     // 3. send res
@@ -142,8 +145,9 @@ exports.getList = (Model) => async (req, res, next) => {
       status: 'success',
       results: results,
       data: {
-        data: await doc(),
+        data: doc,
       },
+      total,
     });
   } catch (error) {
     next(error);

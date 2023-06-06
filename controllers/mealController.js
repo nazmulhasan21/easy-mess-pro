@@ -222,6 +222,124 @@ exports.createMeal = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.addSingleMeal = async (req, res, next) => {
+  try {
+    const { user } = req;
+    const { meal } = req.body;
+    const date = moment(req?.body?.date).format();
+
+    if (date == '') {
+      return next(new AppError(402, 'date', 'দয়া করে তারিখ নির্বাচন করুন।'));
+    }
+
+    //1. find active month
+    const month = await Month.findOne({
+      $and: [{ messId: user.messId }, { active: true }],
+    }).select('date');
+    if (!month)
+      return next(new AppError(404, 'month', 'সক্রিয় মাস পাওয়া যায়নি'));
+    // only add this month date
+    const isMonthDate = moment(month.date).isSame(date, 'month');
+    if (!isMonthDate)
+      return next(
+        new AppError(402, 'date', 'আপনার সক্রিয় মাসের তারিখ নির্বাচন করুন।')
+      );
+
+    // check add now day meal in active month
+    const oldMeal = await Meal.findOne({
+      $and: [
+        { monthId: month._id },
+        { userId: meal.userId },
+        {
+          date: {
+            $gte: moment(date).startOf('day'),
+            $lte: moment(date).endOf('day'),
+          },
+        },
+      ],
+    });
+    //c
+
+    if (oldMeal)
+      return next(
+        new AppError(
+          403,
+          'meal',
+          `আগেই ${moment(date).format(
+            'DD/MM/YY'
+          )} এই তারিখের মিল যোগ করা আছে। অন্যদিনের মিল যোগ করতে তারিখ পরিবর্তন করুন।`
+        )
+      );
+
+    //  3. find another user meal
+    const oldAnotherMeal = await Meal.find({
+      $and: [
+        { monthId: month._id },
+        {
+          date: {
+            $gte: moment(date).startOf('day'),
+            $lte: moment(date).endOf('day'),
+          },
+        },
+      ],
+    });
+
+    if ((oldAnotherMeal.length = 0))
+      return next(
+        new AppError(
+          403,
+          'meal',
+          `${moment(date).format(
+            'DD/MM/YY'
+          )} তারিখে অন্য কারো মিল যোগ করা হয়নি। তাই সবার মিল যোগ করতে, সবার মিল এড অপশনে যান।`
+        )
+      );
+
+    const total = meal.breakfast + meal.lunch + meal.dinner;
+    // 4. post daily meal
+    const userMeal = await Meal.create({
+      userId: meal.userId,
+      breakfast: meal.breakfast,
+      lunch: meal.lunch,
+      dinner: meal.dinner,
+      total: total,
+      date: date,
+      messId: user.messId,
+      monthId: month._id,
+      addBy: user._id,
+    });
+
+    // Push Notifications with Firebase
+
+    const pushTitle = `মিল যোগ করা হয়েছে`;
+    const body = `মোট মিল: ${total}টি , তারিখ: ${moment(date).format(
+      'DD/MM/YY'
+    )}`;
+    const member = await User.findById(meal.userId).select('FCMToken');
+    if (member && member.FCMToken) {
+      const FCMToken = member.FCMToken;
+      await pushNotification(pushTitle, body, FCMToken);
+    }
+
+    // await Notification.create({
+    //   monthId: month._id,
+    //   receiver: myMeal.userId,
+    //   user: myMeal.userId,
+    //   title: pushTitle,
+    //   description: body,
+    //   date: userMeal.createdAt,
+    // });
+
+    // 5. send res
+    res.status(201).json({
+      status: 'success',
+      message: `সফলভাবে মিল যোগ করা হলো।`,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 exports.getLastDayMeal = async (req, res, next) => {
   try {
     const { user } = req;
@@ -356,6 +474,165 @@ exports.getLastDayMeal = async (req, res, next) => {
       status: 'success',
       data: {
         data: meals,
+        total: total,
+        date: meals[0].date,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+exports.getMealBoard = async (req, res, next) => {
+  try {
+    const { user } = req;
+    const day = req.query.day;
+    // const day = moment(getDay).format('MM/DD/YYYY');
+    console.log(day);
+
+    let dateFilter = {};
+    dateFilter = {
+      date: {
+        $gte: moment(day).startOf('day'),
+        $lte: moment(day).endOf('day'),
+      },
+    };
+
+    // 1 . find user mess
+    const mess = await Mess.findById(user.messId).select('allMember');
+    // 2. find user active month
+    const month = await Month.findOne({
+      $and: [{ messId: mess._id }, { active: true }],
+    });
+    // only add this month date
+    const isMonthDate = moment(month.date).isSame(day, 'month');
+    if (!isMonthDate)
+      return res.status(200).json({
+        status: 'success',
+        message: `${moment(month.date).format(
+          'MMMM YYYY'
+        )} মাসের তারিখ নির্বাচন করুন`,
+        data: {
+          data: [],
+          total: {},
+          date: moment(day).format(),
+        },
+      });
+
+    // find allMember in this month
+    const userData = await UserMonthData.find({
+      $and: [{ messId: user.messId }, { monthId: month._id }],
+    })
+      .select('userId')
+      .sort({ rollNo: 1 });
+
+    const members = await Promise.all(
+      userData.map(async (item) => {
+        return item.userId;
+      })
+    );
+
+    const meals = await Promise.all(
+      members.map(async (userId) => {
+        // find user
+        const user = await User.findById(userId).select('name avatar role');
+
+        let userMeals = [];
+        let meal;
+        if (day && dateFilter) {
+          userMeals = await Meal.findOne({
+            $and: [{ userId: userId }, { monthId: month._id }, dateFilter],
+          });
+
+          if (userMeals) {
+            meal = {
+              _id: userMeals?._id,
+              userId: userId,
+              user,
+              breakfast: userMeals?.breakfast,
+              lunch: userMeals?.lunch,
+              dinner: userMeals?.dinner,
+              total: userMeals?.total,
+              date: userMeals?.date,
+            };
+          }
+        } else {
+          let dateFilter = {};
+          dateFilter = {
+            date: {
+              $gte: moment().startOf('day'),
+              $lte: moment().endOf('day'),
+            },
+          };
+          userMeals = await Meal.findOne({
+            $and: [{ userId: userId }, { monthId: month._id }, dateFilter],
+          });
+
+          if (userMeals) {
+            meal = {
+              _id: userMeals?._id,
+              userId: userId,
+              user,
+              breakfast: userMeals?.breakfast,
+              lunch: userMeals?.lunch,
+              dinner: userMeals?.dinner,
+              total: userMeals?.total,
+              date: userMeals?.date,
+            };
+          }
+
+          // else {
+          //   userMeals = await Meal.find({
+          //     $and: [{ userId: userId }, { monthId: month._id }],
+          //   });
+
+          //   const lastDayMeal = userMeals[userMeals.length - 1];
+          //   const userMeal = lastDayMeal;
+          //   // create new
+          //   if (userMeal) {
+          //     meal = {
+          //       _id: userMeal?._id,
+          //       userId: userId,
+          //       user,
+          //       breakfast: userMeal?.breakfast,
+          //       lunch: userMeal?.lunch,
+          //       dinner: userMeal?.dinner,
+          //       total: userMeal?.total,
+          //       date: userMeal?.date,
+          //     };
+          //   }
+          // }
+        }
+
+        return meal;
+      })
+    );
+    if (meals[0] == undefined) {
+      return res.status(200).json({
+        status: 'success',
+        message: `${moment(day).format(
+          'DD/MM/YYYY'
+        )} এই তারিখে কোন মিল যোগ করা হয়নি।`,
+        data: {
+          data: [],
+          total: {},
+          date: moment(day).format(),
+        },
+      });
+    }
+
+    // ‍sum by in meals
+    const total = {
+      total: _.sumBy(meals, 'total'),
+      breakfast: _.sumBy(meals, 'breakfast'),
+      lunch: _.sumBy(meals, 'lunch'),
+      dinner: _.sumBy(meals, 'dinner'),
+    };
+    console.log(meals);
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        data: meals.filter(Boolean),
         total: total,
         date: meals[0].date,
       },

@@ -456,12 +456,26 @@ exports.getActiveMonth = async (req, res, next) => {
 exports.getMonthChart = async (req, res, next) => {
   try {
     const { user } = req;
-    // find active month
-    const month = await Month.findOne({
-      $and: [{ messId: user.messId }, { active: true }],
-    });
-    if (!month)
-      return next(new AppError(404, 'month', 'আপনার কোনো সক্রিয় মাস নেই'));
+    const monthId = req.query;
+    let month;
+    if (monthId) {
+      const isValid = mongoose.Types.ObjectId.isValid(monthId);
+      if (!isValid) return next(new AppError(400, '_id', 'Id is not valid '));
+
+      month = await Month.findOne({
+        $and: [{ messId: user.messId }, { _id: monthId }],
+      });
+      if (!month)
+        return next(new AppError(404, 'month', 'মাসটি খুজে পাওয়া যায়নি।'));
+    } else {
+      // find active month
+      month = await Month.findOne({
+        $and: [{ messId: user.messId }, { active: true }],
+      });
+      if (!month)
+        return next(new AppError(404, 'month', 'আপনার কোনো সক্রিয় মাস নেই'));
+    }
+
     /// find user month data
 
     // get active month all data
@@ -521,8 +535,8 @@ exports.deleteMonth = async (req, res, next) => {
     await month.remove();
 
     // Push Notifications with Firebase
-    const pushTitle = `আপনার ${month.monthName} মাসটি মুছেফেলা হয়েছে।`;
-    const pushBody = ` ${user.name} আপনার মেসের ${month.monthName} মাসটি মুছেফেলেছে।`;
+    const pushTitle = `আপনার ${month.monthTitle} মাসটি মুছেফেলা হয়েছে।`;
+    const pushBody = ` ${user.name} আপনার মেসের ${month.monthTitle} মাসটি মুছেফেলেছে।`;
     const FCMTokens = await getMessMemberFCMTokens(user.messId);
     if (FCMTokens) {
       await pushNotificationMultiple(pushTitle, pushBody, FCMTokens);
@@ -586,21 +600,42 @@ exports.changeMonthStatus = async (req, res, next) => {
         new AppError(403, 'active', 'ইতিমধ্যে অন্য একটি মাস সক্রিয় আছে।')
       );
     if ((active == 1 || active == true) && !activeMonth) {
-      await Month.updateOne(
-        { $and: [{ _id: req.params.id }, { messId: user.messId }] },
-        { active: true }
-      );
+      const month = await Month.findOne({
+        $and: [{ _id: req.params.id }, { messId: user.messId }],
+      }).select('active subManager manager');
+
+      await User.updateMany({ messId: user.messId }, { role: 'border' });
+
+      await User.findByIdAndUpdate(month.manager, { role: 'manager' });
+
+      month?.subManager?.map(async (user) => {
+        await User.findByIdAndUpdate(user, { role: 'subManager' });
+      });
+      // update user role
+
       return res.status(200).json({
         status: 'success',
         message: 'আপনার মাসটি সফলভাবে সক্রিয় করা হয়েছে৷',
       });
     }
     if (active == 0 || active == false) {
+      const adminRole = user.role;
       await Month.updateOne(
         { $and: [{ _id: req.params.id }, { messId: user.messId }] },
         { active: false, autoMealUpdate: false }
       );
-
+      // update user role
+      const findSubManager = await User.updateMany(
+        {
+          $and: [
+            { messId: user.messId },
+            { $or: [{ role: 'subManager' }, { role: 'manager' }] },
+          ],
+        },
+        { role: 'border' }
+      );
+      user.role = adminRole;
+      await user.save();
       return res.status(200).json({
         status: 'success',
         message: 'আপনার মাসটি সফলভাবে নিষ্ক্রিয় করা হয়েছে৷',

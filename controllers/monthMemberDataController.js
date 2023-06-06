@@ -43,7 +43,7 @@ exports.createMonthMemberData = async (req, res, next) => {
         new AppError(404, 'month', 'আপনার সক্রিয় মাস খুঁজে পাওয়া যায়নি')
       );
 
-    const isMonthDate = moment(month.monthName).isSame(
+    const isMonthDate = moment(month.date).isSame(
       body?.date || moment(),
       'month'
     );
