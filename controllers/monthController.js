@@ -600,9 +600,12 @@ exports.changeMonthStatus = async (req, res, next) => {
         new AppError(403, 'active', 'ইতিমধ্যে অন্য একটি মাস সক্রিয় আছে।')
       );
     if ((active == 1 || active == true) && !activeMonth) {
-      const month = await Month.findOne({
-        $and: [{ _id: req.params.id }, { messId: user.messId }],
-      }).select('active subManager manager');
+      const month = await Month.findOneAndUpdate(
+        {
+          $and: [{ _id: req.params.id }, { messId: user.messId }],
+        },
+        { active: active }
+      ).select('active subManager manager');
 
       await User.updateMany({ messId: user.messId }, { role: 'border' });
 
