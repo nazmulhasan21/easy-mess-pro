@@ -22,17 +22,22 @@ exports.addSubManager = async (req, res, next) => {
       return next(new AppError(400, 'userId', 'userId is not valid '));
     //  1 add  your subManager in your active month
     const subManager = await User.findById(userId);
-    if (subManager.role == 'manager')
-      return next(
-        new AppError(403, 'manager', 'ব্যাক্তি টি এই মাসের ম্যানেজার')
-      );
-    // 2 find user and change this user role
-    await User.findByIdAndUpdate(userId, { role: 'subManager' });
+    console.log(subManager.role);
+    if (['manager', 'subManager'].includes(subManager.role)) {
+      const message =
+        subManager.role == 'manager'
+          ? 'ব্যাক্তি টি এই মাসের ম্যানেজার'
+          : 'ব্যাক্তি টি আগে থেকেই এই মাসের সাবম্যানেজার';
+
+      return next(new AppError(403, '', message));
+    }
     const month = await Month.findOne({
       $and: [{ messId: user.messId }, { active: true }],
-    }).select('_id monthName');
+    }).select('_id monthName subManager');
     month.subManager.push(userId);
     await month.save();
+    // 2 find user and change this user role
+    await User.findByIdAndUpdate(userId, { role: 'subManager' });
     // Push Notifications with Firebase
     const pushTitle = 'সাব ম্যানেজার যোগ করা হয়েছে';
     const pushBody = ` ${subManager.name} ${month.monthTitle} মাসের সাব ম্যানেজার হিসেবে যুক্ত হয়েছেন।`;

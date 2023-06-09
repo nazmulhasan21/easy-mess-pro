@@ -32,7 +32,7 @@ module.exports = (err, req, res, next) => {
   res.status(err.statusCode).json({
     status: err.status,
     error: err,
-    [err.path]: err.message,
+    // [err.path]: err.message,
     message: err.message,
     stack: err.stack,
   });

@@ -17,6 +17,7 @@ router.use(restrictToMessId);
 
 router.get('/', mealController.getMealList);
 router.get('/last-day', mealController.getLastDayMeal);
+router.get('/last-day-meal', mealController.getAllBorderLastDayMeal);
 router.get('/meal-board', mealController.getMealBoard);
 
 router.get('/personal-today-meal', mealController.getPersonalTodayMeal);
