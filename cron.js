@@ -184,8 +184,10 @@ module.exports.sendNotificationAllUser = async () => {
   // console.log(membersFCMTokens);
   // Push Notifications with Firebase
 
-  const pushTitle = `Easy Mess অ্যাপ সম্পর্কে আপনার মতামত দিন।`;
-  const pushBody = `"Easy Mess- মেস ম্যানেজার অ্যাপ" সম্পর্কে আপনার মূল্যবান মতামতটি Play Store এ রিভিউ দিয়ে জানিয়ে দিন। আপনার একটি মতামত আমাদেরকে নতুন নতুন ফিচার/ Update যুক্ত করতে উৎসাহিত করবে।`;
+  // const pushTitle = `Easy Mess অ্যাপ সম্পর্কে আপনার মতামত দিন।`;
+  const pushTitle = `প্রিয় মেস মেসেজার`;
+  //const pushBody = `"Easy Mess- মেস ম্যানেজার অ্যাপ" সম্পর্কে আপনার মূল্যবান মতামতটি Play Store এ রিভিউ দিয়ে জানিয়ে দিন। আপনার একটি মতামত আমাদেরকে নতুন নতুন ফিচার/ Update যুক্ত করতে উৎসাহিত করবে।`;
+  const pushBody = `আজকের মিল/জমা খরচ লিপিবদ্ধ করেছেন তো?`;
 
   // const result = await pushNotification(pushTitle, pushBody, FCMToken);
   // console.log(result);

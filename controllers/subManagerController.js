@@ -22,7 +22,6 @@ exports.addSubManager = async (req, res, next) => {
       return next(new AppError(400, 'userId', 'userId is not valid '));
     //  1 add  your subManager in your active month
     const subManager = await User.findById(userId);
-    console.log(subManager.role);
     if (['manager', 'subManager'].includes(subManager.role)) {
       const message =
         subManager.role == 'manager'

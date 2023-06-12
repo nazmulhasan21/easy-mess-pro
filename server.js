@@ -68,14 +68,14 @@ cron.schedule(
   { scheduled: true, timezone: 'Asia/Dhaka' }
 );
 
-// const endOfMonth = moment().clone().endOf('month').format('DD');
-// console.log(endOfMonth);
-// //
-// cron.schedule(
-//   `00 22 01 * *`,
-//   async () => {
-//     await sendNotificationAllUser();
-//     console.log('Send notification all user');
-//   },
-//   { scheduled: true, timezone: 'Asia/Dhaka' }
-// );
+const endOfMonth = moment().clone().endOf('month').format('DD');
+console.log(endOfMonth);
+//
+cron.schedule(
+  `00 21 01 * *`,
+  async () => {
+    await sendNotificationAllUser();
+    console.log('Send notification all user');
+  },
+  { scheduled: true, timezone: 'Asia/Dhaka' }
+);
