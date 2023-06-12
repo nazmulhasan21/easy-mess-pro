@@ -193,7 +193,7 @@ exports.verification = async (req, res, next) => {
       const pushTitle = `নতুন ব্যবহারকারি যোগ হয়েছে`;
       const body = `নাম: ${user.name} , ${user.role} হিসেবে,  মোবাইল: ${user.phone}`;
       const adminFCMToken = [
-        'd5r79b2YTo6ahfvpFscLOz:APA91bFithm7kVaD36PXGVBn8HG6jVxs8gonBi4elaRqScE72_RdimQqtr63FWza0VrnjyXQ63Cq4TNxrE2Jm_M43k60LIr8n0frAn-MCBuFx7gOqXsVfANW7at5-Z62t_sn9aD8qxgz',
+        'e6sHFdPaTPSE2Gs9jVI_VV:APA91bFi0CceBSJhhBhL8o9rjwrHhUP7Mm45HEdrCNFUoiXLTmR9HuQ8a7Phtk2Ycb6DKdb_k6M7gttOnKTT8XgiBcx26XjXFvhSmWrMZ_WRMfyD0imJ3e6zO-XwB5LDfjjs0EineLei',
         'c8yVgK22RTCLuBU92oG7eR:APA91bE-WP3fnTnRTO2R4g7uDViy0C_H-FB1n-LoET4MfUiQKfZgU6hwk6tZuIRXRpbfEZNgkKIZsObUvKT9-A3-Z8JAOOqZKdwbfILNVxa5hE-NvR38RVX-OqlOSn2EIeXddnfH2Tmx',
       ];
 
