@@ -13,7 +13,7 @@ exports.signupValidate = [
     .custom((value, { req }) => {
       return User.findOne({ email: value }).then((userDoc) => {
         if (userDoc) {
-          return Promise.reject('ই - মেইল ​​টি আগে থেকেই আছে!');
+          return Promise.reject(`ই -মেইল ​​টি আগে থেকেই আছে!`);
         }
       });
     })

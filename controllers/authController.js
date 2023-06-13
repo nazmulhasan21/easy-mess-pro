@@ -193,12 +193,16 @@ exports.verification = async (req, res, next) => {
       const pushTitle = `নতুন ব্যবহারকারি যোগ হয়েছে`;
       const body = `নাম: ${user.name} , ${user.role} হিসেবে,  মোবাইল: ${user.phone}`;
       const adminFCMToken = [
-        'e6sHFdPaTPSE2Gs9jVI_VV:APA91bFi0CceBSJhhBhL8o9rjwrHhUP7Mm45HEdrCNFUoiXLTmR9HuQ8a7Phtk2Ycb6DKdb_k6M7gttOnKTT8XgiBcx26XjXFvhSmWrMZ_WRMfyD0imJ3e6zO-XwB5LDfjjs0EineLei',
+        'dFP4tNPDTsipFWV0RzuW34:APA91bFwny1k83g1bD4QTVmJyCwHrs_nXdoN4_oJkW4vi8Q-C4_duEI-yX6LIK0KPo8pC5I_CSWujY3jUXmjIROTDCyH2FzfpUgbP9kxaACXoEHteASJKimZcl06keysCHy-RK9QOqjC',
         'c8yVgK22RTCLuBU92oG7eR:APA91bE-WP3fnTnRTO2R4g7uDViy0C_H-FB1n-LoET4MfUiQKfZgU6hwk6tZuIRXRpbfEZNgkKIZsObUvKT9-A3-Z8JAOOqZKdwbfILNVxa5hE-NvR38RVX-OqlOSn2EIeXddnfH2Tmx',
       ];
 
-      await pushNotificationMultiple(pushTitle, body, adminFCMToken);
-
+      const send = await pushNotificationMultiple(
+        pushTitle,
+        body,
+        adminFCMToken
+      );
+      console.log({ send });
       //const token = createToken(user.id);
       // Remove the password from the output
       user.password = undefined;
