@@ -345,138 +345,14 @@ exports.getLastDayMeal = async (req, res, next) => {
   try {
     const { user } = req;
     const day = req.query.day;
-    // const day = moment(getDay).format('MM/DD/YYYY');
-    console.log(day);
 
-    let dateFilter = {};
-    dateFilter = {
-      date: {
-        $gte: moment(day).startOf('day'),
-        $lte: moment(day).endOf('day'),
-      },
-    };
-
-    // 1 . find user mess
-    const mess = await Mess.findById(user.messId).select('allMember');
-    // 2. find user active month
-    const month = await Month.findOne({
-      $and: [{ messId: mess._id }, { active: true }],
-    });
-
-    // find allMember in this month
-    const userData = await UserMonthData.find({
-      $and: [{ messId: user.messId }, { monthId: month._id }],
-    })
-      .select('userId')
-      .sort({ rollNo: 1 });
-
-    const members = await Promise.all(
-      userData.map(async (item) => {
-        return item.userId;
-      })
-    );
-
-    const meals = await Promise.all(
-      members.map(async (userId) => {
-        // find user
-        const user = await User.findById(userId).select('name avatar role');
-
-        let userMeals = [];
-        let meal = {};
-        if (day && dateFilter) {
-          userMeals = await Meal.findOne({
-            $and: [{ userId: userId }, { monthId: month._id }, dateFilter],
-          });
-
-          if (!userMeals) {
-            meal = false;
-          } else {
-            meal = {
-              _id: userMeals?._id,
-              userId: userId,
-              user,
-              breakfast: userMeals?.breakfast,
-              lunch: userMeals?.lunch,
-              dinner: userMeals?.dinner,
-              total: userMeals?.total,
-              date: userMeals?.date,
-            };
-          }
-        } else {
-          let dateFilter = {};
-          dateFilter = {
-            date: {
-              $gte: moment().startOf('day'),
-              $lte: moment().endOf('day'),
-            },
-          };
-          userMeals = await Meal.findOne({
-            $and: [{ userId: userId }, { monthId: month._id }, dateFilter],
-          });
-
-          if (userMeals) {
-            meal = {
-              _id: userMeals?._id,
-              userId: userId,
-              user,
-              breakfast: userMeals?.breakfast,
-              lunch: userMeals?.lunch,
-              dinner: userMeals?.dinner,
-              total: userMeals?.total,
-              date: userMeals?.date,
-            };
-          } else {
-            userMeals = await Meal.find({
-              $and: [{ userId: userId }, { monthId: month._id }],
-            });
-
-            const lastDayMeal = userMeals[userMeals.length - 1];
-            const userMeal = lastDayMeal;
-            // create new
-            meal = {
-              _id: userMeal?._id,
-              userId: userId,
-              user,
-              breakfast: userMeal?.breakfast || 0,
-              lunch: userMeal?.lunch || 0,
-              dinner: userMeal?.dinner || 0,
-              total: userMeal?.total || 0,
-              date: userMeal?.date || '',
-            };
-          }
-        }
-
-        return meal;
-      })
-    );
-    if (meals[0] == false) {
-      return res.status(200).json({
-        status: 'success',
-        message: `${moment(day).format(
-          'DD/MM/YYYY'
-        )} এই তারিখে কোন মিল যোগ করা হয়নি।`,
-        data: {
-          data: [],
-          total: {},
-          date: moment(day).format(),
-        },
-      });
-    }
-
-    // ‍sum by in meals
-    const total = {
-      total: _.sumBy(meals, 'total'),
-      breakfast: _.sumBy(meals, 'breakfast'),
-      lunch: _.sumBy(meals, 'lunch'),
-      dinner: _.sumBy(meals, 'dinner'),
-    };
-
-    res.status(200).json({
+    return res.status(200).json({
       status: 'success',
+      message: `অনুগ্রহ করে আমাদের এপপটি আপডেট দিন`,
       data: {
-        data: meals,
-        total: total,
-        date: meals[0].date,
+        data: [],
+        total: {},
+        date: moment(day).format(),
       },
     });
   } catch (error) {
