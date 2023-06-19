@@ -285,7 +285,7 @@ exports.addSingleMeal = async (req, res, next) => {
       ],
     }).select('monthId date');
 
-    if ((oldAnotherMeal.length = 0))
+    if (oldAnotherMeal.length == 0)
       return next(
         new AppError(
           403,
