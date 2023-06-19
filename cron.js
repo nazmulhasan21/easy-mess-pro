@@ -191,7 +191,7 @@ module.exports.sendNotificationAllUser = async () => {
 
   // const result = await pushNotification(pushTitle, pushBody, FCMToken);
   // console.log(result);
-  if (membersFCMTokens) {
+  if (membersFCMTokens.length > 0) {
     await pushNotificationMultiple(pushTitle, pushBody, membersFCMTokens);
   }
 };

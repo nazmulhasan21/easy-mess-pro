@@ -68,7 +68,7 @@ exports.changeManager = async (req, res, next) => {
         { role: 'manager' }
       );
       // update mess manager
-      await Mess.findByIdAndUpdate(user.messId, { manager: userId });
+      mess.manager = newManager._id;
       // active month manager change
 
       // Push Notifications with Firebase

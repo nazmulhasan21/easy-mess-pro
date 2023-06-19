@@ -338,6 +338,8 @@ exports.deleteMember = async (req, res, next) => {
     }
     isMessMember.totalBorder = isMessMember.allMember.length;
     await isMessMember.save();
+    findUser.messId = undefined;
+    await findUser.save();
 
     // Push Notifications with Firebase
     const pushTitle = `${findUser.name} সদস্য মুছে ফেলা হয়েছে ।`;

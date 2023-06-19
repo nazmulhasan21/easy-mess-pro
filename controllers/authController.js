@@ -333,6 +333,7 @@ exports.checkPassword = async (req, res, next) => {
   }
   next();
 };
+
 // exports.restrictToActiveMonthManager = async (req, res, next) => {
 //   const { user } = req;
 //   // 1. find active Month
