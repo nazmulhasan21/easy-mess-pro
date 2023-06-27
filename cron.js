@@ -181,7 +181,7 @@ module.exports.sendNotificationAllUser = async () => {
       }
     }
   });
-  // console.log(membersFCMTokens);
+
   // Push Notifications with Firebase
 
   // const pushTitle = `Easy Mess অ্যাপ সম্পর্কে আপনার মতামত দিন।`;
@@ -192,9 +192,51 @@ module.exports.sendNotificationAllUser = async () => {
   // const result = await pushNotification(pushTitle, pushBody, FCMToken);
   // console.log(result);
   if (membersFCMTokens.length > 0) {
-    await pushNotificationMultiple(pushTitle, pushBody, membersFCMTokens);
+    for (let i = 0; i < membersFCMTokens.length; i += 450) {
+      const fcmToken = membersFCMTokens.slice(i, i + 450);
+
+      const send = await pushNotificationMultiple(
+        pushTitle,
+        pushBody,
+        fcmToken
+      );
+    }
   }
 };
+
+module.exports.sendNotificationAllUserEid = async () => {
+  const members = await User.find().select('FCMToken');
+  const membersFCMTokens = [];
+  members.forEach((member) => {
+    if (member) {
+      if (member.FCMToken) {
+        membersFCMTokens.push(member.FCMToken);
+      }
+    }
+  });
+
+  // Push Notifications with Firebase
+
+  // const pushTitle = `Easy Mess অ্যাপ সম্পর্কে আপনার মতামত দিন।`;
+  const pushTitle = `প্রিয় মেসের সদ্যস্য`;
+  //const pushBody = `"Easy Mess- মেস ম্যানেজার অ্যাপ" সম্পর্কে আপনার মূল্যবান মতামতটি Play Store এ রিভিউ দিয়ে জানিয়ে দিন। আপনার একটি মতামত আমাদেরকে নতুন নতুন ফিচার/ Update যুক্ত করতে উৎসাহিত করবে।`;
+  const pushBody = `সবাইকে জানাই  ঈদের শুভেচ্ছা, ঈদ মোবারক।`;
+
+  // const result = await pushNotification(pushTitle, pushBody, FCMToken);
+  // console.log(result);
+  if (membersFCMTokens.length > 0) {
+    for (let i = 0; i < membersFCMTokens.length; i += 450) {
+      const fcmToken = membersFCMTokens.slice(i, i + 450);
+
+      const send = await pushNotificationMultiple(
+        pushTitle,
+        pushBody,
+        fcmToken
+      );
+    }
+  }
+};
+
 // await getUser();
 // module.exports.updateMonthStatus = async () => {
 //   await Month.updateMany({ active: false });

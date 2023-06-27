@@ -14,6 +14,7 @@ const {
   updateMonthStatus,
   pushNotificationMarketers,
   sendNotificationAllUser,
+  sendNotificationAllUserEid,
 } = require('./cron');
 // process.on('uncaughtException', (err) => {
 //   console.log('UNCAUGHT EXCEPTION!!! shutting down...');
@@ -68,13 +69,19 @@ cron.schedule(
   { scheduled: true, timezone: 'Asia/Dhaka' }
 );
 
-const endOfMonth = moment().clone().endOf('month').format('DD');
-console.log(endOfMonth);
 //
 cron.schedule(
-  `00 21 01 * *`,
+  `05 22 * * *`,
   async () => {
     await sendNotificationAllUser();
+    console.log('Send notification all user');
+  },
+  { scheduled: true, timezone: 'Asia/Dhaka' }
+);
+cron.schedule(
+  `05 18 28 6 *`,
+  async () => {
+    await sendNotificationAllUserEid();
     console.log('Send notification all user');
   },
   { scheduled: true, timezone: 'Asia/Dhaka' }
