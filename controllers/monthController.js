@@ -386,6 +386,8 @@ exports.getActiveMonth = async (req, res, next) => {
       // });
       // cal this user month data
     } else {
+      await monthCal(month);
+      await month.save();
       await userMonthCal(user._id, month);
     }
 
