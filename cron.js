@@ -237,6 +237,44 @@ module.exports.sendNotificationAllUserEid = async () => {
   }
 };
 
+// const demoMealDelet = async () => {
+//   const date = moment().subtract(2, 'days');
+
+//   let dateFilter = {};
+//   dateFilter = {
+//     date: {
+//       $gte: moment(date).startOf('day'),
+//       $lte: moment(date).endOf('day'),
+//     },
+//   };
+
+//   if (!date) {
+//     console.log('date not found');
+//     return;
+//   }
+//   const month = await Month.findOne({
+//     $and: [{ messId: '631027accf070269e5336afe' }, { active: true }],
+//   });
+
+//   const meal = await Meal.find({
+//     $and: [{ monthId: month._id }, dateFilter],
+//   });
+
+//   if (!meal.length > 0) {
+//     console.log(
+//       `${moment(date).format('DD/MM/YYYY')} এই তারিখে কোন মিল যোগ করা হয়নি।`
+//     );
+//     return;
+//   }
+
+//   console.log(meal);
+
+//   await Meal.deleteMany({
+//     $and: [{ monthId: month._id }, dateFilter],
+//   });
+// };
+
+// demoMealDelet();
 // await getUser();
 // module.exports.updateMonthStatus = async () => {
 //   await Month.updateMany({ active: false });

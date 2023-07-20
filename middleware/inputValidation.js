@@ -20,7 +20,7 @@ exports.signupValidate = [
     .normalizeEmail(),
   body('phone')
     .trim()
-    .isMobilePhone(['bn-BD', 'en-IN'])
+    .isMobilePhone()
     .withMessage((value) => {
       return `'${value}' একটি বৈধ ফোন নম্বর নয়।`;
       d;
