@@ -12,9 +12,11 @@ const Mess = require('../models/messModel');
 
 exports.getAllUser = async (req, res, next) => {
   const users = await User.find()
+    .limit(50)
     .select('name email phone role avatar emailVerified messId createdAt')
     .sort({ createdAt: -1 });
-  const totalUser = users.length;
+  const total = await User.find();
+  const totalUser = total.length;
   const mess = await Mess.find()
     .select()
     .populate('admin allMember', 'name email avatar')
