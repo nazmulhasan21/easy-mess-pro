@@ -62,6 +62,7 @@ exports.createMonthMemberData = async (req, res, next) => {
       type,
       date: date || moment(),
     });
+
     // Push Notifications with Firebase
 
     const member = await User.findById(userId).select('name FCMToken');

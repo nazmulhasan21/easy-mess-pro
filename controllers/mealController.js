@@ -422,8 +422,16 @@ exports.getMealBoard = async (req, res, next) => {
     const { user } = req;
     const day = req.query.day;
     // const day = moment(getDay).format('MM/DD/YYYY');
-    console.log(day);
 
+    return res.status(200).json({
+      status: 'success',
+      message: `দয়া করে অ্যাপটি আপডেট দিন। নতুন ডিজাইন করা হয়েছে। আশা করি ভালো লাগবে।`,
+      meals: [],
+      total: {},
+      date: moment(day).format(),
+    });
+
+    // update app
     let dateFilter = {};
     dateFilter = {
       date: {
