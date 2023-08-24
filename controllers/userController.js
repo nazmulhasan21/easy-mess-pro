@@ -12,7 +12,7 @@ const Mess = require('../models/messModel');
 
 exports.getAllUser = async (req, res, next) => {
   const users = await User.find()
-    .limit(50)
+    .limit()
     .select('name email phone role avatar emailVerified messId createdAt')
     .sort({ createdAt: -1 });
   const total = await User.find();
